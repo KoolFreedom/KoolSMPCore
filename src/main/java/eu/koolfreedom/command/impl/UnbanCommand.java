@@ -1,20 +1,20 @@
 package eu.koolfreedom.command.impl;
 
+import eu.koolfreedom.command.FreedomCommand;
 import eu.koolfreedom.util.FUtil;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.entity.Player;
 
-public class UnbanCommand implements CommandExecutor
+public class UnbanCommand extends FreedomCommand
 {
     @Override
     @SuppressWarnings("deprecation")
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args, boolean senderIsConsole) {
         if (args.length == 0)
         {
             sender.sendMessage(ChatColor.GRAY + "Usage: /<command> (player)");

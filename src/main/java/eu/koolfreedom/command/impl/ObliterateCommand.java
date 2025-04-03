@@ -1,6 +1,7 @@
 package eu.koolfreedom.command.impl;
 
 import eu.koolfreedom.KoolSMPCore;
+import eu.koolfreedom.command.FreedomCommand;
 import eu.koolfreedom.command.impl.Messages;
 import eu.koolfreedom.util.FUtil;
 import net.kyori.adventure.text.Component;
@@ -16,11 +17,12 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 
-public class ObliterateCommand implements CommandExecutor {
+public class ObliterateCommand extends FreedomCommand {
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args, boolean senderIsConsole)
+    {
         if (args.length == 0) {
-            sender.sendMessage(Component.text("Usage: /" + s + " <player> [reason]", NamedTextColor.RED));
+            sender.sendMessage(Component.text("Usage: /" + commandLabel + " <player> [reason]", NamedTextColor.RED));
             return true;
         }
 

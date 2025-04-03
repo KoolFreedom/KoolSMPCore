@@ -1,19 +1,19 @@
 package eu.koolfreedom.command.impl;
 
+import eu.koolfreedom.command.FreedomCommand;
 import eu.koolfreedom.util.FUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.entity.Player;
 
-public class SayCommand implements CommandExecutor
+public class SayCommand extends FreedomCommand
 {
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args, boolean senderIsConsole) {
         if (args.length == 0)
         {
             return false;

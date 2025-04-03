@@ -1,6 +1,7 @@
 package eu.koolfreedom;
 
 import eu.koolfreedom.api.Permissions;
+import eu.koolfreedom.command.CommandLoader;
 import eu.koolfreedom.config.Config;
 import eu.koolfreedom.log.FLog;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -82,7 +83,8 @@ public class KoolSMPCore extends JavaPlugin implements Listener {
         FLog.info("Version " + build.version);
         FLog.info("Compiled " + build.date + " by " + build.author);
         server.getPluginManager().registerEvents(this, this);
-        loadCommands();
+        CommandLoader commandLoader = new CommandLoader(this);
+        commandLoader.registerCommands("eu.koolfreedom.command.impl");
         loadListeners();
         perms = new Permissions();
 
@@ -105,40 +107,6 @@ public class KoolSMPCore extends JavaPlugin implements Listener {
         lol = new LoginListener(this);
         this.getServer().getPluginManager().registerEvents(new PunishmentListener(), this);
         tl = new TabListener(this);
-    }
-
-    public void loadCommands()
-    {
-        Objects.requireNonNull(getCommand("adminchat")).setExecutor(new AdminChatCommand());
-        Objects.requireNonNull(getCommand("ban")).setExecutor(new BanCommand());
-        Objects.requireNonNull(getCommand("banip")).setExecutor(new BanIPCommand());
-        Objects.requireNonNull(getCommand("clearchat")).setExecutor(new ClearChatCommand());
-        Objects.requireNonNull(getCommand("commandspy")).setExecutor(new CommandSpyCommand());
-        Objects.requireNonNull(getCommand("crash")).setExecutor(new CrashCommand());
-        Objects.requireNonNull(getCommand("cry")).setExecutor(new CryCommand());
-        Objects.requireNonNull(getCommand("doom")).setExecutor(new DoomCommand());
-        Objects.requireNonNull(getCommand("hug")).setExecutor(new HugCommand());
-        Objects.requireNonNull(getCommand("kick")).setExecutor(new KickCommand());
-        Objects.requireNonNull(getCommand("kiss")).setExecutor(new KissCommand());
-        Objects.requireNonNull(getCommand("koolsmpcore")).setExecutor(new KoolSMPCoreCommand());
-        Objects.requireNonNull(getCommand("lagsource")).setExecutor(new LagSourceCommand());
-        Objects.requireNonNull(getCommand("mute")).setExecutor(new MuteCommand());
-        Objects.requireNonNull(getCommand("obliterate")).setExecutor(new ObliterateCommand());
-        Objects.requireNonNull(getCommand("orbit")).setExecutor(new OrbitCommand());
-        Objects.requireNonNull(getCommand("pat")).setExecutor(new PatCommand());
-        Objects.requireNonNull(getCommand("poke")).setExecutor(new PokeCommand());
-        Objects.requireNonNull(getCommand("rawsay")).setExecutor(new RawSayCommand());
-        Objects.requireNonNull(getCommand("report")).setExecutor(new ReportCommand());
-        Objects.requireNonNull(getCommand("satisfyall")).setExecutor(new SatisfyAllCommand());
-        Objects.requireNonNull(getCommand("say")).setExecutor(new SayCommand());
-        Objects.requireNonNull(getCommand("ship")).setExecutor(new ShipCommand());
-        Objects.requireNonNull(getCommand("slap")).setExecutor(new SlapCommand());
-        Objects.requireNonNull(getCommand("smite")).setExecutor(new SmiteCommand());
-        Objects.requireNonNull(getCommand("spectate")).setExecutor(new SpectateCommand());
-        Objects.requireNonNull(getCommand("unban")).setExecutor(new UnbanCommand());
-        Objects.requireNonNull(getCommand("unbanip")).setExecutor(new UnbanIPCommand());
-        Objects.requireNonNull(getCommand("unmute")).setExecutor(new UnmuteCommand());
-        Objects.requireNonNull(getCommand("warn")).setExecutor(new WarnCommand());
     }
 
     public static class BuildProperties

@@ -1,6 +1,7 @@
 package eu.koolfreedom.command.impl;
 
 import eu.koolfreedom.KoolSMPCore;
+import eu.koolfreedom.command.FreedomCommand;
 import eu.koolfreedom.command.impl.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -11,9 +12,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("deprecation")
-public class CrashCommand implements CommandExecutor {
+public class CrashCommand extends FreedomCommand {
     @Override
-    public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args, boolean senderIsConsole) {
         // Check if the command sender has permission
         if (!sender.hasPermission("kf.exec")) {
             sender.sendMessage(Messages.MSG_NO_PERMS);

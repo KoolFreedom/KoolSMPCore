@@ -1,5 +1,6 @@
 package eu.koolfreedom.command.impl;
 
+import eu.koolfreedom.command.FreedomCommand;
 import eu.koolfreedom.config.ConfigEntry;
 import eu.koolfreedom.util.FUtil;
 import org.apache.commons.lang.StringUtils;
@@ -13,9 +14,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("deprecation")
-public class BanIPCommand implements CommandExecutor
+public class BanIPCommand extends FreedomCommand
 {
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args, boolean senderIsConsole) {
         if (args.length == 0) {
             sender.sendMessage(ChatColor.GRAY + "Usage: /<command> (player) [reason]");
             return true;

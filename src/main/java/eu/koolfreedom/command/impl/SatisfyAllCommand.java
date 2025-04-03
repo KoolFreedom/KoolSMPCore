@@ -1,15 +1,15 @@
 package eu.koolfreedom.command.impl;
 
+import eu.koolfreedom.command.FreedomCommand;
 import eu.koolfreedom.util.FUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class SatisfyAllCommand implements CommandExecutor
+public class SatisfyAllCommand extends FreedomCommand
 {
-    public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args)
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args, boolean senderIsConsole)
     {
         if (!sender.hasPermission("kf.admin"))
         {

@@ -1,5 +1,6 @@
 package eu.koolfreedom.command.impl;
 
+import eu.koolfreedom.command.FreedomCommand;
 import eu.koolfreedom.util.FUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -15,13 +16,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class OrbitCommand implements CommandExecutor, TabCompleter {
+public class OrbitCommand extends FreedomCommand implements TabCompleter {
     private static final Map<UUID, Integer> isOrbited = new HashMap<>();
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args, boolean senderIsConsole) {
         if (args.length == 0) {
-            sender.sendMessage(ChatColor.GRAY + "Usage: /" + label + " <player> [<power> | stop]");
+            sender.sendMessage(ChatColor.GRAY + "Usage: /" + commandLabel + " <player> [<power> | stop]");
             return true;
         }
 

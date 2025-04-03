@@ -16,12 +16,19 @@ public abstract class FreedomCommand implements CommandExecutor
 {
     private static final Map<String, FreedomCommand> commands = new HashMap<>();
 
-    protected CommandSender sender;
+    public static Map<String, FreedomCommand> getCommands() {
+        return commands;
+    }
 
-    public static FreedomCommand getFrom(Command command)
-    {
+    public static FreedomCommand getFrom(Command command) {
         return commands.get(command.getName().toLowerCase());
     }
+
+    public void register(String name) {
+        commands.put(name.toLowerCase(), this);
+    }
+
+    protected CommandSender sender;
 
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String commandLabel, @NotNull String[] args)
     {
@@ -42,11 +49,6 @@ public abstract class FreedomCommand implements CommandExecutor
     }
 
     public abstract boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args, boolean senderIsConsole);
-
-    public void register(String name)
-    {
-        commands.put(name.toLowerCase(), this);
-    }
 
     protected boolean isConsole()
     {

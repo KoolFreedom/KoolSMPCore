@@ -1,5 +1,6 @@
 package eu.koolfreedom.command.impl;
 
+import eu.koolfreedom.command.FreedomCommand;
 import eu.koolfreedom.listener.PunishmentListener;
 import eu.koolfreedom.util.FUtil;
 import org.apache.commons.lang.StringUtils;
@@ -11,10 +12,10 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class MuteCommand implements CommandExecutor
+public class MuteCommand extends FreedomCommand
 {
 
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args, boolean senderIsConsole) {
         if (!(sender.hasPermission("kf.admin"))) {
             sender.sendMessage(Messages.MSG_NO_PERMS);
             return true;

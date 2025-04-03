@@ -1,5 +1,6 @@
 package eu.koolfreedom.command.impl;
 
+import eu.koolfreedom.command.FreedomCommand;
 import eu.koolfreedom.listener.PunishmentListener;
 import eu.koolfreedom.util.FUtil;
 import org.bukkit.Bukkit;
@@ -10,9 +11,9 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class UnmuteCommand implements CommandExecutor
+public class UnmuteCommand extends FreedomCommand
 {
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args)
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args, boolean senderIsConsole)
     {
         if (args.length == 0)
         {

@@ -1,6 +1,7 @@
 package eu.koolfreedom.command.impl;
 
 import eu.koolfreedom.KoolSMPCore;
+import eu.koolfreedom.command.FreedomCommand;
 import eu.koolfreedom.command.impl.Messages;
 import eu.koolfreedom.config.ConfigEntry;
 import java.util.ArrayList;
@@ -14,19 +15,19 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class ReportCommand implements CommandExecutor {
+public class ReportCommand extends FreedomCommand {
     private final ArrayList<Player> antispam = new ArrayList<>();
 
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args, boolean senderIsConsole) {
         Player player;
-        if (commandSender instanceof Player) {
-            player = (Player)commandSender;
+        if (sender instanceof Player) {
+            player = (Player)sender;
         } else {
-            commandSender.sendMessage(Messages.ONLY_IN_GAME);
+            sender.sendMessage(Messages.ONLY_IN_GAME);
             return true;
         }
         if (args.length == 0) {
-            player.sendMessage(Component.text("Usage: /" + s + " <player> <reason>", NamedTextColor.RED));
+            player.sendMessage(Component.text("Usage: /" + commandLabel + " <player> <reason>", NamedTextColor.RED));
             return true;
         }
         Player playerArg = Bukkit.getServer().getPlayer(args[0]);
