@@ -41,13 +41,11 @@ public class CommandLoader {
         Command command = commandMap.getCommand(commandName);
         if (command != null) {
             command.unregister(commandMap);
-            Bukkit.getLogger().info("Unregistered Bukkit command: /" + commandName);
         }
 
         Command vanilla = commandMap.getCommand(vanillaCommand);
         if (vanilla != null) {
             vanilla.unregister(commandMap);
-            Bukkit.getLogger().info("Unregistered Vanilla command: /" + vanillaCommand);
         }
 
         // Remove Essentials' commands (or other plugin commands)
@@ -55,25 +53,6 @@ public class CommandLoader {
         Command essentials = commandMap.getCommand(essentialsCommand);
         if (essentials != null) {
             essentials.unregister(commandMap);
-            Bukkit.getLogger().info("Unregistered Essentials command: /" + essentialsCommand);
-        }
-    }
-
-
-    private void unregisterVanillaCommand(String commandName, CommandMap commandMap) {
-        // Remove both Bukkit and Vanilla commands
-        String vanillaCommand = "minecraft:" + commandName;
-
-        Command command = commandMap.getCommand(commandName);
-        if (command != null) {
-            command.unregister(commandMap);
-            Bukkit.getLogger().info("Unregistered Bukkit command: /" + commandName);
-        }
-
-        Command vanilla = commandMap.getCommand(vanillaCommand);
-        if (vanilla != null) {
-            vanilla.unregister(commandMap);
-            Bukkit.getLogger().info("Unregistered Vanilla command: /" + vanillaCommand);
         }
     }
 
@@ -99,10 +78,9 @@ public class CommandLoader {
                     if (pluginCommand == null) {
                         PluginCommandWrapper newCommand = new PluginCommandWrapper(commandName, command);
                         commandMap.register(plugin.getDescription().getName(), newCommand);
-                        Bukkit.getLogger().info("Registered new command: /" + commandName);
+                        Bukkit.getLogger().info("Registered command: /" + commandName);
                     } else {
                         pluginCommand.setExecutor(command);
-                        Bukkit.getLogger().info("Replaced existing command: /" + commandName);
                     }
                 }
             }
