@@ -1,3 +1,14 @@
+/*
+/
+/ I realize this class is called FreedomCommand (similar to TotalFreedomMod), and that was because I was
+/ wanting to re-create TFM's FrontDoor and it had calls to FreedomCommand and I was honestly
+/ too lazy to change the name, this will remain like this considering my server name *is* "KoolFreedom"
+/
+/ And yes, I know this is very 1:1 with TFM's FreedomCommand, I was honestly getting upset trying to do it myself with
+/ original code and going nowhere with it. I just got upset and said "fuck it" and ripped a good chunk of it
+/ and use it for myself. So, credit for the majority of this file goes to the TotalFreedomMod developers, I'm sorry.
+/
+*/
 package eu.koolfreedom.command;
 
 import org.bukkit.Bukkit;
