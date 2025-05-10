@@ -1,58 +1,68 @@
 package eu.koolfreedom.command.impl;
 
+import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.KoolCommand;
+import eu.koolfreedom.punishment.Punishment;
 import eu.koolfreedom.util.FUtil;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings("deprecation")
-public class SmiteCommand implements CommandExecutor
+import java.util.List;
+
+@CommandParameters(name = "smite", description = "\"Kindly\" correct a misbehaving player.",
+        usage = "/<command> <player> [reason]", aliases = {"bitchslap"})
+public class SmiteCommand extends KoolCommand
 {
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (!(sender.hasPermission("kf.admin"))) {
-            sender.sendMessage(Messages.MSG_NO_PERMS);
-            return true;
-        }
-
-        if (args.length < 1) {
-            sender.sendMessage(ChatColor.RED + "Usage: /smite <player> [reason]");
-            return true;
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
+    {
+        if (args.length == 0)
+        {
+            return false;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
-        if (target == null) {
-            sender.sendMessage(Messages.PLAYER_NOT_FOUND);
+        if (target == null)
+        {
+            msg(sender, playerNotFound);
             return true;
         }
 
-        // Strike lightning 8 times
-        for (int i = 0; i < 8; i++) {
+
+        broadcast("<red><player> has been a naughty, naughty child.",
+                Placeholder.unparsed("player", target.getName()));
+        broadcast(" <red>Smitten by: <yellow><sender>", Placeholder.unparsed("sender", sender.getName()));
+
+        if (args.length >= 2)
+        {
+            String reason = String.join(" ", ArrayUtils.remove(args, 0));
+            broadcast(" <red>Reason: <yellow><reason>", Placeholder.unparsed("reason", reason));
+        }
+
+        plugin.recordKeeper.recordPunishment(Punishment.builder()
+                .uuid(target.getUniqueId())
+                .name(target.getName())
+                .ip(FUtil.getIp(target))
+                .type("SMITE")
+                .build());
+
+        // ZAP!
+        for (int i = 0; i < 8; i++)
+        {
             target.getWorld().strikeLightningEffect(target.getLocation());
         }
-
-        // Apply smite effects
         target.setHealth(0);
-        target.setGameMode(GameMode.SURVIVAL);
-        target.setOp(false);
-
-        FUtil.bcastMsg(ChatColor.RED + target.getName() + " has been a naughty, naughty child.");
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "discord broadcast **" + target.getName() + " has been a naughty, naughty child.**");
-        FUtil.bcastMsg(ChatColor.RED + "Smitten by: " + ChatColor.YELLOW + sender.getName());
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "discord broadcast **Smitten by**: " + sender.getName());
-
-        if (args.length > 1) {
-            String reason = String.join(" ", args).substring(args[0].length()).trim();
-            FUtil.bcastMsg(ChatColor.RED + "Reason: " + ChatColor.YELLOW + reason);
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "discord broadcast **Reason**: " + reason);
-        }
-
         return true;
+    }
+
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
+    {
+        return args.length == 1 ? Bukkit.getOnlinePlayers().stream().map(Player::getName).toList() : List.of();
     }
 }
 

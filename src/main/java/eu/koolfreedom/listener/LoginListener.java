@@ -1,20 +1,19 @@
 package eu.koolfreedom.listener;
 
 import eu.koolfreedom.KoolSMPCore;
+import eu.koolfreedom.config.ConfigEntry;
 import eu.koolfreedom.util.FUtil;
-import eu.koolfreedom.util.KoolSMPCoreBase;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-public class LoginListener extends KoolSMPCoreBase implements Listener
+public class LoginListener implements Listener
 {
-    public LoginListener(KoolSMPCore plugin)
+    public LoginListener()
     {
-        this.main = plugin;
-        Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
+        Bukkit.getServer().getPluginManager().registerEvents(this, KoolSMPCore.getInstance());
     }
 
     @EventHandler
@@ -22,15 +21,19 @@ public class LoginListener extends KoolSMPCoreBase implements Listener
     {
         Player player = event.getPlayer();
 
-        String header = main.config.getString("server.tablist_header");
-        String footer = main.config.getString("server.tablist_footer");
-        if (!(header == null))
+        String header = ConfigEntry.SERVER_TABLIST_HEADER.getString();
+        String footer = ConfigEntry.SERVER_TABLIST_FOOTER.getString();
+
+        if (header != null)
         {
-            player.setPlayerListHeader(FUtil.colorize(header).replace("\\n", "\n"));
+            player.sendPlayerListHeader(FUtil.miniMessage(header));
         }
-        if (!(footer == null))
+
+        if (footer != null)
         {
-            player.setPlayerListFooter(FUtil.colorize(footer).replace("\\n", "\n"));
+            player.sendPlayerListFooter(FUtil.miniMessage(footer));
         }
+
+        player.playerListName(KoolSMPCore.getInstance().groupCosmetics.getColoredName(player));
     }
 }

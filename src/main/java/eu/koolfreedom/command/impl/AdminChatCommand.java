@@ -1,28 +1,25 @@
 package eu.koolfreedom.command.impl;
 
-import org.apache.commons.lang.StringUtils;
+import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.KoolCommand;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import eu.koolfreedom.util.FUtil;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.entity.Player;
 
-public class AdminChatCommand implements CommandExecutor
+@CommandParameters(name = "adminchat", description = "Speak with other staff members", aliases = {"o", "oc", "ac"})
+public class AdminChatCommand extends KoolCommand
 {
-    public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String[] args)
+    @Override
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
     {
-        if (!sender.hasPermission("kf.adminchat"))
-        {
-            sender.sendMessage(Messages.MSG_NO_PERMS);
-            return true;
-        }
         if (args.length == 0)
         {
-            sender.sendMessage(Messages.MISSING_ARGS);
-            return true;
+            return false;
         }
-        String message = StringUtils.join(args, " ");
-        FUtil.adminChat(sender, message);
+
+        FUtil.adminChat(sender, StringUtils.join(args, " "));
         return true;
     }
 }

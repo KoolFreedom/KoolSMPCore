@@ -1,158 +1,120 @@
 package eu.koolfreedom.util;
 
 import eu.koolfreedom.KoolSMPCore;
-import eu.koolfreedom.log.FLog;
+import eu.koolfreedom.config.ConfigEntry;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.Modifying;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
 import java.util.*;
 
-@SuppressWarnings("deprecation")
 public class FUtil // the f stands for fuck
 {
-    public static Map<String, ChatColor> CHAT_COLOR_NAMES;
-    public static List<ChatColor> CHAT_COLOR_POOL;
-    private static Random RANDOM;
+    private static final Random RANDOM = new Random();
+    private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
-    static
+    public static void staffAction(CommandSender sender, String message, TagResolver... placeholders)
     {
-        RANDOM = new Random();
-        CHAT_COLOR_NAMES = new HashMap<>();
-        CHAT_COLOR_POOL = Arrays.asList(ChatColor.DARK_RED, ChatColor.RED, ChatColor.GOLD, ChatColor.YELLOW, ChatColor.GREEN, ChatColor.DARK_GREEN, ChatColor.AQUA, ChatColor.DARK_AQUA, ChatColor.BLUE, ChatColor.DARK_BLUE, ChatColor.DARK_PURPLE, ChatColor.LIGHT_PURPLE);
-        for (final ChatColor chatColor : CHAT_COLOR_POOL)
-        {
-            CHAT_COLOR_NAMES.put(chatColor.name().toLowerCase().replace("_", ""), chatColor);
-        }
+        broadcast("<gray><i>[<sender>: <action>]", Placeholder.unparsed("sender", sender.getName()),
+                Placeholder.component("action", FUtil.miniMessage(message, placeholders)));
     }
 
-    public static void copy(InputStream in, File file) throws IOException
+    public static void broadcast(Component component)
     {
-        if (!file.exists())
-        {
-            file.getParentFile().mkdirs();
-        }
-
-        final OutputStream out = new FileOutputStream(file);
-        byte[] buf = new byte[1024];
-        int len;
-        while ((len = in.read(buf)) > 0)
-        {
-            out.write(buf, 0, len);
-        }
-        out.close();
-        in.close();
+        Bukkit.broadcast(component);
     }
 
-    @SuppressWarnings("deprecation")
-    public static void adminAction(String adminName, String action, boolean isRed)
+    public static void broadcast(Component component, String permission)
     {
-        FUtil.bcastMsg(adminName + " - " + action, (isRed ? ChatColor.RED : ChatColor.AQUA));
+        Bukkit.broadcast(component, permission);
     }
 
-    @SuppressWarnings("deprecation")
-    public static void bcastMsg(String message, ChatColor color)
+    public static void broadcast(String message, TagResolver... placeholders)
     {
-        bcastMsg(message, color, true);
+        Bukkit.broadcast(miniMessage(message, placeholders));
+
+        // TODO: Add calls to Discord broadcasts to here so that all broadcasts get sent to the Discord
     }
 
-    @SuppressWarnings("deprecation")
-    public static void bcastMsg(String message, ChatColor color, Boolean toConsole)
+    public static void broadcast(String permission, String message, TagResolver... placeholders)
     {
-        if (toConsole)
-        {
-            FLog.info(message);
-        }
-
-        for (Player player : Bukkit.getOnlinePlayers())
-        {
-            player.sendMessage((color == null ? "" : color) + message);
-        }
+        Bukkit.broadcast(miniMessage(message, placeholders), permission);
     }
 
-    public static void bcastMsg(String message, Boolean toConsole)
+    public static Component miniMessage(String message, TagResolver... placeholders)
     {
-        bcastMsg(message, null, toConsole);
+        return MINI_MESSAGE.deserialize(message, placeholders);
     }
 
-    public static void bcastMsg(String message)
+    public static int randomNumber()
     {
-        FUtil.bcastMsg(message, null, true);
+        return RANDOM.nextInt();
     }
 
-    public static String colorize(final String string)
+    public static int randomNumber(int min, int max)
     {
-        return ChatColor.translateAlternateColorCodes('&', string);
+        return RANDOM.nextInt(min, max);
     }
 
-    public static ChatColor randomChatColor()
+    public static String randomString(int length)
     {
-        return CHAT_COLOR_POOL.get(RANDOM.nextInt(CHAT_COLOR_POOL.size()));
+        return RANDOM.ints(48, 122)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(length)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
     }
 
     public static void adminChat(CommandSender sender, String message)
     {
-        Player player = Bukkit.getPlayer(sender.getName());
-        String rank = KoolSMPCore.main.perms.getDisplay(player);
-        String format = ChatColor.DARK_GRAY + "[" + ChatColor.AQUA + "AC" + ChatColor.DARK_GRAY + "] " + ChatColor.BLUE + sender.getName() + ChatColor.DARK_GRAY + " [" + rank
-                + ChatColor.DARK_GRAY + "] " + ChatColor.GOLD + message;
-        Bukkit.getLogger().info(format);
-        Bukkit.getOnlinePlayers()
-                .stream()
-                .filter((players) -> (players.hasPermission("kf.admin")))
-                .forEachOrdered((players) -> players.sendMessage(format));
-    }
+        Component formattedMessage = miniMessage(ConfigEntry.FORMATS_ADMIN_CHAT.getString(),
+                Placeholder.unparsed("name", sender.getName()),
+                Placeholder.component("rank", KoolSMPCore.getInstance().groupCosmetics.getSenderGroup(sender).getDisplayName()),
+                Placeholder.unparsed("message", message));
 
-    public static long getUnixTime()
-    {
-        return System.currentTimeMillis() / 1000L;
-    }
-
-    public static Date getUnixDate(long unix)
-    {
-        return new Date(unix * 1000);
-    }
-
-    public static long getUnixTime(Date date)
-    {
-        if (date == null)
-        {
-            return 0;
-        }
-
-        return date.getTime() / 1000L;
-    }
-
-    public static String decolorize(String string)
-    {
-        return string.replaceAll("\\u00A7(?=[0-9a-fk-or])", "&");
-    }
-
-    public static File getPluginFile(Plugin plugin, String name)
-    {
-        return new File(plugin.getDataFolder(), name);
+        broadcast(formattedMessage, "kfc.command.adminchat");
     }
 
     public static String getIp(Player player)
     {
-        return player.getAddress().getAddress().getHostAddress().trim();
+        return Objects.requireNonNull(player.getAddress()).getAddress().getHostAddress().trim();
     }
 
-    public static String getFormattedEndDate(long end) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(end);
+    public static List<String> getPlayerList(boolean includeVanish)
+    {
+        return Bukkit.getOnlinePlayers().stream().filter(player ->
+                !KoolSMPCore.getInstance().isVanished(player) || includeVanish).map(Player::getName).toList();
+    }
 
-        return String.format(
-                "%02d/%02d/%02d %02dH:%02dM",
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH),
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE)
-        );
+    public static Player getPlayer(String name, boolean seeVanished)
+    {
+        Player player = Bukkit.getPlayer(name);
+        return seeVanished || !KoolSMPCore.getInstance().isVanished(player) ? player : null;
+    }
+
+    public static class RandomColorTag implements Modifying
+    {
+        public static final RandomColorTag INSTANCE = new RandomColorTag();
+
+        @Override
+        public Component apply(@NotNull Component current, int depth)
+        {
+            if (current instanceof TextComponent textComponent)
+            {
+                return Component.join(JoinConfiguration.spaces(), Arrays.stream(textComponent.content().split(" "))
+                        .map(text -> Component.text(text).color(TextColor.color(randomNumber(0, 255),
+                                randomNumber(0, 255), randomNumber(0, 255)))).toList());
+            }
+
+            return current;
+        }
     }
 }

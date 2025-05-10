@@ -1,58 +1,70 @@
 package eu.koolfreedom.command.impl;
 
+import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.KoolCommand;
+import eu.koolfreedom.config.ConfigEntry;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.Objects;
 
-@SuppressWarnings("deprecation")
-public class CommandSpyCommand implements CommandExecutor, Listener {
-    private final Set<UUID> commandSpyEnabled = new HashSet<>();
+@CommandParameters(name = "commandspy", description = "Spy on other people's commands", aliases = {"cmdspy", "cspy"})
+public class CommandSpyCommand extends KoolCommand implements Listener
+{
+    private final NamespacedKey commandSpyKey = new NamespacedKey(plugin, "commandspy");
+
+    public CommandSpyCommand()
+    {
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+    }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("This command can only be used by players.");
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
+    {
+        if (playerSender == null)
+        {
+            msg(sender, playersOnly);
             return true;
         }
 
-        Player player = (Player) sender;
-        UUID playerUUID = player.getUniqueId();
+        PersistentDataContainer container = playerSender.getPersistentDataContainer();
 
-        if (!player.hasPermission("kf.admin")) {
-            player.sendMessage(Messages.MSG_NO_PERMS);
-            return true;
+        if (!container.getOrDefault(commandSpyKey, PersistentDataType.BOOLEAN, false))
+        {
+            msg(sender, "<gray>CommandSpy <green>enabled</green>.");
+            container.set(commandSpyKey, PersistentDataType.BOOLEAN, true);
+        }
+        else
+        {
+            msg(sender, "<gray>CommandSpy <red>disabled</red>.");
+            container.set(commandSpyKey, PersistentDataType.BOOLEAN, false);
         }
 
-        if (commandSpyEnabled.contains(playerUUID)) {
-            commandSpyEnabled.remove(playerUUID);
-            player.sendMessage(Messages.CMDSPY_DISABLED);
-        } else {
-            commandSpyEnabled.add(playerUUID);
-            player.sendMessage(Messages.CMDSPY_ENABLED);
-        }
         return true;
     }
 
     @EventHandler
-    public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
+    public void onPlayerCommand(PlayerCommandPreprocessEvent event)
+    {
         Player sender = event.getPlayer();
         String commandMessage = event.getMessage();
 
-        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            if (commandSpyEnabled.contains(onlinePlayer.getUniqueId()) && !onlinePlayer.equals(sender)) {
-                onlinePlayer.sendMessage(ChatColor.GRAY + sender.getName() + ": " + ChatColor.GRAY + commandMessage);
-            }
-        }
+        Bukkit.getOnlinePlayers().stream().filter(player -> player.hasPermission(Objects.requireNonNull(getPermission())))
+                .filter(player -> player.getPersistentDataContainer().getOrDefault(commandSpyKey, PersistentDataType.BOOLEAN, false))
+                .filter(player -> !sender.equals(player))
+                .forEach(player -> msg(player, ConfigEntry.FORMATS_COMMANDSPY.getString(),
+                        Placeholder.parsed("name", sender.getName()),
+                        Placeholder.parsed("raw_command", commandMessage),
+                        Placeholder.component("command", Component.text(commandMessage))));
     }
 }

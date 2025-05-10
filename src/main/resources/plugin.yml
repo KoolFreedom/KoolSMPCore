@@ -2,80 +2,70 @@ name: KoolSMPCore
 main: eu.koolfreedom.KoolSMPCore
 version: ${project.version}
 description: Core plugin for the KoolFreedom SMP
-depend: [ ProtocolLib, WorldGuard, LuckPerms ]
-softdepend: [ Essentials, DiscordSRV ]
-authors: [gamingto12]
-commands:
-  adminchat:
-    usage: /<command> <message>
-    description: Speak with other staff members
-    aliases: [ o, oc, adminchat, ac ]
-  ban:
-    description: Ban someone
-    aliases: [gtfo]
-  clearchat:
-    aliases: [cc]
-    permission: kf.admin
-    description: Clears the chat
-  commandspy:
-    aliases: [cmdspy, cspy]
-    description: Spy on another player's commands.
-  crash:
-    permission: kf.exec
-    description: Crash a person's client
-  cry:
-    description: womp womp
-  doom:
-    description: Swing the Russian Hammer
-  hug:
-    descriptions: Hug a player
-  kick:
-    description: Kick someone
-  kiss:
-    description: For the lovebirds, give em a big ol kiss
-  koolsmpcore:
-    description: Display information about the plugin
-    aliases: [kfm]
-  mute:
-    description: Mutes a player
-  obliterate:
-    description: Unleash hell upon a player
-  orbit:
-    description: trol
-  pat:
-    description: pat pat
-  permbans:
-    description: Reload the PermBans configuration file.
-  poke:
-    description: poke
-  rawsay:
-    description: Tellraw...but better
-    permission: kf.admin
-  report:
-    description: Report a suspicious user
-  satisfyall:
-    description: Feed and heal everyone online
-    usage: /<command>
-  say:
-    permission: kf.admin
-    description: what the fuck else does it do
-  ship:
-    description: Make a really unfunny joke about how you ship 2 people
-  slap:
-    description: Slap the shit out of someone
-  smite:
-    permission: kf.admin
-    description: Smite that motherfucker
-  spectate:
-    description: Suspicious user? Spectate them
-  unban:
-    description: Unban someone
-  warn:
-    description: Warn someone
+depend:
+  - Vault
+softdepend:
+  - ProtocolLib
+  - LuckPerms
+authors:
+  - "gamingto12"
+  - "0x7694C9"
+  - "videogamesm12"
+api-version: 1.21.1
 permissions:
-  kf.admin:
+  kfc.member:
+    description: Permissions for regular players
+    default: not op
+    children:
+      - kfc.command.cry
+      - kfc.command.hug
+      - kfc.command.kiss
+      - kfc.command.koolsmpcore
+      - kfc.command.pat
+      - kfc.command.poke
+      - kfc.command.report
+      - kfc.command.ship
+      - kfc.command.slap
+  kfc.admin:
+    description: Permission group offering basic administrative tools, but leaving the more important stuff locked away
     default: op
-  kf.senior:
+    children:
+      - kfc.member
+      - kfc.command.adminchat
+      - kfc.command.ban
+      - kfc.command.banip
+      - kfc.command.clearchat
+      - kfc.command.clearchat.immune
+      - kfc.command.commandspy
+      - kfc.command.kick
+      - kfc.command.mute
+      - kfc.command.mute.immune
+      - kfc.command.orbit
+      - kfc.command.rawsay
+      - kfc.command.reports
+      - kfc.command.satisfyall
+      - kfc.command.say
+      - kfc.command.smite
+      - kfc.command.spectate
+      - kfc.command.unban
+      - kfc.command.warn
+      - kfc.command.warn.immune
+      - kfc.ping_everyone
+  kfc.senior:
+    description: Permission group offering some additional administrative capabilities, plus the ability to doom people.
     default: op
-  kf.exec:
+    children:
+      - kf.admin
+      - kfc.command.banlist.reload
+      - kfc.command.koolsmpcore.reload
+      - kfc.command.doom
+  kfc.exec:
+    description: Permission group offering pretty much everything the plugin has to offer, plus some fun commands
     default: op
+    children:
+      - kf.senior
+      - kfc.command.crash
+      - kfc.command.reports.purge
+libraries:
+  - org.javassist:javassist:3.29.1-GA
+  - net.dv8tion:JDA:5.5.1

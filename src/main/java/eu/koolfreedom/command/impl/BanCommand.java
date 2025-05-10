@@ -1,104 +1,83 @@
 package eu.koolfreedom.command.impl;
 
-import eu.koolfreedom.KoolSMPCore;
+import eu.koolfreedom.banning.Ban;
+import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.KoolCommand;
+import eu.koolfreedom.punishment.Punishment;
 import eu.koolfreedom.util.FUtil;
-import eu.koolfreedom.punishment.PunishmentList;
-import eu.koolfreedom.punishment.PunishmentType;
 import eu.koolfreedom.banning.BanType;
-import eu.koolfreedom.banning.BanList;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 
-public class BanCommand implements CommandExecutor
+import java.util.List;
+
+@CommandParameters(name = "ban", description = "Ban someone from the server.", usage = "/<command> <player> [reason]",
+        aliases = "gtfo")
+public class BanCommand extends KoolCommand
 {
-
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String c, String[] args)
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
     {
-        if (!sender.hasPermission("kf.admin"))
-        {
-            sender.sendMessage(Messages.MSG_NO_PERMS);
-            return true;
-        }
-
         if (args.length == 0)
         {
             return false;
         }
 
-        Player player = Bukkit.getPlayer(args[0]);
-        if (player == null)
+        OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
+        if (!target.isOnline() && !target.hasPlayedBefore())
         {
-            sender.sendMessage(Messages.PLAYER_NOT_FOUND);
+            msg(sender, playerNotFound);
             return true;
         }
 
-        StringBuilder kickMsg = new StringBuilder()
-                .append(ChatColor.RED)
-                .append("You have been banned from this server.")
-                .append("\nBanned by: ")
-                .append(sender.getName());
+        final Ban ban = Ban.fromPlayer(target, sender.getName(), args.length > 1 ? String.join(" ", ArrayUtils.remove(args, 0)) : null, BanType.BAN);
+        boolean success = plugin.banManager.addBan(ban);
 
-        String reason = null;
-        if (args.length > 1)
+        if (!success && !target.isOnline())
         {
-            reason = StringUtils.join(args, " ", 1, args.length);
-            kickMsg.append("\nReason: ")
-                    .append(reason);
+            msg(sender, "<red>That user is already permanently banned.");
+            return true;
         }
 
-        // shoot the player up
-        player.setAllowFlight(true);
-        player.setFlying(false);
-        player.getWorld().createExplosion(player.getLocation(), 0.5F);
-        player.setVelocity(player.getVelocity().clone().add(new Vector(0, 20, 0)));
+        FUtil.staffAction(sender, "Banned <player>", Placeholder.unparsed("player", target.getName() != null ? target.getName() : args[0]));
+        plugin.recordKeeper.recordPunishment(Punishment.fromBan(ban));
 
-        // add ban
-        BanList.addBan(player, sender, BanType.BAN, reason);
-
-        // log ban
-        PunishmentList.logPunishment(player, PunishmentType.BAN, sender, reason);
-
-        new BukkitRunnable()
+        if (target instanceof Player online)
         {
-            public void run()
+            // Now for the fun part...
+            for (int i = 0; i < 4; i++)
             {
-                // announce
-                FUtil.adminAction(sender.getName(), "Banning " + player.getName(), true);
+                online.getWorld().strikeLightning(online.getLocation());
+            }
+            online.setHealth(0);
 
-                // de-op
-                player.setOp(false);
+            // We had our fun, they're gone
+            online.kick(ban.getKickMessage());
 
-                // set to survival
-                player.setGameMode(GameMode.SURVIVAL);
-
-                // clear inventory
-                player.getInventory().clear();
-
-                // strike 4 lightning bolts
+            // Just for good measure...
+            Bukkit.getOnlinePlayers().stream().filter(player -> FUtil.getIp(player).equalsIgnoreCase(FUtil.getIp(online))).forEach(player ->
+            {
+                // ZAP, and they're gone
                 for (int i = 0; i < 4; i++)
                 {
                     player.getWorld().strikeLightning(player.getLocation());
                 }
-
-                // large explosion
-                player.getWorld().createExplosion(player.getLocation(), 8F);
-
-                // kill
-                player.setHealth(0.0);
-
-                // kick player
-                player.kickPlayer(kickMsg.toString());
-            }
-        }.runTaskLater(KoolSMPCore.main, 2L * 20L);
+                player.setHealth(0);
+                player.kick(ban.getKickMessage());
+            });
+        }
         return true;
+    }
+
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
+    {
+        return args.length == 1 ? Bukkit.getOnlinePlayers().stream().map(Player::getName)
+                .filter(name -> !name.equalsIgnoreCase(sender.getName())).toList() : List.of();
     }
 }

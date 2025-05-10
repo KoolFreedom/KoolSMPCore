@@ -1,7 +1,9 @@
 package eu.koolfreedom.listener;
 
 import eu.koolfreedom.KoolSMPCore;
-import org.bukkit.ChatColor;
+import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -9,50 +11,68 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class MuteManager implements Listener
 {
-    private KoolSMPCore plugin;
-    public MuteManager(KoolSMPCore plugin)
+    private final List<UUID> muted = new ArrayList<>();
+
+    public MuteManager()
     {
-        this.plugin = plugin;
+        Bukkit.getPluginManager().registerEvents(this, KoolSMPCore.getInstance());
     }
 
-    private static List<Player> muted = new ArrayList<>();
+    public void setMuted(Player player, boolean mute)
+    {
+        if (mute)
+        {
+            muted.add(player.getUniqueId());
+        }
+        else
+        {
+            muted.remove(player.getUniqueId());
+        }
+    }
 
-    public static int getMutedAmount()
+    public int wipeMutes()
+    {
+        int amount = muted.size();
+        muted.clear();
+        return amount;
+    }
+
+    public int getMuteCount()
     {
         return muted.size();
     }
 
-    public static void setMuted(Player player, boolean mute)
+    public boolean isMuted(Player player)
     {
-        if (mute)
-        {
-            muted.add(player);
-            return;
-        }
-        muted.remove(player);
-    }
-
-    public static void wipeMutes()
-    {
-        muted.clear();
-    }
-
-    public static boolean isMuted(Player player)
-    {
-        return muted.contains(player);
+        return muted.contains(player.getUniqueId());
     }
 
     @EventHandler
-    public void onPlayerChat(AsyncPlayerChatEvent e)
+    public void onPlayerChat(AsyncChatEvent event)
     {
-        Player player = e.getPlayer();
+        Player player = event.getPlayer();
+
         if (isMuted(player))
         {
-            e.setCancelled(true);
-            player.sendMessage(ChatColor.GRAY + "You are currently muted and cannot chat.");
+            player.sendMessage(FUtil.miniMessage("<gray>You are currently muted."));
+            event.setCancelled(true);
+        }
+    }
+
+    // Fallback in case AsyncChatEvent doesn't block it effectively enough
+    @EventHandler
+    @SuppressWarnings("deprecation")
+    public void onPlayerChat(AsyncPlayerChatEvent event)
+    {
+        Player player = event.getPlayer();
+
+        if (isMuted(player))
+        {
+            event.setCancelled(true);
         }
     }
 }

@@ -3,29 +3,129 @@
 #
 
 server:
-  motd: KoolFreedom SMP (Native 1.21.1)
-  tablist_header: ' \n  &dWelcome to &6KoolFreedom SMP&d!  \n '
-  tablist_footer: ' \n  &dJoin our &5/discord \n  '
+  motd: '<randomize>KoolFreedom SMP (Native 1.21.1)'
+  tablist_header: ' <newline>  <light_purple>Welcome to <gold>KoolFreedom SMP</gold>!  <newline> '
+  tablist_footer: ' <newline>  <light_purple>Join our <dark_purple>/discord</dark_purple> <newline>  '
   website_or_forum: 'Put your own forum/website here.'
 
-# Toggles the announcer
-enable-announcer: true
+# All things related to the announcer
+announcer:
+  # Toggles the announcer
+  enable: true
 
-# Time between each announcement
-announcer-time: 2400
+  # Time in ticks between each announcement
+  delay: 2400
 
-# Announcements
-messages:
-  discord:
-    - "&c[&6KoolFreedom&c] Remember to join our Discord with &6'/discord'&c."
-  report:
-    - "&c[&6KoolFreedom&c] Got a rule breaker on the server? use &6'/report' &cto submit a report."
-  owner:
-    - "&c[&6KoolFreedom&c] &6gamingto12&c is the Owner of KoolFreedom."
+  # Announcer's messages, formatted in MiniMessage
+  messages:
+    - "<red>[<gold>KoolFreedom</gold>] Remember to join our Discord with <gold><click:suggest_command:/discord>'/discord'</click></gold>."
+    - "<red>[<gold>KoolFreedom</gold>] Dealing with a rule-breaker? Use <gold><click:suggest_command:/report>'/report'</click></gold> to submit a report."
+    - "<red>[<gold>KoolFreedom</gold>] <gold>gamingto12</gold> is the owner of KoolFreedom."
 
+# Chat filter
+chat-filter:
+  # Toggles the filter
+  enabled: true
+
+  # Delay in ticks before the action takes place
+  delay: 50
+
+  # Categories of filters
+  categories:
+    # Example entry
+    example:
+      # The permission node required to bypass this filter
+      bypassPermission: kfc.bypass_filter.example
+      # The action to take. Currently available options: ban, doom, log, mute, nothing
+      action: log
+      # Whether to cancel the chat event
+      cancel: false
+      # The message/reason to give in regard to the action. This doesn't do anything if the action is set to "mute"
+      reason: "{} is spitting facts right now: '{}'"
+      # A list of regex patterns
+      filters:
+        - "gamingto12 is smelly"
+        - "video(gamesm12)? is not a bunny"
+
+    # Generic hate speech filter which dooms players who say naughty phrases
+    hate-speech:
+      action: doom
+      cancel: true
+      reason: Hate Speech
+      filters:
+        - "(?i)n[i1]+g+(a|e+r)"
+        - "(?i)f[a4]g+([o0]t)?"
+        - "(?i)heil hitler"
+        - "(?i)seig heil"
+        - "(?i)tran{2,}y"
+        - "(?i)tro{2,}n"
+
+# Formats
+formats:
+  admin_chat: "<dark_gray>[<aqua>AC</aqua>] <blue><name></blue> [<rank>] <gold><message>"
+  commandspy: "<gray><hover:show_text:'<translate:chat.copy.click>'><click:copy_to_clipboard:<name>><name></click></hover>: <click:suggest_command:'<raw_command>'><command>"
+  report: "<dark_gray>[<red>REPORTS</red>] <gold><reporter></gold> <red>has reported <gold><player></gold> for <gold><reason></gold>."
+  report_summary: "<gradient:dark_gray:gray>████</gradient> Report Summary - <id> <gradient:gray:dark_gray>████</gradient><newline><dark_gray><b>|</b><newline><b>|</b>   <gray>Reported: <white><reported></white></gray><newline><b>|</b>   <gray>By: <white><reporter></white></gray><newline><b>|</b>   <gray>Reason: <white><reason></white></gray><newline><b>|</b>   <gray>Date: <white><date:'yyyy-MM-dd \\'at\\' h:mm:ss a'></white></gray><newline><b>|</b>   <gray>Status: <white><status></white></gray><newline><b>|</b>   <gray>Staff Note: <white><staff_note></white></gray><newline><b>|</b>"
+  report_quick_summary: "<b><dark_gray>|</dark_gray></b> <hover:show_text:'<full_summary>'><click:run_command:'/reports summary <id>'><white><date:'HH:mm:ss'></white> <gray>| <white><reporter></white> reported <white><reported></white></click></hover>"
+  report_empty_quick_summary: "<b><dark_gray>|</dark_gray></b> "
+  say: "<light_purple>[Server:<name>] <message>"
+
+# Discord integration
 discord:
+  # The token for the Discord bot
   bot_token: ""
-  report_channel_id: ""
 
-unbannable_usernames:
-  - gamingto12
+  # The ID of the server you want to be part of
+  server_id: ""
+
+  # All things reporting
+  reports:
+    # The ID of the channel where reports will be routed to
+    channel_id: ""
+
+    # List of role IDs that can perform certain tasks to reports
+    roles:
+      purge: []
+      resolve: []
+      close: []
+      reopen: []
+
+
+# Groups that show up in places like admin chat
+groups:
+  default:
+    name: default
+    color: gray
+    displayName: <gray>Member
+  mod:
+    name: mod
+    color: green
+    displayName: <green>Moderator
+  admin:
+    name: admin
+    color: aqua
+    displayName: <aqua>Admin
+  senior:
+    name: senior
+    color: gold
+    displayName: <gold>Senior
+  developer:
+    name: developer
+    color: dark_purple
+    displayName: <dark_purple>Developer
+  manager:
+    name: manager
+    color: light_purple
+    displayName: <light_purple>Manager
+  co_owner:
+    name: co_owner
+    color: red
+    displayName: <red>Co-Owner
+  executive:
+    name: executive
+    color: dark_red
+    displayName: <dark_red>Executive
+  owner:
+    name: owner
+    color: red
+    displayName: <red>Owner

@@ -1,103 +1,77 @@
 package eu.koolfreedom.log;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import eu.koolfreedom.KoolSMPCore;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
+import org.slf4j.Logger;
 
 public class FLog
 {
+    private static final Logger logger = KoolSMPCore.getInstance().getSLF4JLogger();
+    private static final ComponentLogger componentLogger = KoolSMPCore.getInstance().getComponentLogger();
 
-    private static final Logger FALLBACK_LOGGER = Logger.getLogger("Minecraft-Server");
-    private static Logger serverLogger = null;
-    private static Logger pluginLogger = null;
-
-    // Level.INFO:
     public static void info(String message)
     {
-        info(message, false);
+        logger.info(message);
     }
 
-    public static void info(String message, Boolean raw)
+    public static void info(String message, Object... args)
     {
-        log(Level.INFO, message, raw);
+        logger.info(message, args);
     }
 
-    public static void info(Throwable ex)
+    public static void info(Component message)
     {
-        log(Level.INFO, ex);
+        componentLogger.info(message);
     }
 
-    // Level.WARNING:
     public static void warning(String message)
     {
-        warning(message, false);
+        logger.warn(message);
     }
 
-    public static void warning(String message, Boolean raw)
+    public static void warning(String message, Object... args)
     {
-        log(Level.WARNING, message, raw);
+        logger.warn(message, args);
     }
 
-    public static void warning(Throwable ex)
+    public static void warning(Component message)
     {
-        log(Level.WARNING, ex);
+        componentLogger.warn(message);
     }
 
-    // Level.SEVERE:
-    public static void severe(String message)
+    public static void warning(String message, Throwable ex)
     {
-        severe(message, false);
+        logger.warn(message, ex);
     }
 
-    public static void severe(String message, Boolean raw)
+    public static void warning(Component message, Throwable ex)
     {
-        log(Level.SEVERE, message, raw);
+        componentLogger.warn(message, ex);
     }
 
-    public static void severe(Throwable ex)
+    public static void error(String message)
     {
-        log(Level.SEVERE, ex);
+        logger.error(message);
     }
 
-    // Utility
-    private static void log(Level level, String message, boolean raw)
+    public static void error(String message, Object... args)
     {
-        getLogger(raw).log(level, message);
+        logger.error(message, args);
     }
 
-    private static void log(Level level, Throwable throwable)
+    public static void error(Component message)
     {
-        getLogger(false).log(level, null, throwable);
+        componentLogger.error(message);
     }
 
-    private static Logger getLogger(boolean raw)
+    public static void error(String message, Throwable ex)
     {
-        if (raw || pluginLogger == null)
-        {
-            return (serverLogger != null ? serverLogger : FALLBACK_LOGGER);
-        }
-        else
-        {
-            return pluginLogger;
-        }
+        logger.error(message, ex);
     }
 
-    public static Logger getPluginLogger()
+    public static void error(Component message, Throwable ex)
     {
-        return (pluginLogger != null ? pluginLogger : FALLBACK_LOGGER);
-    }
-
-    public static void setPluginLogger(Logger logger)
-    {
-        pluginLogger = logger;
-    }
-
-    public static Logger getServerLogger()
-    {
-        return (serverLogger != null ? serverLogger : FALLBACK_LOGGER);
-    }
-
-    public static void setServerLogger(Logger logger)
-    {
-        serverLogger = logger;
+        componentLogger.error(message, ex);
     }
 }

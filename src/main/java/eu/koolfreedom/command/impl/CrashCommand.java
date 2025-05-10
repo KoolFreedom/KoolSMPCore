@@ -1,70 +1,61 @@
 package eu.koolfreedom.command.impl;
 
-import eu.koolfreedom.KoolSMPCore;
-import eu.koolfreedom.command.impl.Messages;
+import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.KoolCommand;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.Particle;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings("deprecation")
-public class CrashCommand implements CommandExecutor {
+import java.util.List;
+
+@CommandParameters(name = "crash", description = "Crash people's clients.", usage = "/<command> [player]",
+        aliases = {"370"})
+public class CrashCommand extends KoolCommand
+{
     @Override
-    public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        // Check if the command sender has permission
-        if (!sender.hasPermission("kf.exec")) {
-            sender.sendMessage(Messages.MSG_NO_PERMS);
-            return true;
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
+    {
+        if (args.length == 0)
+        {
+            Bukkit.getOnlinePlayers().stream().filter(player -> !player.equals(playerSender)).forEach(this::crashPlayer);
+            msg(sender, "<green>Not sure why you'd do that, but everyone has been sent the funny payload.");
         }
+        else
+        {
+            Player player = Bukkit.getPlayer(args[0]);
 
-        // Check if the command is run by a player
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(Messages.ONLY_IN_GAME);
-            return true;
-        }
-
-        Player executor = (Player) sender;
-
-        if (args.length == 0) {
-            // Crash all players except the executor
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (!player.equals(executor)) {
-                    crashPlayer(player);
+            if (player != null)
+            {
+                crashPlayer(player);
+                msg(sender, "<green>Your wish is my command.");
+            }
+            else
+            {
+                if (playerSender == null)
+                {
+                    msg(sender, "<red>We couldn't find that player. Since you're doing this from console, we can't reflect it back at you :(");
+                }
+                else
+                {
+                    msg(sender, "<red>We couldn't find that player, so we're going to do it to you instead :)");
+                    crashPlayer(playerSender);
                 }
             }
-            executor.sendMessage(Messages.CRASHED_ALL);
-        } else if (args.length == 1) {
-            // Crash a specific player
-            Player target = Bukkit.getPlayer(args[0]);
-            if (target == null || !target.isOnline()) {
-                executor.sendMessage(Messages.PLAYER_NOT_FOUND);
-                return true;
-            }
-            if (target.equals(executor)) {
-                executor.sendMessage(Messages.CRASH_SELF);
-                return true;
-            }
-
-            crashPlayer(target);
-            executor.sendMessage(ChatColor.GREEN + "Crashed player: " + target.getName());
-        } else {
-            executor.sendMessage(ChatColor.RED + "Usage: /crash [player]");
         }
 
         return true;
     }
 
-    private void crashPlayer(Player player) {
-        // Send a particle overload to crash the player's client
-        String command = "execute at " + player.getName() + " run particle ash ~ ~ ~ 1 1 1 1 2147483647 force " + player.getName();
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
-        for (int i = 0; i < 3; i++) {
-            Bukkit.getScheduler().runTaskLater(KoolSMPCore.main, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute as \"" + player.getName() + "\" at @s run particle flame ~ ~ ~ 1 1 1 1 999999999 force @s"), 30);
-        }
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
+    {
+        return args.length == 1 ? Bukkit.getOnlinePlayers().stream().map(Player::getName).toList() : List.of();
+    }
 
-        player.sendMessage(Messages.MSG_CRASHED);
+    private void crashPlayer(Player victim)
+    {
+        victim.spawnParticle(Particle.ASH, victim.getLocation(), Integer.MAX_VALUE, 1, 1, 1, 1, null, true);
     }
 }

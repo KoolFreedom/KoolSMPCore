@@ -1,45 +1,54 @@
 package eu.koolfreedom.command.impl;
 
-import eu.koolfreedom.KoolSMPCore;
+import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.KoolCommand;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
-public class SpectateCommand implements CommandExecutor {
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args)
+import java.util.List;
+
+@CommandParameters(name = "spectate", description = "Be like Big Brother and watch suspicious players.",
+        usage = "/<command> <player>", aliases = "watch")
+public class SpectateCommand extends KoolCommand
+{
+    @Override
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
     {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(Messages.ONLY_IN_GAME);
-            return true;
-        }
-
-        if (args.length == 0)
+        if (playerSender == null)
         {
-            sender.sendMessage(KoolSMPCore.main.mmDeserialize("<red>Usage: /" + s + " <player>"));
+            msg(sender, playersOnly);
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null)
         {
-            sender.sendMessage(Messages.PLAYER_NOT_FOUND);
+            msg(sender, playerNotFound);
             return true;
         }
 
-        if (target.getGameMode().equals(GameMode.SPECTATOR))
+        if (target.getGameMode() == GameMode.SPECTATOR)
         {
-            sender.sendMessage(KoolSMPCore.main.mmDeserialize("<red>You cannot spectate other players who are in spectator"));
+            msg(sender, "<red>That player is also in spectator mode.");
             return true;
         }
 
-        player.setGameMode(GameMode.SPECTATOR);
-        player.teleport(target);
+        playerSender.setGameMode(GameMode.SPECTATOR);
+        playerSender.setSpectatorTarget(target);
+        playerSender.teleport(target.getLocation());
 
-        player.sendMessage(KoolSMPCore.main.mmDeserialize("<green>Now spectating " + target.getName()));
+        msg(sender, "<green>Now spectating <player>.", Placeholder.unparsed("player", target.getName()));
         return true;
+    }
+
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
+    {
+        return args.length == 1 ? Bukkit.getOnlinePlayers().stream().filter(player -> player.getGameMode() != GameMode.SPECTATOR)
+                .map(Player::getName).toList() : List.of();
     }
 }

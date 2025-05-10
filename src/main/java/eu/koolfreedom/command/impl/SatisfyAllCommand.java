@@ -1,27 +1,30 @@
 package eu.koolfreedom.command.impl;
 
+import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.util.FUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class SatisfyAllCommand implements CommandExecutor
+import java.util.Objects;
+
+@CommandParameters(name = "satisfyall", description = "Feed and heal everyone online.", aliases = {"feedall"})
+public class SatisfyAllCommand extends KoolCommand
 {
-    public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args)
+    @Override
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
     {
-        if (!sender.hasPermission("kf.admin"))
+        Bukkit.getOnlinePlayers().forEach(player ->
         {
-            sender.sendMessage(Messages.MSG_NO_PERMS);
-            return true;
-        }
-        for (Player player : Bukkit.getOnlinePlayers())
-        {
-            player.setHealth(20.0);
+            player.setHealth(Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue());
             player.setFoodLevel(20);
-        }
-        FUtil.adminAction(sender.getName(), "Healing all players", false);
+            player.setSaturation(20);
+            player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));
+        });
+        FUtil.staffAction(sender, "Healed all players");
         return true;
     }
 }

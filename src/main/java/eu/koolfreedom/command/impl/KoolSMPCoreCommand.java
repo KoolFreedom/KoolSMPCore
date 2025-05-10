@@ -1,63 +1,69 @@
 package eu.koolfreedom.command.impl;
 
-import eu.koolfreedom.KoolSMPCore;
+import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.KoolCommand;
+import eu.koolfreedom.config.MainConfig;
 import eu.koolfreedom.log.FLog;
-import eu.koolfreedom.util.KoolSMPCoreBase;
+import eu.koolfreedom.util.BuildProperties;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
 
-public class KoolSMPCoreCommand extends KoolSMPCoreBase implements CommandExecutor, TabCompleter
+@CommandParameters(name = "koolsmpcore", description = "Display information about the plugin or reload it.",
+        usage = "/<command> [reload]", aliases = "kfc")
+public class KoolSMPCoreCommand extends KoolCommand
 {
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String str, String[] args)
+    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
     {
-        if (args.length == 0)
+        if (args.length == 0 || !sender.hasPermission("kfc.command.koolsmpcore.reload"))
         {
-            KoolSMPCore.BuildProperties build = KoolSMPCore.build;
-            sender.sendMessage(main.mmDeserialize("<gold>KoolSMPCore - A multi-purpose SMP Core plugin."));
-            sender.sendMessage(main.mmDeserialize("<gold>Version <blue>" + String.format("%s.%s", build.version, build.number)));
-            sender.sendMessage(main.mmDeserialize("<gold>Compiled on <blue>" + String.format("%s" + " <gold>by <blue>" + "%s", build.date, build.author)));
-            sender.sendMessage(main.mmDeserialize("<green>Visit <aqua>https://github.com/KoolFreedom/KoolSMPCore <green>for more information."));
+            BuildProperties build = plugin.buildMeta;
+            msg(sender, "<white><b>KoolSMPCore - The Core of KoolFreedom SMP.");
+            msg(sender, "<gray>Version <white><version>.<build>", Placeholder.unparsed("version", build.getVersion()),
+                    Placeholder.unparsed("build", build.getNumber()));
+            msg(sender, "<gray>Compiled on <white><date></white> by <white><builder></white>.",
+                    Placeholder.unparsed("date", build.getDate()),
+                    Placeholder.unparsed("builder", build.getAuthor()));
             return true;
         }
+
         if (args[0].equalsIgnoreCase("reload"))
         {
-            if (!sender.hasPermission("kf.senior"))
-            {
-                sender.sendMessage(Messages.MSG_NO_PERMS);
-                return true;
-            }
             try
             {
-                main.config.load();
-                sender.sendMessage(Messages.RELOADED);
-                return true;
+                MainConfig.load();
+                plugin.groupCosmetics.loadGroups();
+                plugin.chatFilter.load();
+                msg(sender, "<green>The configuration file has been reloaded.");
             }
             catch (Exception ex)
             {
-                FLog.severe(ex.toString());
-                sender.sendMessage(Messages.FAILED);
+                FLog.error("Failed to load configuration", ex);
+                msg(sender, "<red>An error occurred whilst attempting to reload the configuration.");
             }
+
             return true;
         }
+
         return false;
     }
 
-    public List<String> onTabComplete(CommandSender sender, @NotNull Command command, @NotNull String label, String[] args)
+    @Override
+    public List<String> tabComplete(CommandSender sender, @NotNull Command command, @NotNull String label, String[] args)
     {
-        if (sender.hasPermission("kf.senior"))
+        if (sender.hasPermission("kfc.command.koolsmpcore.reload") && args.length == 1)
         {
             return Collections.singletonList("reload");
         }
         else
         {
-            return null;
+            return List.of();
         }
     }
 }
