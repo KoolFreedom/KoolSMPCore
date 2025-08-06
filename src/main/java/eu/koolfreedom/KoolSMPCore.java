@@ -131,6 +131,7 @@ public class KoolSMPCore extends JavaPlugin
             FLog.info("PacketEvents found, enabling exploit patches.");
             PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
             PacketEvents.getAPI().load();
+            PacketEvents.getAPI().init();
             exploitListener = new ExploitListener();
             PacketEvents.getAPI().getEventManager().registerListener(exploitListener, PacketListenerPriority.HIGHEST);
 
