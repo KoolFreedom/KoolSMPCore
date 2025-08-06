@@ -33,13 +33,6 @@ public class MiniMessageHandler implements Listener
         Player player = event.getPlayer();
         String rawMessage = FUtil.plainText(event.originalMessage());
 
-        // If player does NOT have formatting permission, skip MiniMessage entirely
-        if (!player.hasPermission("kfc.chat.minimessage"))
-        {
-            event.message(Component.text(rawMessage));
-            return;
-        }
-
         // Optionally filter disallowed tags before parsing
         String safeMessage = sanitizeBlockedTags(rawMessage);
 

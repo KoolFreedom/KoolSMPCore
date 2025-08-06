@@ -24,7 +24,6 @@ permissions:
     description: Permissions for regular players
     default: not op
     children:
-      - kfc.chat.minimessage
       - kfc.command.admininfo
       - kfc.command.cry
       - kfc.command.hug
