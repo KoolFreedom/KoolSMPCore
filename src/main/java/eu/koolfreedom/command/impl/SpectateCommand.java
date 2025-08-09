@@ -24,6 +24,11 @@ public class SpectateCommand extends KoolCommand
             return true;
         }
 
+        if (args.length == 0)
+        {
+            return false;
+        }
+
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null)
         {
