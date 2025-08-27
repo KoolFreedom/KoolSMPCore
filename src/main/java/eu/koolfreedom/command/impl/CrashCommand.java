@@ -19,8 +19,8 @@ public class CrashCommand extends KoolCommand
     {
         if (args.length == 0)
         {
-            Bukkit.getOnlinePlayers().stream().filter(player -> !player.equals(playerSender)).forEach(this::crashPlayer);
-            msg(sender, "<green>Not sure why you'd do that, but everyone has been sent the funny payload.");
+            msg(sender, "<red>You shouldn't have done that.");
+            crashPlayer(playerSender);
         }
         else
         {
