@@ -64,16 +64,17 @@ public class LuckPermsBridge
 					default -> false;
 				};
 
-				if (shouldUpdate)
-				{
-					Player player = Bukkit.getPlayer(user.getUniqueId());
-
-					if (player != null)
-					{
-						player.playerListName(KoolSMPCore.getInstance().getGroupManager().getColoredName(player));
-						KoolSMPCore.getInstance().getGroupManager().applyNametagColor(player);
-					}
-				}
+                if (shouldUpdate)
+                {
+                    Player player = Bukkit.getPlayer(user.getUniqueId());
+                    if (player != null)
+                    {
+                        Bukkit.getScheduler().runTask(KoolSMPCore.getInstance(), () -> {
+                            player.playerListName(KoolSMPCore.getInstance().getGroupManager().getColoredName(player));
+                            KoolSMPCore.getInstance().getGroupManager().applyNametagColor(player);
+                        });
+                    }
+                }
 			}
 		});
 	}

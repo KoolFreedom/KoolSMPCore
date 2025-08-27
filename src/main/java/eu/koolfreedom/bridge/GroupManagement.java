@@ -127,10 +127,14 @@ public class GroupManagement
         Scoreboard main = Bukkit.getScoreboardManager().getMainScoreboard();
 
         // Always remove the player from all teams first
-        for (Team t : main.getTeams())
-        {
-            if (t.hasEntry(playerName))
-                t.removeEntry(playerName);
+        for (Team t : main.getTeams()) {
+            if (t.hasEntry(playerName)) {
+                try {
+                    t.removeEntry(playerName);
+                } catch (IllegalStateException e) {
+                    FLog.warning("[GroupManagement] Tried to remove " + playerName + " from " + t.getName() + " but they weren't in it anymore.");
+                }
+            }
         }
 
         // Don't create a team for the default group
