@@ -478,7 +478,7 @@ public class DiscordSRVIntegration extends ListenerAdapter implements DiscordInt
                     .replace("%usernamenoescapes%", senderName)
                     .replace("%displayname%", DiscordUtil.escapeMarkdown(displayName))
                     .replace("%displaynamenoescapes%", displayName)
-                    .replace("%message%", displayName)
+                    .replace("%message%", message)
             );
         }
     }
