@@ -186,7 +186,7 @@ public class KoolSMPCore extends JavaPlugin
             FLog.info("Using DiscordSRV bridge.");
             discordBridge = new DiscordSRVIntegration().register();
         }
-        else if (pluginManager.isPluginEnabled("EssentialsDiscord") && pluginManager.isPluginEnabled("EssentialsDiscordLink"))
+        else if (pluginManager.isPluginEnabled("EssentialsXDiscord") && pluginManager.isPluginEnabled("EssentialsXDiscordLink"))
         {
             FLog.info("Using EssentialsXDiscord bridge.");
             discordBridge = new EssentialsXDiscordIntegration().register();
