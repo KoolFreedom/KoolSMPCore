@@ -6,7 +6,7 @@ import org.bukkit.plugin.Plugin;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 
 public class UpdateChecker {
     private final Plugin plugin;
@@ -19,12 +19,11 @@ public class UpdateChecker {
         this.repoName = repoName;
     }
 
-    @SuppressWarnings("deprecation")
     public void check() {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
-                URL url = new URL("https://api.github.com/repos/" + repoOwner + "/" + repoName + "/releases/latest");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                URI uri = URI.create("https://api.github.com/repos/" + repoOwner + "/" + repoName + "/releases/latest");
+                HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
                 conn.setRequestProperty("Accept", "application/vnd.github+json");
 
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
@@ -38,7 +37,7 @@ public class UpdateChecker {
                     String json = response.toString();
                     String latestTag = json.split("\"tag_name\":\"")[1].split("\"")[0];
 
-                    String currentVersion = plugin.getDescription().getVersion();
+                    String currentVersion = plugin.getPluginMeta().getVersion();
 
                     // Normalize: strip leading 'v' or 'V'
                     String normalizedLatest = latestTag.replaceFirst("(?i)^v", "");
@@ -55,7 +54,7 @@ public class UpdateChecker {
                     }
                     else
                     {
-                        FLog.info("You are running the latest version");
+                        FLog.info("You are running the latest version of KoolSMPCore");
                     }
                 }
             } catch (Exception e) {
