@@ -5,6 +5,7 @@ import eu.koolfreedom.util.FUtil;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,6 +20,7 @@ public class MiniMessageHandler implements Listener
     {
         Bukkit.getServer().getPluginManager().registerEvents(this, KoolSMPCore.getInstance());
     }
+
     // Set of disallowed MiniMessage tags
     private static final Set<String> BLOCKED_TAGS = Set.of(
             "click", "hover", "obf", "keybind", "translate", "obfuscated", "black"
@@ -27,22 +29,35 @@ public class MiniMessageHandler implements Listener
     // Pattern to detect MiniMessage-style tags: <tag:...> or <tag>
     private static final Pattern TAG_PATTERN = Pattern.compile("<([a-zA-Z0-9_-]+)(:.*?)?>");
 
+    // Legacy color serializer (handles § or & codes)
+    private static final LegacyComponentSerializer LEGACY_SERIALIZER =
+            LegacyComponentSerializer.builder()
+                    .character('&') // allow &a, &b, etc.
+                    .hexCharacter('#') // allow hex like &#FFFFFF
+                    .useUnusualXRepeatedCharacterHexFormat() // allow &x&f&f...
+                    .build();
+
     @EventHandler
     public void onAsyncChat(AsyncChatEvent event)
     {
         Player player = event.getPlayer();
         String rawMessage = FUtil.plainText(event.originalMessage());
 
-        // Optionally filter disallowed tags before parsing
+        // First, sanitize blocked MiniMessage tags
         String safeMessage = sanitizeBlockedTags(rawMessage);
 
-        // Try parsing the safe message with MiniMessage
         Component parsed;
         try {
-            parsed = FUtil.miniMessage(safeMessage, TagResolver.empty());
+            // If the message contains legacy codes, parse them first
+            if (safeMessage.contains("&") || safeMessage.contains("§")) {
+                parsed = LEGACY_SERIALIZER.deserialize(safeMessage);
+            } else {
+                // Otherwise, try MiniMessage
+                parsed = FUtil.miniMessage(safeMessage, TagResolver.empty());
+            }
         }
         catch (Exception e) {
-            // Fallback: plain message if syntax breaks
+            // Fallback: plain message
             parsed = Component.text(rawMessage);
         }
 
