@@ -3,10 +3,11 @@ package eu.koolfreedom.util;
 import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.freeze.FreezeManager;
 import eu.koolfreedom.listener.MuteManager;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -21,11 +22,13 @@ public class AutoUndoManager
     private final MuteManager muteManager;
     private final FreezeManager freezeManager;
 
-    // Tasks for auto unmute/unfreeze by player UUID
-    private final Map<UUID, BukkitTask> muteUndoTasks = new ConcurrentHashMap<>();
-    private final Map<UUID, BukkitTask> freezeUndoTasks = new ConcurrentHashMap<>();
+    private final Map<UUID, BukkitTask> muteTasks = new ConcurrentHashMap<>();
+    private final Map<UUID, BukkitTask> freezeTasks = new ConcurrentHashMap<>();
 
-    private static final long AUTO_UNDO_TICKS = 5 * 60 * 20L; // 5 minutes in ticks
+    private static final long AUTO_UNDO_TICKS = 5 * 60 * 20L;
+
+    private static final Component AUTO_UNMUTE_MSG   = FUtil.miniMessage("<green>Your mute has been automatically lifted after 5 minutes.");
+    private static final Component AUTO_UNFREEZE_MSG = FUtil.miniMessage("<green>Your freeze has been automatically lifted after 5 minutes.");
 
     public AutoUndoManager(KoolSMPCore plugin, MuteManager muteManager, FreezeManager freezeManager)
     {
@@ -41,48 +44,24 @@ public class AutoUndoManager
     public void scheduleAutoUnmute(Player player)
     {
         UUID uuid = player.getUniqueId();
+        scheduleUndo(uuid, muteTasks, () -> {
+            if (!muteManager.isMuted(uuid)) return;
 
-        // cancel any previous timer
-        BukkitTask old = muteUndoTasks.remove(uuid);
-        if (old != null) old.cancel();
+            muteManager.unmute(uuid);
+            Player online = Bukkit.getPlayer(uuid);
+            OfflinePlayer offline = Bukkit.getOfflinePlayer(uuid);
 
-        BukkitTask task = new BukkitRunnable()
-        {
-            @Override
-            public void run() {
-                // fetch managers fresh – in case they were (re)loaded later
-                MuteManager mm = KoolSMPCore.getInstance().getMuteManager();
-                if (mm == null) {            // should not happen, but be safe
-                    cancel();
-                    return;
-                }
+            String name = online != null ? online.getName() : Objects.requireNonNull(offline.getName());
+            FUtil.staffAction(Bukkit.getConsoleSender(), "Auto-unmuted <player>",
+                    Placeholder.unparsed("player", name));
 
-                if (mm.isMuted(uuid))
-                {
-                    mm.unmute(uuid);
-
-                    // broadcast & tell player (if online)
-                    Player online = Bukkit.getPlayer(uuid);
-                    OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
-                    FUtil.staffAction(
-                            Bukkit.getConsoleSender(),
-                            "Auto‑unmuted <player>",
-                            Placeholder.unparsed("player", online != null ? online.getName() : Objects.requireNonNull(offlinePlayer.getName()))
-                    );
-                    if (online != null)
-                        online.sendMessage(FUtil.miniMessage("<green>Your mute has been automatically lifted after 5 minutes."));
-                }
-                muteUndoTasks.remove(uuid);
-            }
-        }.runTaskLater(plugin, AUTO_UNDO_TICKS);
-
-        muteUndoTasks.put(uuid, task);
+            if (online != null) online.sendMessage(AUTO_UNMUTE_MSG);
+        });
     }
 
     public void cancelAutoUnmute(UUID uuid)
     {
-        BukkitTask task = muteUndoTasks.remove(uuid);
-        if (task != null) task.cancel();
+        cancelTask(uuid, muteTasks);
     }
 
     /* ------------------------- */
@@ -92,54 +71,50 @@ public class AutoUndoManager
     public void scheduleAutoUnfreeze(Player player)
     {
         UUID uuid = player.getUniqueId();
+        scheduleUndo(uuid, freezeTasks, () -> {
+            Player p = Bukkit.getPlayer(uuid);
+            if (p == null || !p.isOnline()) return;
 
-        // Cancel an existing task if one exists
-        BukkitTask existing = freezeUndoTasks.remove(uuid);
-        if (existing != null) existing.cancel();
+            if (!freezeManager.isFrozen(p)) return;
 
-        // Schedule a new task
-        BukkitTask task = new BukkitRunnable()
-        {
-            @Override
-            public void run()
-            {
-                // Get player safely
-                Player p = Bukkit.getPlayer(uuid);
-                if (p == null || !p.isOnline())
-                {
-                    // FLog.error("[DEBUG] Auto-unfreeze: player is offline or null: " + uuid);
-                    freezeUndoTasks.remove(uuid);
-                    return;
-                }
-
-                if (freezeManager.isFrozen(p))
-                {
-                    // FLog.error("[DEBUG] Auto-unfreeze: unfreezing " + p.getName());
-
-                    // Message and broadcast first
-                    FUtil.staffAction(Bukkit.getConsoleSender(), "Auto-unfroze <player>",
-                            Placeholder.unparsed("player", p.getName()));
-                    p.sendMessage(FUtil.miniMessage("<green>Your freeze has been automatically lifted after 5 minutes."));
-
-                    // Then unfreeze
-                    freezeManager.unfreeze(player);
-                }
-                else
-                {
-                    FLog.error("Auto-unfreeze: player " + p.getName() + " is not frozen.");
-                }
-
-                freezeUndoTasks.remove(uuid);
-            }
-        }.runTaskLater(plugin, AUTO_UNDO_TICKS);
-
-        freezeUndoTasks.put(uuid, task);
+            FUtil.staffAction(Bukkit.getConsoleSender(), "Auto-unfroze <player>",
+                    Placeholder.unparsed("player", p.getName()));
+            p.sendMessage(AUTO_UNFREEZE_MSG);
+            freezeManager.unfreeze(p);
+        });
     }
-
 
     public void cancelAutoUnfreeze(UUID uuid)
     {
-        BukkitTask task = freezeUndoTasks.remove(uuid);
+        cancelTask(uuid, freezeTasks);
+    }
+
+    /* ------------------------- */
+    /* Generic helpers */
+    /* ------------------------- */
+
+    private void scheduleUndo(UUID uuid, Map<UUID, BukkitTask> map, Runnable undoAction)
+    {
+        // Cancel existing
+        cancelTask(uuid, map);
+
+        BukkitTask task = new BukkitRunnable() {
+            @Override
+            public void run() {
+                try {
+                    undoAction.run();
+                } finally {
+                    map.remove(uuid);
+                }
+            }
+        }.runTaskLater(plugin, AUTO_UNDO_TICKS);
+
+        map.put(uuid, task);
+    }
+
+    private void cancelTask(UUID uuid, Map<UUID, BukkitTask> map)
+    {
+        BukkitTask task = map.remove(uuid);
         if (task != null) task.cancel();
     }
 }

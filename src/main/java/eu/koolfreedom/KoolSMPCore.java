@@ -2,7 +2,6 @@ package eu.koolfreedom;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
-import eu.koolfreedom.api.AltListener;
 import eu.koolfreedom.api.AltManager;
 import eu.koolfreedom.bridge.GroupManagement;
 import eu.koolfreedom.banning.BanManager;
@@ -71,7 +70,6 @@ public class KoolSMPCore extends JavaPlugin
     private ExploitListener exploitListener;
     private ChatListener chatListener;
     private PlayerJoinListener pjListener;
-    private AltListener altListener;
     private PlaytimeListener ptListener;
     private MiniMessageHandler mmHandler;
 
@@ -169,7 +167,6 @@ public class KoolSMPCore extends JavaPlugin
         freezeListener = new FreezeListener();
         lockupManager = new LockupManager(this);
         pjListener = new PlayerJoinListener();
-        altListener = new AltListener();
         ptListener = new PlaytimeListener();
         antiSpamListener = new AntiSpamService(this);
         mmHandler = new MiniMessageHandler();
