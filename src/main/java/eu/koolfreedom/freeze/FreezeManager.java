@@ -1,7 +1,5 @@
 package eu.koolfreedom.freeze;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -13,9 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FreezeManager
 {
     private final Map<UUID, FreezeData> frozenPlayers = new ConcurrentHashMap<>();
-    @Getter
-    @Setter
-    private boolean globalFreeze = false;
 
     public void freeze(Player player)
     {

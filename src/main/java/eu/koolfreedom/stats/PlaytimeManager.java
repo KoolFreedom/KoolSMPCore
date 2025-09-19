@@ -16,18 +16,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class PlaytimeManager
-{
+public class PlaytimeManager {
     private final File file = new File(KoolSMPCore.getInstance().getDataFolder(), "playtime.yml");
     private final YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
     private final IEssentials essentials = (IEssentials) Bukkit.getPluginManager().getPlugin("Essentials");
 
-    public static class PlaytimeData
-    {
-        public long firstJoin = 0;
-        public long lastSeen = 0;
-        public long totalPlaySeconds = 0;
-        public Long sessionStart = null; // new: saves session on disk
+    public static class PlaytimeData {
+        public long firstJoin = 0;         // millis
+        public long lastSeen = 0;          // millis
+        public long totalPlaySeconds = 0;  // stored seconds
+        public Long sessionStart = null;   // millis
     }
 
     private final Map<UUID, PlaytimeData> data = new HashMap<>();
@@ -47,8 +45,7 @@ public class PlaytimeManager
             }
         }
 
-        for (String key : config.getKeys(false))
-        {
+        for (String key : config.getKeys(false)) {
             UUID id = UUID.fromString(key);
             ConfigurationSection section = config.getConfigurationSection(key);
             if (section == null) continue;
@@ -61,10 +58,9 @@ public class PlaytimeManager
                 d.sessionStart = section.getLong("sessionStart");
 
             // crash recovery
-            if (d.sessionStart != null)
-            {
-                long now = Instant.now().getEpochSecond();
-                long delta = now - d.sessionStart;
+            if (d.sessionStart != null) {
+                long now = Instant.now().toEpochMilli();
+                long delta = (now - d.sessionStart) / 1000L;
                 d.totalPlaySeconds += Math.max(delta, 0);
                 d.sessionStart = null;
                 System.out.println("[Playtime] Recovered " + delta + "s for " + key);
@@ -85,10 +81,7 @@ public class PlaytimeManager
             config.set(path + ".firstJoin", d.firstJoin);
             config.set(path + ".lastSeen", d.lastSeen);
             config.set(path + ".totalPlaySeconds", d.totalPlaySeconds);
-            if (d.sessionStart != null)
-                config.set(path + ".sessionStart", d.sessionStart);
-            else
-                config.set(path + ".sessionStart", null);
+            config.set(path + ".sessionStart", d.sessionStart);
         }
 
         try
@@ -116,6 +109,19 @@ public class PlaytimeManager
         return get(id).totalPlaySeconds;
     }
 
+    /** Includes active session time if online */
+    public long getEffectivePlaytime(UUID id)
+    {
+        PlaytimeData d = get(id);
+        long base = d.totalPlaySeconds;
+        if (d.sessionStart != null) {
+            long now = Instant.now().toEpochMilli();
+            long delta = (now - d.sessionStart) / 1000L;
+            return base + Math.max(delta, 0);
+        }
+        return base;
+    }
+
     /** Call from PlayerJoinEvent */
     public void handleJoin(UUID id)
     {
@@ -126,7 +132,7 @@ public class PlaytimeManager
             d.firstJoin = now;
 
         d.lastSeen = now;
-        d.sessionStart = Instant.now().getEpochSecond();
+        d.sessionStart = now; // store millis
     }
 
     /** Call from PlayerQuitEvent */
@@ -135,16 +141,16 @@ public class PlaytimeManager
         PlaytimeData d = get(id);
         if (d.sessionStart != null)
         {
-            long now = Instant.now().getEpochSecond();
-            long delta = now - d.sessionStart;
+            long now = Instant.now().toEpochMilli();
+            long delta = (now - d.sessionStart) / 1000L;
             d.totalPlaySeconds += Math.max(delta, 0);
-            d.lastSeen = now * 1000;
+            d.lastSeen = now;
             System.out.println("[Playtime] + " + delta + "s for " + id);
             d.sessionStart = null;
         }
     }
 
-    /** Optional: resync from Essentials */
+    /** Optional: resync from Essentials/Bukkit stats */
     @SuppressWarnings("deprecation")
     public void importFromEssentials(UUID id)
     {
@@ -156,23 +162,22 @@ public class PlaytimeManager
             int ticks = offlinePlayer.getStatistic(Statistic.PLAY_ONE_MINUTE);
             long playtimeSeconds = ticks / 20L;
 
-            PlaytimeData d = get(id);  // fetch existing data or new
+            PlaytimeData d = get(id);
 
-            d.totalPlaySeconds = playtimeSeconds;
+            // safer: only overwrite if ours is empty or theirs is bigger
+            if (d.totalPlaySeconds == 0 || playtimeSeconds > d.totalPlaySeconds)
+            {
+                d.totalPlaySeconds = playtimeSeconds;
+            }
 
             if (d.firstJoin == 0) d.firstJoin = offlinePlayer.getFirstPlayed();
-            d.lastSeen = offlinePlayer.getLastPlayed();
+            if (offlinePlayer.getLastPlayed() > 0) d.lastSeen = offlinePlayer.getLastPlayed();
 
             d.sessionStart = null;
-
-            // Put updated data back into the map (probably not needed if get returns reference)
-            // But just to be safe:
             set(id, d);
 
-            // Save to file (if applicable)
             save();
-
-            System.out.println("[Playtime] Imported " + playtimeSeconds + "s from Bukkit statistics for " + id);
+            System.out.println("[Playtime] Imported " + playtimeSeconds + "s from Bukkit stats for " + id);
         }
         catch (Exception e)
         {

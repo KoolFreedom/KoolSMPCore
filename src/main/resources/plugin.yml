@@ -30,6 +30,7 @@ permissions:
       - kfc.command.kiss
       - kfc.command.koolsmpcore
       - kfc.command.pat
+      - kfc.command.playtime
       - kfc.command.poke
       - kfc.command.report
       - kfc.command.seen
@@ -76,6 +77,7 @@ permissions:
       - kfc.command.warn
       - kfc.command.warn.immune
       - kfc.ping_everyone
+      - kfc.playtime.others
   kfc.senior:
     description: Permission group offering some additional administrative capabilities, plus the ability to doom people.
     default: op
