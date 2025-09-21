@@ -25,7 +25,7 @@ public class FreezeListener implements Listener
     {
         Player p  = event.getPlayer();
 
-        if(!(freezeManager.isGlobalFreeze() || freezeManager.isFrozen(p)))
+        if(!(freezeManager.isFrozen(p)))
         {
             return; // not frozen
         }
