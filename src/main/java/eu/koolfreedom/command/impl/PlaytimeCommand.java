@@ -2,7 +2,6 @@ package eu.koolfreedom.command.impl;
 
 import eu.koolfreedom.command.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
-import eu.koolfreedom.stats.PlaytimeManager;
 import eu.koolfreedom.util.FUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -12,13 +11,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
-import java.util.UUID;
 
 @CommandParameters(name = "playtime", description = "Shows your or another player's playtime", usage = "/playtime [player]")
 public class PlaytimeCommand extends KoolCommand
 {
-    private final PlaytimeManager playtimeManager = plugin.getPlaytimeManager();
-
     @Override
     public boolean run(CommandSender sender, Player player, Command cmd, String label, String[] args)
     {
@@ -48,22 +44,10 @@ public class PlaytimeCommand extends KoolCommand
             }
         }
 
-        UUID uuid = target.getUniqueId();
-
-        // First try plugin’s effective playtime
-        long playtimeSeconds = playtimeManager.getEffectivePlaytime(uuid);
-
-        // Fallback to Bukkit stats if plugin has no record
-        if (playtimeSeconds <= 0 && target.hasPlayedBefore())
-        {
-            try {
-                playtimeSeconds = (long) target.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20L;
-            }
-            catch (Exception ignored)
-            {
-                // Some OfflinePlayers may not have stats available, swallow safely
-            }
-        }
+        long playtimeSeconds = 0;
+        try {
+            playtimeSeconds = (long) target.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20L;
+        } catch (Exception ignored) {}
 
         String formatted = formatDuration(playtimeSeconds);
         msg(sender, FUtil.miniMessage("<gray>" + target.getName() + "</gray> has played for <red>" + formatted + "</red>."));

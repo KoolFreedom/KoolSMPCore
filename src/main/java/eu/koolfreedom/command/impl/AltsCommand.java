@@ -69,7 +69,6 @@ public class AltsCommand extends KoolCommand
             String name = p.getName() != null ? p.getName() : uuid.toString();
             boolean banned = plugin.getBanManager().isBanned(p);
             boolean flagged = plugin.getNoteManager().hasNotes(uuid);
-            long playSeconds = plugin.getPlaytimeManager().getPlaytime(uuid);
 
             TextComponent.Builder line = Component.text().append(Component.text("- ", NamedTextColor.GRAY));
             line.append(Component.text(name, NamedTextColor.YELLOW));
@@ -78,8 +77,6 @@ public class AltsCommand extends KoolCommand
                 line.append(Component.text(" [BANNED]", NamedTextColor.RED, TextDecoration.BOLD));
             if (flagged)
                 line.append(Component.text(" [FLAGGED]", NamedTextColor.DARK_PURPLE));
-            if (playSeconds < 3600)
-                line.append(Component.text(" [Low Playtime]", NamedTextColor.GRAY));
 
             msg(sender, line.build());
         }

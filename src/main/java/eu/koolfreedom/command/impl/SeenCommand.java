@@ -3,14 +3,11 @@ package eu.koolfreedom.command.impl;
 import eu.koolfreedom.banning.BanManager;
 import eu.koolfreedom.command.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
+import eu.koolfreedom.freeze.FreezeManager;
+import eu.koolfreedom.listener.MuteManager;
 import eu.koolfreedom.note.NoteManager;
 import eu.koolfreedom.note.PlayerNote;
-import eu.koolfreedom.listener.MuteManager;
-import eu.koolfreedom.freeze.FreezeManager;
-import eu.koolfreedom.stats.PlaytimeManager;
-import eu.koolfreedom.stats.PlaytimeManager.PlaytimeData;
 import eu.koolfreedom.util.FUtil;
-import net.ess3.api.IEssentials;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Bukkit;
@@ -34,8 +31,6 @@ public class SeenCommand extends KoolCommand
     private final NoteManager noteManager = plugin.getNoteManager();
     private final MuteManager muteManager = plugin.getMuteManager();
     private final FreezeManager freezeManager = plugin.getFreezeManager();
-    private final PlaytimeManager playtimeManager = plugin.getPlaytimeManager();
-    private final IEssentials essentials = (IEssentials) Bukkit.getPluginManager().getPlugin("Essentials");
 
     private final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 
@@ -84,57 +79,22 @@ public class SeenCommand extends KoolCommand
         String name = target.getName() != null ? target.getName() : uuid.toString();
         msg(sender, FUtil.miniMessage("<red>Player Info: <gold>" + name + "</gold> <gray>(" + uuid + ")</gray>"));
 
-        PlaytimeData pt = playtimeManager.get(uuid);
-
-        long first = pt.firstJoin;
+        long first = target.getFirstPlayed();
         long last = target.getLastPlayed();
 
-        // Your stored playtime in seconds
-        long storedPlaytime = pt.totalPlaySeconds;
-
-        // Bukkit stats playtime fallback (also in seconds)
-        long bukkitPlaytime = 0;
+        long played = 0;
         try {
             int ticks = target.getStatistic(Statistic.PLAY_ONE_MINUTE);
-            bukkitPlaytime = ticks / 20L;
+            played = ticks / 20L; // seconds
         } catch (Exception ignored) {}
-
-        // Decide which playtime to show
-        long played = storedPlaytime;
-        boolean usingFallback = false;
-
-        if (bukkitPlaytime > played) {
-            played = bukkitPlaytime;
-            // Don't override storedPlaytime here — only use for display
-        }
-
-        // Only fallback if no valid playtime recorded
-        if (played == 0 && first > 0 && last > first) {
-            played = (last - first) / 1000L;
-            usingFallback = true;
-        }
-
-        // Update playtime data if we have a bigger number than stored (optional)
-        if (played > storedPlaytime) {
-            pt.totalPlaySeconds = played;
-            playtimeManager.set(uuid, pt);
-        }
-
-        // Format times for display
-        if (first == 0) first = target.getFirstPlayed();
-        if (last == 0) last = target.getLastPlayed();
-        pt.firstJoin = first;
-        pt.lastSeen = last;
-        playtimeManager.set(uuid, pt);
 
         String firstStr = first > 0 ? fmt.format(Instant.ofEpochMilli(first)) : "Unknown";
         String lastStr = last > 0 ? fmt.format(Instant.ofEpochMilli(last)) : "Unknown";
         String playStr = played > 0 ? formatDuration(played) : "Unknown";
 
-        // Append fallback label if needed
-        if (usingFallback) {
-            playStr += " (fallback)";
-        }
+        msg(sender, FUtil.miniMessage("<red>First Join:</red> <yellow>" + firstStr));
+        msg(sender, FUtil.miniMessage("<red>Last Seen:</red>  <yellow>" + lastStr));
+        msg(sender, FUtil.miniMessage("<red>Playtime:</red>   <yellow>" + playStr));
 
         String ip = forcedIp != null ? forcedIp : plugin.getAltManager().getLastIP(uuid).orElse("Unknown");
         List<String> alts = FUtil.getOfflinePlayersByIp(ip).stream()
@@ -149,10 +109,6 @@ public class SeenCommand extends KoolCommand
         boolean banned = banManager.isBanned(target);
         boolean opped = target.isOp();
         boolean white = target.isWhitelisted();
-
-        msg(sender, FUtil.miniMessage("<red>First Join:</red> <yellow>" + firstStr));
-        msg(sender, FUtil.miniMessage("<red>Last Seen:</red>  <yellow>" + lastStr));
-        msg(sender, FUtil.miniMessage("<red>Playtime:</red>   <yellow>" + playStr));
 
         if (sender.hasPermission("kfc.seen.viewip"))
         {

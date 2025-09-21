@@ -20,8 +20,6 @@ import eu.koolfreedom.bridge.discord.EssentialsXDiscordIntegration;
 import eu.koolfreedom.freeze.FreezeListener;
 import eu.koolfreedom.freeze.FreezeManager;
 import eu.koolfreedom.note.NoteManager;
-import eu.koolfreedom.stats.PlaytimeListener;
-import eu.koolfreedom.stats.PlaytimeManager;
 import eu.koolfreedom.util.*;
 import eu.koolfreedom.punishment.RecordKeeper;
 import eu.koolfreedom.reporting.ReportManager;
@@ -59,8 +57,6 @@ public class KoolSMPCore extends JavaPlugin
     private NoteManager noteManager;
     @Getter
     private AltManager altManager;
-    @Getter
-    private PlaytimeManager playtimeManager;
     private FreezeListener freezeListener;
     private AntiSpamService antiSpamListener;
     @Getter
@@ -70,7 +66,6 @@ public class KoolSMPCore extends JavaPlugin
     private ExploitListener exploitListener;
     private ChatListener chatListener;
     private PlayerJoinListener pjListener;
-    private PlaytimeListener ptListener;
     private MiniMessageHandler mmHandler;
 
     private GroupManagement groupManager;
@@ -101,8 +96,6 @@ public class KoolSMPCore extends JavaPlugin
         FLog.info("Enabled Metrics");
 
         altManager = new AltManager();
-        playtimeManager = new PlaytimeManager();
-        playtimeManager.load();
         noteManager = new NoteManager();
         freezeManager = new FreezeManager();
 
@@ -148,7 +141,6 @@ public class KoolSMPCore extends JavaPlugin
 
         banManager.save();
         reportManager.save();
-        playtimeManager.save();
     }
 
     public void loadBansConfig()
@@ -166,8 +158,7 @@ public class KoolSMPCore extends JavaPlugin
         chatListener = new ChatListener();
         freezeListener = new FreezeListener();
         lockupManager = new LockupManager(this);
-        pjListener = new PlayerJoinListener();
-        ptListener = new PlaytimeListener();
+        pjListener = new PlayerJoinListener();;
         antiSpamListener = new AntiSpamService(this);
         mmHandler = new MiniMessageHandler();
         autoUndoManager = new AutoUndoManager(this, muteManager, freezeManager);
