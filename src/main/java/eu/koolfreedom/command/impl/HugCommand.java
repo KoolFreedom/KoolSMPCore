@@ -35,7 +35,7 @@ public class HugCommand extends KoolCommand
             return true;
         }
 
-        broadcast("<aqua><sender> gave <target> a warm hug!",
+        broadcast("<#E6B1C9><sender> gave <target> a warm hug!",
                 Placeholder.unparsed("sender", sender.getName()),
                 Placeholder.unparsed("target", player.getName()));
         return true;

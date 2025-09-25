@@ -36,7 +36,7 @@ public class KissCommand extends KoolCommand
             return true;
         }
 
-        broadcast("<aqua><sender> gave <target> a kiss on the cheek. Awww! <dark_red><b>♥",
+        broadcast("<#FFABDB><sender> gave <target> a kiss on the cheek. Awww! <dark_red><b>♥",
                 Placeholder.unparsed("sender", sender.getName()),
                 Placeholder.unparsed("target", player.getName()));
         return true;

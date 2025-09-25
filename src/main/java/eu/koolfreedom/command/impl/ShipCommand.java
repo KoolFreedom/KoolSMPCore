@@ -60,7 +60,7 @@ public class ShipCommand extends KoolCommand
             return true;
         }
 
-        broadcast("<green><sender> ships <player1> x <player2>! <dark_red><b>♥",
+        broadcast("<#FF8C8C><sender> ships <player1> x <player2>! <dark_red><b>♥",
                 Placeholder.unparsed("sender", sender.getName()),
                 Placeholder.unparsed("player1", player1.getName()),
                 Placeholder.unparsed("player2", player2.getName()));

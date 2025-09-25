@@ -39,7 +39,7 @@ public class PokeCommand extends KoolCommand
             return true;
         }
 
-        broadcast("<aqua><sender> poked <target>.",
+        broadcast("<#FF7EBB><sender> poked <target>.",
                 Placeholder.unparsed("sender", sender.getName()),
                 Placeholder.unparsed("target", player.getName()));
 

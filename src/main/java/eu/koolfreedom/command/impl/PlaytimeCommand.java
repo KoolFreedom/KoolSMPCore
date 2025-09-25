@@ -50,7 +50,7 @@ public class PlaytimeCommand extends KoolCommand
         } catch (Exception ignored) {}
 
         String formatted = formatDuration(playtimeSeconds);
-        msg(sender, FUtil.miniMessage("<gray>" + target.getName() + "</gray> has played for <red>" + formatted + "</red>."));
+        msg(sender, FUtil.miniMessage("<gray>" + target.getName() + " has played for <red>" + formatted + "</red>."));
         return true;
     }
 

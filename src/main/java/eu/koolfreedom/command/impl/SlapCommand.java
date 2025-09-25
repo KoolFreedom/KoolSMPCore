@@ -36,7 +36,7 @@ public class SlapCommand extends KoolCommand
             return true;
         }
 
-        broadcast("<aqua><sender> gave <player> a nice slap to the face!",
+        broadcast("<#ff0004><sender> gave <player> a nice slap to the face!",
                 Placeholder.unparsed("sender", sender.getName()),
                 Placeholder.unparsed("player", target.getName()));
         return true;

@@ -35,7 +35,7 @@ public class PatCommand extends KoolCommand
             return true;
         }
 
-        broadcast("<aqua><sender> gave <target> a pat on the head.",
+        broadcast("<#F06FF6><sender> gave <target> a pat on the head.",
                 Placeholder.unparsed("sender", sender.getName()),
                 Placeholder.unparsed("target", player.getName()));
 
