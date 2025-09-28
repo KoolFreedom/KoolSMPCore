@@ -57,25 +57,25 @@ public class PlayerJoinListener implements Listener
         if (freezeManager.isFrozen(player))
         {
             freezeManager.freeze(player);
-            player.sendMessage(FUtil.miniMessage("<red>Just because you re-logged, doesn't mean you're safe"));
+            player.sendMessage(FUtil.miniMessage("<#CCBBF0>Just because you re-logged, doesn't mean you're safe"));
         }
 
         if (muteManager.isMuted(player))
         {
-            player.sendMessage(FUtil.miniMessage("<gray>You are still muted."));
+            player.sendMessage(FUtil.miniMessage("<#678580>You are still muted."));
         }
 
         UUID id = player.getUniqueId();
 
         if (muteManager.isCommandsBlocked(id))
         {
-            player.sendMessage(FUtil.miniMessage("<gray>Your commands are still blocked."));
+            player.sendMessage(FUtil.miniMessage("<#678580>Your commands are still blocked."));
         }
 
         if (lockupManager.isLocked(player.getUniqueId()))
         {
             lockupManager.lock(player);
-            player.sendMessage(FUtil.miniMessage("<red>Just because you re-logged doesn't mean you're safe!"));
+            player.sendMessage(FUtil.miniMessage("<#CCBBF0>Just because you re-logged doesn't mean you're safe!"));
         }
 
         String ip = player.getAddress().getAddress().getHostAddress();
