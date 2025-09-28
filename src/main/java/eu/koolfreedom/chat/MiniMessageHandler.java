@@ -23,7 +23,8 @@ public class MiniMessageHandler implements Listener
 
     // Set of disallowed MiniMessage tags
     private static final Set<String> BLOCKED_TAGS = Set.of(
-            "click", "hover", "obf", "keybind", "translate", "obfuscated", "black"
+            "obfuscated", "obf", "newline", "lang", "key", "translate",
+            "black", "hover"
     );
 
     // Pattern to detect MiniMessage-style tags: <tag:...> or <tag>
