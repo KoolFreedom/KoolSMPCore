@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 
 import java.util.List;
 import java.util.Set;
@@ -28,26 +29,44 @@ public class PlayerJoinListener implements Listener
     private final BanManager banManager = plugin.getBanManager();
     private final NoteManager noteManager = plugin.getNoteManager();
 
+    // =====================================
+    //  Handle BANNED join attempts
+    // =====================================
+    @EventHandler
+    public void onPlayerLogin(PlayerLoginEvent event)
+    {
+        Player player = event.getPlayer();
+
+        banManager.findBan(player)
+                .or(() -> banManager.findBan(event.getAddress().getHostAddress()))
+                .ifPresent(ban ->
+                {
+                    String duration = ban.getDurationString();
+
+                    // Deny connection
+                    event.disallow(PlayerLoginEvent.Result.KICK_BANNED, ban.getKickMessage());
+
+                    // Broadcast to admins
+                    FUtil.broadcast("kfc.admin",
+                            "<gradient:#ff4d4d:#ff9966><b>⚠ Banned Join Attempt</b></gradient> "
+                                    + "<gray>-</gray> <#ffb347>" + player.getName()
+                                    + "</#ffb347> <gray>tried to join but is banned</gray> "
+                                    + "(<#ffd580>" + duration + "</#ffd580>)");
+
+                    // Log to console
+                    FLog.info("[Banned Join Attempt] " + player.getName() + " (" + duration + ")");
+                });
+    }
+
+    // =====================================
+    //  Handle normal successful joins
+    // =====================================
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event)
     {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
         String ip = player.getAddress().getAddress().getHostAddress();
-
-        // --- Ban Broadcast ---
-        banManager.findBan(player)
-                .or(() -> banManager.findBan(ip))
-                .ifPresent(ban ->
-                {
-                    String duration = ban.getDurationString();
-                    FUtil.broadcast("kfc.admin",
-                            "<gradient:#ff4d4d:#ff9966><b>⚠ Banned Join Attempt</b></gradient> "
-                                    + "<gray>-</gray> <#ffb347>" + player.getName()
-                                    + "</#ffb347> <gray>tried to join but is banned</gray> "
-                                    + "(<#ffd580>" + duration + "</#ffd580>)");
-                    FLog.info(player.getName() + " tried to join but is banned (" + duration + ")");
-                });
 
         // --- Staff Notes ---
         List<PlayerNote> notes = noteManager.getNotes(uuid);
@@ -66,7 +85,7 @@ public class PlayerJoinListener implements Listener
             }
         }
 
-        // --- Punishment persistence ---
+        // --- Persistent punishments ---
         if (freezeManager.isFrozen(player))
         {
             freezeManager.freeze(player);
@@ -100,7 +119,7 @@ public class PlayerJoinListener implements Listener
                             + "<gray>-</gray> <#9fffea>" + player.getName()
                             + "</#9fffea> <gray>shares an IP with</gray> "
                             + "<#aaff80>" + altCount + "</#aaff80> <gray>other account(s).</gray>");
-            FLog.info(player.getName() + " shares an IP with " + altCount + " other account(s).");
+            FLog.info("[Alt Alert] " + player.getName() + " shares an IP with " + altCount + " other account(s).");
         }
     }
 }
