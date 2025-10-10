@@ -114,7 +114,7 @@ public class SeenCommand extends KoolCommand
         {
             Component ipComp = Component.text(ip).clickEvent(ClickEvent.copyToClipboard(ip))
                     .hoverEvent(Component.text("Click to copy IP"));
-            sender.sendMessage(FUtil.miniMessage("<red>IP:</red> ").append(ipComp));
+            sender.sendMessage(FUtil.miniMessage("<gray>IP:</gray> ").append(ipComp));
         }
         else
         {
