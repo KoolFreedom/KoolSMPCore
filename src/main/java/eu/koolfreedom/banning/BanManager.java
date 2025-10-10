@@ -208,10 +208,26 @@ public class BanManager implements Listener
 		return banMap.values().stream().filter(ban -> !ban.isExpired()).count();
 	}
 
-	@EventHandler
-	public void onPlayerJoin(PlayerLoginEvent event)
-	{
-		findBan(event.getPlayer()).or(() -> findBan(event.getAddress().getHostAddress())).ifPresent(ban ->
-				event.disallow(PlayerLoginEvent.Result.KICK_BANNED, ban.getKickMessage()));
-	}
+    @EventHandler
+    public void onPlayerJoin(PlayerLoginEvent event)
+    {
+        findBan(event.getPlayer())
+                .or(() -> findBan(event.getAddress().getHostAddress()))
+                .ifPresent(ban ->
+                {
+                    // Always deny the login
+                    event.disallow(PlayerLoginEvent.Result.KICK_BANNED, ban.getKickMessage());
+
+                    // Fancy colors + gradient for broadcast
+                    String playerName = event.getPlayer().getName();
+                    String duration = ban.getDurationString();
+
+                    // Broadcast to admins
+                    FUtil.broadcast("kfc.admin",
+                            "<gradient:#ff4d4d:#ff9966><b>⚠ Banned Join Attempt</b></gradient> "
+                                    + "<gray>-</gray> <#ffb347>" + playerName
+                                    + "</#ffb347> <gray>tried to join but is banned</gray> "
+                                    + "(<#ffd580>" + duration + "</#ffd580>)");
+                });
+    }
 }

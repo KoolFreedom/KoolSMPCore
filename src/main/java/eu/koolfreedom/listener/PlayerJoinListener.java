@@ -30,35 +30,6 @@ public class PlayerJoinListener implements Listener
     private final NoteManager noteManager = plugin.getNoteManager();
 
     // =====================================
-    //  Handle BANNED join attempts
-    // =====================================
-    @EventHandler
-    public void onPlayerLogin(PlayerLoginEvent event)
-    {
-        Player player = event.getPlayer();
-
-        banManager.findBan(player)
-                .or(() -> banManager.findBan(event.getAddress().getHostAddress()))
-                .ifPresent(ban ->
-                {
-                    String duration = ban.getDurationString();
-
-                    // Deny connection
-                    event.disallow(PlayerLoginEvent.Result.KICK_BANNED, ban.getKickMessage());
-
-                    // Broadcast to admins
-                    FUtil.broadcast("kfc.admin",
-                            "<gradient:#ff4d4d:#ff9966><b>⚠ Banned Join Attempt</b></gradient> "
-                                    + "<gray>-</gray> <#ffb347>" + player.getName()
-                                    + "</#ffb347> <gray>tried to join but is banned</gray> "
-                                    + "(<#ffd580>" + duration + "</#ffd580>)");
-
-                    // Log to console
-                    FLog.info("[Banned Join Attempt] " + player.getName() + " (" + duration + ")");
-                });
-    }
-
-    // =====================================
     //  Handle normal successful joins
     // =====================================
     @EventHandler

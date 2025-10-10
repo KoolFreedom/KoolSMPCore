@@ -158,7 +158,7 @@ public class KoolSMPCore extends JavaPlugin
         chatListener = new ChatListener();
         freezeListener = new FreezeListener();
         lockupManager = new LockupManager(this);
-        pjListener = new PlayerJoinListener();;
+        pjListener = new PlayerJoinListener();
         antiSpamListener = new AntiSpamService(this);
         mmHandler = new MiniMessageHandler();
         autoUndoManager = new AutoUndoManager(this, muteManager, freezeManager);
