@@ -2,14 +2,13 @@ package eu.koolfreedom.listener;
 
 import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.api.AltManager;
+import eu.koolfreedom.banning.BanManager;
+import eu.koolfreedom.freeze.FreezeManager;
 import eu.koolfreedom.note.NoteManager;
 import eu.koolfreedom.note.PlayerNote;
 import eu.koolfreedom.util.FLog;
 import eu.koolfreedom.util.FUtil;
-import eu.koolfreedom.freeze.*;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -21,43 +20,57 @@ import java.util.UUID;
 
 public class PlayerJoinListener implements Listener
 {
-    private final FreezeManager freezeManager = KoolSMPCore.getInstance().getFreezeManager();
-    private final MuteManager muteManager = KoolSMPCore.getInstance().getMuteManager();
-    private final LockupManager lockupManager = KoolSMPCore.getInstance().getLockupManager();
-    private final AltManager altManager = KoolSMPCore.getInstance().getAltManager();
+    private final KoolSMPCore plugin = KoolSMPCore.getInstance();
+    private final FreezeManager freezeManager = plugin.getFreezeManager();
+    private final MuteManager muteManager = plugin.getMuteManager();
+    private final LockupManager lockupManager = plugin.getLockupManager();
+    private final AltManager altManager = plugin.getAltManager();
+    private final BanManager banManager = plugin.getBanManager();
+    private final NoteManager noteManager = plugin.getNoteManager();
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event)
     {
         Player player = event.getPlayer();
-        NoteManager noteManager = KoolSMPCore.getInstance().getNoteManager();
+        UUID uuid = player.getUniqueId();
+        String ip = player.getAddress().getAddress().getHostAddress();
 
-        List<PlayerNote> notes = noteManager.getNotes(player.getUniqueId());
+        // --- Ban Broadcast ---
+        banManager.findBan(player)
+                .or(() -> banManager.findBan(ip))
+                .ifPresent(ban ->
+                {
+                    String duration = ban.getDurationString();
+                    FUtil.broadcast("kfc.admin",
+                            "<gradient:#ff4d4d:#ff9966><b>⚠ Banned Join Attempt</b></gradient> "
+                                    + "<gray>-</gray> <#ffb347>" + player.getName()
+                                    + "</#ffb347> <gray>tried to join but is banned</gray> "
+                                    + "(<#ffd580>" + duration + "</#ffd580>)");
+                    FLog.info(player.getName() + " tried to join but is banned (" + duration + ")");
+                });
 
-        if (notes.isEmpty())
-            return;
-
-        for (Player online : Bukkit.getOnlinePlayers())
+        // --- Staff Notes ---
+        List<PlayerNote> notes = noteManager.getNotes(uuid);
+        if (!notes.isEmpty())
         {
-            if (!online.hasPermission("kfc.admin")) continue;
-
-            online.sendMessage(Component.text()
-                    .append(Component.text("[Note] ", NamedTextColor.YELLOW))
-                    .append(Component.text(player.getName(), NamedTextColor.RED))
-                    .append(Component.text(" has ", NamedTextColor.YELLOW))
-                    .append(Component.text(notes.size() + " staff note(s).", NamedTextColor.RED))
-            );
+            FUtil.broadcast("kfc.admin",
+                    "<gradient:#b48ef2:#e57eff>[Note]</gradient> <#d4bfff>" + player.getName()
+                            + "</#d4bfff> <gray>has</gray> <#ffb3ec>" + notes.size()
+                            + "</#ffb3ec> <gray>staff note(s).</gray>");
 
             for (PlayerNote note : notes)
             {
-                online.sendMessage(Component.text("- " + note.getMessage(), NamedTextColor.GRAY));
+                FUtil.broadcast("kfc.admin",
+                        "<gray>•</gray> <#c9a6ff><note></#c9a6ff>",
+                        Placeholder.unparsed("note", note.getMessage()));
             }
         }
 
+        // --- Punishment persistence ---
         if (freezeManager.isFrozen(player))
         {
             freezeManager.freeze(player);
-            player.sendMessage(FUtil.miniMessage("<#CCBBF0>Just because you re-logged, doesn't mean you're safe"));
+            player.sendMessage(FUtil.miniMessage("<#CCBBF0>Just because you re-logged, doesn't mean you're safe."));
         }
 
         if (muteManager.isMuted(player))
@@ -65,34 +78,29 @@ public class PlayerJoinListener implements Listener
             player.sendMessage(FUtil.miniMessage("<#678580>You are still muted."));
         }
 
-        UUID id = player.getUniqueId();
-
-        if (muteManager.isCommandsBlocked(id))
+        if (muteManager.isCommandsBlocked(uuid))
         {
             player.sendMessage(FUtil.miniMessage("<#678580>Your commands are still blocked."));
         }
 
-        if (lockupManager.isLocked(player.getUniqueId()))
+        if (lockupManager.isLocked(uuid))
         {
             lockupManager.lock(player);
             player.sendMessage(FUtil.miniMessage("<#CCBBF0>Just because you re-logged doesn't mean you're safe!"));
         }
 
-        String ip = player.getAddress().getAddress().getHostAddress();
-
-        altManager.record(ip, player.getUniqueId());
+        // --- Alt Detection ---
+        altManager.record(ip, uuid);
         Set<UUID> alts = altManager.getAlts(ip);
         if (alts.size() > 1)
         {
-            Component msg = Component.text("⚠ ")
-                    .append(Component.text(player.getName(), NamedTextColor.RED))
-                    .append(Component.text(" shares an IP with: "))
-                    .append(Component.text(alts.size() - 1 + " other account(s).", NamedTextColor.YELLOW));
-            Bukkit.getOnlinePlayers().stream()
-                    .filter(pl -> pl.hasPermission("kfc.admin"))
-                    .forEach(pl -> pl.sendMessage(msg));
-            FLog.info(msg);
+            int altCount = alts.size() - 1;
+            FUtil.broadcast("kfc.admin",
+                    "<gradient:#00f5d4:#9fffac>⚠ <b>Alt Alert</b></gradient> "
+                            + "<gray>-</gray> <#9fffea>" + player.getName()
+                            + "</#9fffea> <gray>shares an IP with</gray> "
+                            + "<#aaff80>" + altCount + "</#aaff80> <gray>other account(s).</gray>");
+            FLog.info(player.getName() + " shares an IP with " + altCount + " other account(s).");
         }
     }
-
 }

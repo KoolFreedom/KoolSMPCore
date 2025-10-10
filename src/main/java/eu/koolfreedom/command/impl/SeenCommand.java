@@ -92,11 +92,11 @@ public class SeenCommand extends KoolCommand
         String lastStr = last > 0 ? fmt.format(Instant.ofEpochMilli(last)) : "Unknown";
         String playStr = played > 0 ? formatDuration(played) : "Unknown";
 
-        msg(sender, FUtil.miniMessage("<red>First Join:</red> <yellow>" + firstStr));
-        msg(sender, FUtil.miniMessage("<red>Last Seen:</red>  <yellow>" + lastStr));
-        msg(sender, FUtil.miniMessage("<red>Playtime:</red>   <yellow>" + playStr));
+        msg(sender, FUtil.miniMessage("<gray>First Join:</gray> <red>" + firstStr));
+        msg(sender, FUtil.miniMessage("<gray>Last Seen:</gray>  <red>" + lastStr));
+        msg(sender, FUtil.miniMessage("<gray>Playtime:</gray>   <red>" + playStr));
 
-        String ip = forcedIp != null ? forcedIp : plugin.getAltManager().getLastIP(uuid).orElse("Unknown");
+        String ip = forcedIp != null ? forcedIp : plugin.getAltManager().getLastIP(uuid).orElse("Cannot find IP");
         List<String> alts = FUtil.getOfflinePlayersByIp(ip).stream()
                 .map(OfflinePlayer::getName)
                 .filter(n -> n != null && !n.equalsIgnoreCase(name))
@@ -118,32 +118,32 @@ public class SeenCommand extends KoolCommand
         }
         else
         {
-            msg(sender, FUtil.miniMessage("<red>IP:</red> <gray>[Hidden]</gray>"));
+            msg(sender, FUtil.miniMessage("<gray>IP:</gray> <red>[Hidden]</red>"));
         }
 
         if (!alts.isEmpty())
         {
-            msg(sender, FUtil.miniMessage("<red>Alts:</red> <yellow>" + String.join(", ", alts)));
+            msg(sender, FUtil.miniMessage("<gray>Alts:</gray> <red>" + String.join(", ", alts)));
         }
 
         if (!notes.isEmpty())
         {
-            msg(sender, FUtil.miniMessage("<red>Notes:</red>"));
+            msg(sender, FUtil.miniMessage("<gray>Notes:</gray>"));
             for (PlayerNote n : notes)
             {
-                msg(sender, FUtil.miniMessage("  <gray>- [" + n.getTimestamp() + "] " + n.getAuthor() + ": " + n.getMessage() + "</gray>"));
+                msg(sender, FUtil.miniMessage("  <red>- [" + n.getTimestamp() + "] " + n.getAuthor() + ": " + n.getMessage() + "</red>"));
             }
         }
         else
         {
-            msg(sender, FUtil.miniMessage("<red>Notes:</red> <gray>None"));
+            msg(sender, FUtil.miniMessage("<gray>Notes:</gray> <red>None"));
         }
 
         String status = (muted ? "Muted" : "Not Muted") + ", " + (frozen ? "Frozen" : "Not Frozen");
-        msg(sender, FUtil.miniMessage("<red>Status:</red> <yellow>" + status + "</yellow>"));
-        msg(sender, FUtil.miniMessage("<red>OP:</red> <yellow>" + (opped ? "Yes" : "No") + "</yellow>"));
-        msg(sender, FUtil.miniMessage("<red>Banned:</red> <yellow>" + (banned ? "Yes" : "No") + "</yellow>"));
-        msg(sender, FUtil.miniMessage("<red>Whitelisted:</red> <yellow>" + (white ? "Yes" : "No") + "</yellow>"));
+        msg(sender, FUtil.miniMessage("<gray>Status:</gray> <red>" + status + "</red>"));
+        msg(sender, FUtil.miniMessage("<gray>OP:</gray> <red>" + (opped ? "Yes" : "No") + "</red>"));
+        msg(sender, FUtil.miniMessage("<gray>Banned:</gray> <red>" + (banned ? "Yes" : "No") + "</red>"));
+        msg(sender, FUtil.miniMessage("<gray>Whitelisted:</gray> <red>" + (white ? "Yes" : "No") + "</red>"));
     }
 
     private String formatDuration(long totalSeconds)

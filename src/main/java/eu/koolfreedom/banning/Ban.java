@@ -127,7 +127,36 @@ public class Ban
 		return !ips.isEmpty() || name != null || uuid != null;
 	}
 
-	public Component getKickMessage()
+    public String getDurationString()
+    {
+        if (!canExpire())
+        {
+            return "permanent";
+        }
+
+        long remaining = expires - System.currentTimeMillis();
+        if (remaining <= 0)
+        {
+            return "expired";
+        }
+
+        long seconds = remaining / 1000;
+        long days = seconds / 86400;
+        seconds %= 86400;
+        long hours = seconds / 3600;
+        seconds %= 3600;
+        long minutes = seconds / 60;
+
+        StringBuilder sb = new StringBuilder();
+        if (days > 0) sb.append(days).append("d ");
+        if (hours > 0) sb.append(hours).append("h ");
+        if (minutes > 0) sb.append(minutes).append("m");
+
+        return sb.isEmpty() ? "less than a minute" : sb.toString().trim();
+    }
+
+
+    public Component getKickMessage()
 	{
 		StringBuilder builder = new StringBuilder("<red>You are banned from this server.");
 
