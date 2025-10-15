@@ -2,7 +2,6 @@ package eu.koolfreedom.listener;
 
 import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.api.AltManager;
-import eu.koolfreedom.banning.BanManager;
 import eu.koolfreedom.freeze.FreezeManager;
 import eu.koolfreedom.note.NoteManager;
 import eu.koolfreedom.note.PlayerNote;
@@ -13,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
 
 import java.util.List;
 import java.util.Set;
@@ -26,7 +24,6 @@ public class PlayerJoinListener implements Listener
     private final MuteManager muteManager = plugin.getMuteManager();
     private final LockupManager lockupManager = plugin.getLockupManager();
     private final AltManager altManager = plugin.getAltManager();
-    private final BanManager banManager = plugin.getBanManager();
     private final NoteManager noteManager = plugin.getNoteManager();
 
     // =====================================

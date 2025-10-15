@@ -10,7 +10,6 @@ import eu.koolfreedom.bridge.VanishIntegration;
 import eu.koolfreedom.bridge.vanish.EssentialsVanishIntegration;
 import eu.koolfreedom.bridge.vanish.SuperVanishIntegration;
 import eu.koolfreedom.chat.AntiSpamService;
-//import eu.koolfreedom.combat.CombatManager;
 import eu.koolfreedom.chat.MiniMessageHandler;
 import eu.koolfreedom.command.CommandLoader;
 import eu.koolfreedom.config.ConfigEntry;
