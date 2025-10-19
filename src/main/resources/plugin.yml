@@ -13,9 +13,9 @@ softdepend:
   - Essentials
 authors:
   - "gamingto12"
-  - "_sftp"
+  - "_1kz"
   - "videogamesm12"
-  - "ch1ppie"
+  - "sapph-ic"
 api-version: 1.21.1
 # plugin.yml is no longer used to define commands, rather define permission nodes for commands that don't already have one
 #  defined in the command class.
