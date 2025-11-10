@@ -8,6 +8,7 @@ import eu.koolfreedom.note.PlayerNote;
 import eu.koolfreedom.util.FLog;
 import eu.koolfreedom.util.FUtil;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,6 +26,11 @@ public class PlayerJoinListener implements Listener
     private final LockupManager lockupManager = plugin.getLockupManager();
     private final AltManager altManager = plugin.getAltManager();
     private final NoteManager noteManager = plugin.getNoteManager();
+
+    public PlayerJoinListener()
+    {
+        Bukkit.getPluginManager().registerEvents(this, KoolSMPCore.getInstance());
+    }
 
     // =====================================
     //  Handle normal successful joins
