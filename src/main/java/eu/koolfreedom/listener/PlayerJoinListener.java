@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
 import java.util.Set;
@@ -59,28 +60,34 @@ public class PlayerJoinListener implements Listener
             }
         }
 
-        // --- Persistent punishments ---
-        if (freezeManager.isFrozen(player))
+        new BukkitRunnable()
         {
-            freezeManager.freeze(player);
-            player.sendMessage(FUtil.miniMessage("<#CCBBF0>Just because you re-logged, doesn't mean you're safe."));
-        }
+            @Override
+            public void run()
+            {
+                if (freezeManager.isFrozen(player))
+                {
+                    freezeManager.freeze(player);
+                    player.sendMessage(FUtil.miniMessage("<#CCBBF0>Just because you re-logged, doesn't mean you're safe."));
+                }
 
-        if (muteManager.isMuted(player))
-        {
-            player.sendMessage(FUtil.miniMessage("<#678580>You are still muted."));
-        }
+                if (muteManager.isMuted(player))
+                {
+                    player.sendMessage(FUtil.miniMessage("<#678580>You are still muted."));
+                }
 
-        if (muteManager.isCommandsBlocked(uuid))
-        {
-            player.sendMessage(FUtil.miniMessage("<#678580>Your commands are still blocked."));
-        }
+                if (muteManager.isCommandsBlocked(uuid))
+                {
+                    player.sendMessage(FUtil.miniMessage("<#678580>Your commands are still blocked."));
+                }
 
-        if (lockupManager.isLocked(uuid))
-        {
-            lockupManager.lock(player);
-            player.sendMessage(FUtil.miniMessage("<#CCBBF0>Just because you re-logged doesn't mean you're safe!"));
-        }
+                if (lockupManager.isLocked(uuid))
+                {
+                    lockupManager.lock(player);
+                    player.sendMessage(FUtil.miniMessage("<#CCBBF0>Just because you re-logged doesn't mean you're safe!"));
+                }
+            }
+        }.runTaskLater(plugin, 40L); // 40 ticks (2 seconds)
 
         // --- Alt Detection ---
         altManager.record(ip, uuid);
