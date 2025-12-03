@@ -1,9 +1,8 @@
 package eu.koolfreedom.command.impl;
 
-import eu.koolfreedom.KoolSMPCore;
-import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
-import eu.koolfreedom.listener.MuteManager;
+import eu.koolfreedom.listener.impl.MuteManager;
 import eu.koolfreedom.util.FUtil;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;

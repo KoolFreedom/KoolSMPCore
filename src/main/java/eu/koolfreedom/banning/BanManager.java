@@ -1,6 +1,7 @@
 package eu.koolfreedom.banning;
 
 import eu.koolfreedom.KoolSMPCore;
+import eu.koolfreedom.listener.KoolListener;
 import eu.koolfreedom.util.FLog;
 import eu.koolfreedom.util.FUtil;
 import org.bukkit.Bukkit;
@@ -17,15 +18,10 @@ import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-public class BanManager implements Listener
+public class BanManager extends KoolListener
 {
 	private static final File bansFile = new File(KoolSMPCore.getInstance().getDataFolder(), "bans.yml");
 	private final Map<Long, Ban> banMap = new HashMap<>();
-
-	public BanManager()
-	{
-		Bukkit.getPluginManager().registerEvents(this, KoolSMPCore.getInstance());
-	}
 
 	public void load()
 	{

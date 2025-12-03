@@ -1,6 +1,6 @@
 package eu.koolfreedom.command.impl;
 
-import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;

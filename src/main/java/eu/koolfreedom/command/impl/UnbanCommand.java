@@ -1,7 +1,7 @@
 package eu.koolfreedom.command.impl;
 
 import eu.koolfreedom.banning.Ban;
-import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.util.FUtil;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;

@@ -1,4 +1,4 @@
-package eu.koolfreedom.listener;
+package eu.koolfreedom.listener.impl;
 
 import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.banning.Ban;

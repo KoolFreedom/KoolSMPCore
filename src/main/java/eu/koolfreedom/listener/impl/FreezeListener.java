@@ -1,23 +1,15 @@
-package eu.koolfreedom.freeze;
+package eu.koolfreedom.listener.impl;
 
 import eu.koolfreedom.KoolSMPCore;
-import eu.koolfreedom.util.FUtil;
-import org.bukkit.Bukkit;
+import eu.koolfreedom.freeze.FreezeManager;
+import eu.koolfreedom.listener.KoolListener;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
-public class FreezeListener implements Listener
+public class FreezeListener extends KoolListener
 {
-
-    public FreezeListener()
-    {
-        Bukkit.getPluginManager().registerEvents(this, KoolSMPCore.getInstance());
-    }
-
     private final FreezeManager freezeManager = KoolSMPCore.getInstance().getFreezeManager();
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

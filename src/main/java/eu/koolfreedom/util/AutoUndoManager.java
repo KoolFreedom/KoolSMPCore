@@ -2,7 +2,7 @@ package eu.koolfreedom.util;
 
 import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.freeze.FreezeManager;
-import eu.koolfreedom.listener.MuteManager;
+import eu.koolfreedom.listener.impl.MuteManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;

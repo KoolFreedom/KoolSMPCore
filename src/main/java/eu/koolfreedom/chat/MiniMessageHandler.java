@@ -1,26 +1,19 @@
 package eu.koolfreedom.chat;
 
-import eu.koolfreedom.KoolSMPCore;
+import eu.koolfreedom.listener.KoolListener;
 import eu.koolfreedom.util.FUtil;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public class MiniMessageHandler implements Listener
+public class MiniMessageHandler extends KoolListener
 {
-    public MiniMessageHandler()
-    {
-        Bukkit.getServer().getPluginManager().registerEvents(this, KoolSMPCore.getInstance());
-    }
-
     // Set of disallowed MiniMessage tags
     private static final Set<String> BLOCKED_TAGS = Set.of(
             "obfuscated", "obf", "newline", "lang", "key", "translate",

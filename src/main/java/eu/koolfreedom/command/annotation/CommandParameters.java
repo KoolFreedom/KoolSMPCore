@@ -1,4 +1,6 @@
-package eu.koolfreedom.command;
+package eu.koolfreedom.command.annotation;
+
+import eu.koolfreedom.command.KoolCommand;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

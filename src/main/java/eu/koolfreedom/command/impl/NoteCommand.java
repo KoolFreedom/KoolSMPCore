@@ -1,6 +1,6 @@
 package eu.koolfreedom.command.impl;
 
-import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.note.PlayerNote;
 import eu.koolfreedom.util.FUtil;

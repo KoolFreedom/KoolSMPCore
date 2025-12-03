@@ -16,8 +16,9 @@ import eu.koolfreedom.config.ConfigEntry;
 import eu.koolfreedom.bridge.discord.DiscordSRVIntegration;
 import eu.koolfreedom.bridge.DiscordIntegration;
 import eu.koolfreedom.bridge.discord.EssentialsXDiscordIntegration;
-import eu.koolfreedom.freeze.FreezeListener;
+import eu.koolfreedom.listener.impl.FreezeListener;
 import eu.koolfreedom.freeze.FreezeManager;
+import eu.koolfreedom.listener.impl.*;
 import eu.koolfreedom.note.NoteManager;
 import eu.koolfreedom.util.*;
 import eu.koolfreedom.punishment.RecordKeeper;
@@ -28,7 +29,6 @@ import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.*;
 import org.bukkit.plugin.*;
 import eu.koolfreedom.command.impl.*;
-import eu.koolfreedom.listener.*;
 import org.bukkit.*;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -158,14 +158,14 @@ public class KoolSMPCore extends JavaPlugin
 
     public void loadListeners()
     {
-        muteManager = new MuteManager(this);
+        muteManager = new MuteManager();
         reportManager = new ReportManager();
         cosmeticManager = new CosmeticManager();
         chatListener = new ChatListener();
         freezeListener = new FreezeListener();
-        lockupManager = new LockupManager(this);
+        lockupManager = new LockupManager();
         pjListener = new PlayerJoinListener();
-        antiSpamListener = new AntiSpamService(this);
+        antiSpamListener = new AntiSpamService();
         mmHandler = new MiniMessageHandler();
         autoUndoManager = new AutoUndoManager(this, muteManager, freezeManager);
     }

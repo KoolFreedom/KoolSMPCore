@@ -1,10 +1,10 @@
 package eu.koolfreedom.command.impl;
 
 import eu.koolfreedom.banning.BanManager;
-import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.freeze.FreezeManager;
-import eu.koolfreedom.listener.MuteManager;
+import eu.koolfreedom.listener.impl.MuteManager;
 import eu.koolfreedom.note.NoteManager;
 import eu.koolfreedom.note.PlayerNote;
 import eu.koolfreedom.util.FUtil;

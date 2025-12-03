@@ -1,8 +1,8 @@
 package eu.koolfreedom.command.impl;
 
-import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
-import eu.koolfreedom.listener.MuteManager;
+import eu.koolfreedom.listener.impl.MuteManager;
 import eu.koolfreedom.util.FUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;

@@ -1,6 +1,7 @@
 package eu.koolfreedom.command;
 
 import eu.koolfreedom.KoolSMPCore;
+import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.util.FLog;
 import eu.koolfreedom.util.FUtil;
 import lombok.Getter;

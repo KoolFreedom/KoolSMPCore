@@ -1,6 +1,7 @@
-package eu.koolfreedom.listener;
+package eu.koolfreedom.listener.impl;
 
 import eu.koolfreedom.KoolSMPCore;
+import eu.koolfreedom.listener.KoolListener;
 import eu.koolfreedom.util.FUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -20,18 +21,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class LockupManager implements Listener
+public class LockupManager extends KoolListener
 {
     private final Map<UUID, BukkitRunnable> locked = new ConcurrentHashMap<>();
-    private final KoolSMPCore plugin;
     private final MiniMessage mini = MiniMessage.miniMessage();
     private final Component lockupTitle = mini.deserialize("<red>You are locked up!");
-
-    public LockupManager(KoolSMPCore plugin)
-    {
-        this.plugin = plugin;
-        Bukkit.getPluginManager().registerEvents(this, plugin);
-    }
 
     /* --------------------------------------------------------------------- */
     /*  Public API                                                           */

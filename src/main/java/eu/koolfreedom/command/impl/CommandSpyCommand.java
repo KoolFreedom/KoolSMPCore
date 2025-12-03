@@ -1,6 +1,6 @@
 package eu.koolfreedom.command.impl;
 
-import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.config.ConfigEntry;
 import net.kyori.adventure.text.Component;

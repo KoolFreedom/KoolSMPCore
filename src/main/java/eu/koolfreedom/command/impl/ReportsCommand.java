@@ -1,7 +1,7 @@
 package eu.koolfreedom.command.impl;
 
 import com.google.common.collect.Lists;
-import eu.koolfreedom.command.CommandParameters;
+import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.config.ConfigEntry;
 import eu.koolfreedom.reporting.Report;

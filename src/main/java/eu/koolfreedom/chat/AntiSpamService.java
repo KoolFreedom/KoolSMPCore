@@ -1,7 +1,8 @@
 package eu.koolfreedom.chat;
 
 import eu.koolfreedom.KoolSMPCore;
-import eu.koolfreedom.listener.MuteManager;
+import eu.koolfreedom.listener.KoolListener;
+import eu.koolfreedom.listener.impl.MuteManager;
 import eu.koolfreedom.util.FUtil;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
@@ -10,14 +11,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class AntiSpamService implements Listener
+public class AntiSpamService extends KoolListener
 {
     private static final int CHAT_MAX_PER_SEC      = 5;   // msgs-per-second before mute
     private static final int CMD_MAX_PER_SEC       = 5;   // cmds-per-second before kick
@@ -31,16 +31,6 @@ public class AntiSpamService implements Listener
 
     private final Map<UUID, Counter> chatCounts = new ConcurrentHashMap<>();
     private final Map<UUID, Counter> cmdCounts  = new ConcurrentHashMap<>();
-
-    private final MuteManager muteManager;
-    private final KoolSMPCore plugin;
-
-    public AntiSpamService(KoolSMPCore plugin)
-    {
-        this.plugin = plugin;
-        this.muteManager = plugin.getMuteManager();
-        Bukkit.getPluginManager().registerEvents(this, plugin);
-    }
 
     /* ----------------------- CHAT ----------------------- */
 

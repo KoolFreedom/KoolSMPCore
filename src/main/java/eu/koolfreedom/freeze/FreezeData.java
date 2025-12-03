@@ -9,7 +9,7 @@ import org.bukkit.scheduler.BukkitTask;
 public class FreezeData {
     @Getter
     private final Player player;
-    private Location location;
+    private final Location location;
     @Setter
     private BukkitTask unfreezeTask;
 

@@ -1,15 +1,15 @@
-package eu.koolfreedom.listener;
+package eu.koolfreedom.listener.impl;
 
 import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.banning.Ban;
 import eu.koolfreedom.banning.BanManager;
 import eu.koolfreedom.config.ConfigEntry;
+import eu.koolfreedom.listener.KoolListener;
 import eu.koolfreedom.util.FUtil;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServerListPingEvent;
@@ -18,12 +18,8 @@ import org.bukkit.scoreboard.Team;
 
 import java.util.Optional;
 
-public class CosmeticManager implements Listener
+public class CosmeticManager extends KoolListener
 {
-    public CosmeticManager()
-    {
-        Bukkit.getServer().getPluginManager().registerEvents(this, KoolSMPCore.getInstance());
-    }
 
     @EventHandler
     public void onServerPing(ServerListPingEvent event)

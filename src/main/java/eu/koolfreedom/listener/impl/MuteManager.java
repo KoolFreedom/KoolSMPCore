@@ -1,7 +1,8 @@
-package eu.koolfreedom.listener;
+package eu.koolfreedom.listener.impl;
 
 import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.command.impl.MuteChatCommand;
+import eu.koolfreedom.listener.KoolListener;
 import eu.koolfreedom.util.FUtil;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import org.bukkit.Bukkit;
@@ -11,25 +12,16 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MuteManager implements Listener
+public class MuteManager extends KoolListener
 {
     /** single source of truth */
     private final Set<UUID> muted = ConcurrentHashMap.newKeySet();
     private final Set<UUID> commandBlocked = ConcurrentHashMap.newKeySet();
-
-    private final KoolSMPCore plugin;
-
-    public MuteManager(KoolSMPCore plugin)
-    {
-        this.plugin = plugin;
-        Bukkit.getPluginManager().registerEvents(this, plugin);
-    }
 
     /* -------------------------------------------------------------------- */
     /* Public API                                                           */
