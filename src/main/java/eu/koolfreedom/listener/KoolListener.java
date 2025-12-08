@@ -10,9 +10,6 @@ import org.bukkit.event.Listener;
  *
  * I'm not a good developer at all, I'm actually kinda slow. This helps..... a lot.....
  *
- * I *think* that I have to leave a duplicate registry into ChatListener, no idea wtf to do because of the loadFilters() shit in there.
- * Same with a bunch of other classes cause hell if I know what I need to do for that shit.
- * Again, stupid.
  * - gamingto12
  */
 public abstract class KoolListener implements Listener
