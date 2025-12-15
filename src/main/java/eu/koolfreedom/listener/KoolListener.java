@@ -19,6 +19,6 @@ public abstract class KoolListener implements Listener
         KoolSMPCore.getInstance().getServer().getPluginManager().registerEvents(this, KoolSMPCore.getInstance());
     }
 
-    protected KoolSMPCore plugin;
-    protected MuteManager muteManager;
+    protected final KoolSMPCore plugin = KoolSMPCore.getInstance();
+    protected final MuteManager muteManager = plugin.getMuteManager();
 }
