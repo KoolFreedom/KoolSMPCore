@@ -5,6 +5,7 @@ import eu.koolfreedom.config.ConfigEntry;
 import eu.koolfreedom.event.PlayerReportDeleteEvent;
 import eu.koolfreedom.event.PlayerReportEvent;
 import eu.koolfreedom.event.PlayerReportUpdateEvent;
+import eu.koolfreedom.listener.KoolListener;
 import eu.koolfreedom.util.FLog;
 import eu.koolfreedom.util.FUtil;
 import net.kyori.adventure.text.Component;
@@ -16,7 +17,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.io.File;
@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-public class ReportManager implements Listener
+public class ReportManager extends KoolListener
 {
 	private static final File reportsFile = new File(KoolSMPCore.getInstance().getDataFolder(), "reports.yml");
 	private final Map<String, Report> reportMap = new HashMap<>();
@@ -32,7 +32,6 @@ public class ReportManager implements Listener
 	public ReportManager()
 	{
 		load();
-		Bukkit.getPluginManager().registerEvents(this, KoolSMPCore.getInstance());
 	}
 
 	public void load()

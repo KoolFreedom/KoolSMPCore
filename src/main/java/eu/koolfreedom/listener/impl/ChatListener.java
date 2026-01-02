@@ -5,6 +5,7 @@ import eu.koolfreedom.banning.Ban;
 import eu.koolfreedom.command.impl.DoomCommand;
 import eu.koolfreedom.command.impl.SmiteCommand;
 import eu.koolfreedom.config.ConfigEntry;
+import eu.koolfreedom.listener.KoolListener;
 import eu.koolfreedom.util.FLog;
 import eu.koolfreedom.punishment.Punishment;
 import eu.koolfreedom.util.FUtil;
@@ -20,7 +21,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 
@@ -28,13 +28,12 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-public class ChatListener implements Listener
+public class ChatListener extends KoolListener
 {
 	private final Set<FilterEntry> filters = new HashSet<>();
 
 	public ChatListener()
 	{
-		Bukkit.getPluginManager().registerEvents(this, KoolSMPCore.getInstance());
 		loadFilters();
 	}
 
