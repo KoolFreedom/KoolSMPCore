@@ -52,11 +52,11 @@ public class MiniMessageHandler extends KoolListener
         String safeMessage = sanitizeBlockedTags(rawMessage);
 
         // Sanitize blocked legacy formats if no permission
-        if (!player.hasPermission("venomcore.chat.legacy")) {
+        if (!player.hasPermission("kfc.chat.legacy")) {
             safeMessage = sanitizeLegacyFormats(safeMessage);
         }
 
-        if (!player.hasPermission("venomcore.chat.minimessage"))
+        if (!player.hasPermission("kfc.chat.minimessage"))
         {
             event.message(Component.text(safeMessage));
             return;
