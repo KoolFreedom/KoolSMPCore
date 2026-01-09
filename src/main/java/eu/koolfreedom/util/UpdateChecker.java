@@ -8,25 +8,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 
-public class UpdateChecker
-{
-    private final KoolSMPCore plugin;
-    private final String repoOwner;
-    private final String repoName;
-    private final String spigotUrl;
-    private final String modrinthUrl;
+@SuppressWarnings("UnstableApiUsage")
+public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoName, String spigotUrl,
+                            String modrinthUrl) {
 
-    public UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoName, String spigotUrl, String modrinthUrl)
-    {
-        this.plugin = plugin;
-        this.repoOwner = repoOwner;
-        this.repoName = repoName;
-        this.spigotUrl = spigotUrl;
-        this.modrinthUrl = modrinthUrl;
-    }
-
-    public void check()
-    {
+    public void check() {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () ->
         {
             try
@@ -60,12 +46,14 @@ public class UpdateChecker
                     if (!normalizedLatest.equalsIgnoreCase(normalizedCurrent))
                     {
                         logUpdateAvailable(currentVersion, latestTag);
-                    } else
+                    }
+                    else
                     {
                         FLog.info(String.format("You are running the latest version of %s (%s)", plugin.getName(), currentVersion));
                     }
                 }
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 FLog.warning("Failed to check for updates: " + e.getMessage());
             }
