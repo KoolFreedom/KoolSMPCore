@@ -23,6 +23,7 @@ import java.util.UUID;
         usage = "/note <add|view|remove> <player> [message|index]",
         aliases = {"notes"}
 )
+@SuppressWarnings("ConstantConditions")
 public class NoteCommand extends KoolCommand
 {
     @Override
@@ -95,9 +96,9 @@ public class NoteCommand extends KoolCommand
                     PlayerNote n = notes.get(i);
                     msg(sender,
                             "<gray>" + (i+1) + ". <white>[<time>] <author>: <message></white>",
-                            Placeholder.unparsed("time", n.getTimestamp().toString()),
-                            Placeholder.unparsed("author", n.getAuthor()),
-                            Placeholder.unparsed("message", n.getMessage())
+                            Placeholder.unparsed("time", n.timestamp().toString()),
+                            Placeholder.unparsed("author", n.author()),
+                            Placeholder.unparsed("message", n.message())
                     );
                 }
                 return true;

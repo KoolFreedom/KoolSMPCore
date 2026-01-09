@@ -50,7 +50,7 @@ public class PlayerJoinListener extends KoolListener
             {
                 FUtil.broadcast("kfc.admin",
                         "<gray>•</gray> <#c9a6ff><note></#c9a6ff>",
-                        Placeholder.unparsed("note", note.getMessage()));
+                        Placeholder.unparsed("note", note.message()));
             }
         }
 

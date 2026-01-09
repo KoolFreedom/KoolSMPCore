@@ -131,7 +131,7 @@ public class SeenCommand extends KoolCommand
             msg(sender, FUtil.miniMessage("<gray>Notes:</gray>"));
             for (PlayerNote n : notes)
             {
-                msg(sender, FUtil.miniMessage("  <red>- [" + n.getTimestamp() + "] " + n.getAuthor() + ": " + n.getMessage() + "</red>"));
+                msg(sender, FUtil.miniMessage("  <red>- [" + n.timestamp() + "] " + n.author() + ": " + n.message() + "</red>"));
             }
         }
         else
