@@ -35,7 +35,7 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
                     String latestTag = extractJsonValue(json);
                     if (latestTag == null)
                     {
-                        FLog.warning("Could not parse the latest release tag from GitHub API.");
+                        FLog.error("Could not parse the latest release tag from GitHub API.");
                         return;
                     }
 
@@ -55,7 +55,7 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
             }
             catch (Exception e)
             {
-                FLog.warning("Failed to check for updates: " + e.getMessage());
+                FLog.error("Failed to check for updates: " + e.getMessage());
             }
         });
     }
