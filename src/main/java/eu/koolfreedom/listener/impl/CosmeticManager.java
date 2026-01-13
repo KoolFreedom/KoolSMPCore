@@ -57,13 +57,13 @@ public class CosmeticManager extends KoolListener
         /* ------------------------------------------------------------ */
         if (Bukkit.hasWhitelist())
         {
-            event.motd(FUtil.miniMessage("<red>Whitelist is enabled!"));
+            event.motd(FUtil.miniMessage(ConfigEntry.SERVER_WHITELIST_MOTD.getString()));
             return;
         }
 
         if (Bukkit.getOnlinePlayers().size() >= Bukkit.getMaxPlayers())
         {
-            event.motd(FUtil.miniMessage("<red>Server is full!"));
+            event.motd(FUtil.miniMessage(ConfigEntry.SERVER_FULL_MOTD.getString()));
             return;
         }
 
