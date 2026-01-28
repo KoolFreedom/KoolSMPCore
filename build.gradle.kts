@@ -12,7 +12,7 @@ plugins {
 
 group = "eu.koolfreedom"
 version = "4.2.5"
-description = "KoolSMPCore"
+description = "KoolSMPCore-DEV"
 
 java {
     toolchain {

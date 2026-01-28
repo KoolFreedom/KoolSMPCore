@@ -9,8 +9,8 @@ dependencies:
       required: true
     LuckPerms:
       required: false
-    #packetevents:
-    #  require: false
+    packetevents:
+      required: false
     Essentials:
       required: false
     EssentialsDiscord:
