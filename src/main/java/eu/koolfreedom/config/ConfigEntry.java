@@ -9,6 +9,8 @@ import java.util.List;
 public enum ConfigEntry
 {
     SERVER_MOTD(String.class, "server.motd"),
+    SERVER_WHITELIST_MOTD(String.class, "server.whitelist_motd"),
+    SERVER_FULL_MOTD(String.class, "server.full_motd"),
     SERVER_TABLIST_HEADER(String.class, "server.tablist_header"),
     SERVER_TABLIST_FOOTER(String.class, "server.tablist_footer"),
     SERVER_APPEAL_URL(String.class, "server.ban_url"),

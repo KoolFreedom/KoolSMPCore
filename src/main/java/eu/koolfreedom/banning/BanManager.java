@@ -4,12 +4,10 @@ import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.listener.KoolListener;
 import eu.koolfreedom.util.FLog;
 import eu.koolfreedom.util.FUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 
 import java.io.File;
@@ -204,7 +202,7 @@ public class BanManager extends KoolListener
 		return banMap.values().stream().filter(ban -> !ban.isExpired()).count();
 	}
 
-    @EventHandler
+    @EventHandler @SuppressWarnings("deprecation")
     public void onPlayerJoin(PlayerLoginEvent event)
     {
         findBan(event.getPlayer())
