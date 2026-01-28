@@ -1,7 +1,25 @@
-# Project exclude paths
+# Build artifacts
+/build/
 /target/
+*.jar
+*.class
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+# IDE
 /.idea/
 *.iml
-dependency-reduced-pom.xml
+*.iws
+*.ipr
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
 build.properties
-/build.sh
+/*.sh

@@ -5,7 +5,7 @@ import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.List;
 
-@Getter
+@Getter @SuppressWarnings("unchecked")
 public enum ConfigEntry
 {
     SERVER_MOTD(String.class, "server.motd"),

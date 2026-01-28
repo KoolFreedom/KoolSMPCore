@@ -1,7 +1,7 @@
 package eu.koolfreedom;
 
-import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.event.PacketListenerPriority;
+//import com.github.retrooper.packetevents.PacketEvents;
+//import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import eu.koolfreedom.api.AltManager;
 import eu.koolfreedom.bridge.GroupManagement;
 import eu.koolfreedom.banning.BanManager;
@@ -23,7 +23,7 @@ import eu.koolfreedom.note.NoteManager;
 import eu.koolfreedom.util.*;
 import eu.koolfreedom.punishment.RecordKeeper;
 import eu.koolfreedom.reporting.ReportManager;
-import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
+//import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import lombok.Getter;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.*;
@@ -62,7 +62,7 @@ public class KoolSMPCore extends JavaPlugin
     private AutoUndoManager autoUndoManager;
 
     private CosmeticManager cosmeticManager;
-    private ExploitListener exploitListener;
+    // private ExploitListener exploitListener;
     private ChatListener chatListener;
     private PlayerJoinListener pjListener;
     private MiniMessageHandler mmHandler;
@@ -124,6 +124,12 @@ public class KoolSMPCore extends JavaPlugin
         loadBridges();
         FLog.info("Bridges built");
 
+        /**
+         * Temporarily removes ExploitListener + PacketEvents integration until I can figure that shit out with Gradle LMFAO
+         * - gamingto12
+         */
+
+        /*
         if (Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
             FLog.info("PacketEvents found, enabling exploit patches.");
             PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
@@ -131,18 +137,20 @@ public class KoolSMPCore extends JavaPlugin
             PacketEvents.getAPI().init();
             exploitListener = new ExploitListener();
             PacketEvents.getAPI().getEventManager().registerListener(exploitListener, PacketListenerPriority.HIGHEST);
-
-        } else {
+        }
+        else {
             FLog.warning("PacketEvents not found! Exploit patches will not be able to function!");
         }
+        */
+
     }
 
     @Override
     public void onDisable()
     {
-        if (Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
-            PacketEvents.getAPI().terminate();
-        }
+        //if (Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
+        //    PacketEvents.getAPI().terminate();
+        //}
         FLog.info("KoolSMPCore has been disabled");
 
         banManager.save();

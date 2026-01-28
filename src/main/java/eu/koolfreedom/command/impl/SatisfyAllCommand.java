@@ -19,7 +19,7 @@ public class SatisfyAllCommand extends KoolCommand
     {
         Bukkit.getOnlinePlayers().forEach(player ->
         {
-            player.setHealth(Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue());
+            player.setHealth(Objects.requireNonNull(player.getAttribute(Attribute.MAX_HEALTH)).getValue());
             player.setFoodLevel(20);
             player.setSaturation(20);
             player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));

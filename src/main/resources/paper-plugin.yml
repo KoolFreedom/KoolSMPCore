@@ -1,24 +1,31 @@
 name: KoolSMPCore
 main: eu.koolfreedom.KoolSMPCore
-version: ${project.version}
+loader: eu.koolfreedom.KoolLibraryManager
+version: 4.2.5
 description: Core plugin for the KoolFreedom SMP
-depend:
-  - Vault
-softdepend:
-  - packetevents
-  - LuckPerms
-  - EssentialsDiscord
-  - EssentialsDiscordLink
-  - DiscordSRV
-  - Essentials
+dependencies:
+  server:
+    Vault:
+      required: true
+    LuckPerms:
+      required: false
+    #packetevents:
+    #  require: false
+    Essentials:
+      required: false
+    EssentialsDiscord:
+      required: false
+    EssentialsDiscordLink:
+      required: false
+    DiscordSRV:
+      required: false
 authors:
   - "gamingto12"
   - "_1kz"
   - "videogamesm12"
   - "sapph-ic"
-api-version: 1.21.1
-# plugin.yml is no longer used to define commands, rather define permission nodes for commands that don't already have one
-#  defined in the command class.
+api-version: 1.21.10
+
 permissions:
   kfc.member:
     description: Permissions for regular players
