@@ -65,10 +65,10 @@ paper {
             required = false
             load = PaperPluginDescription.RelativeLoadOrder.BEFORE
         }
-        //register("packetevents") {
-        //    required = false
-        //    load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-        //}
+        register("packetevents") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
     }
 }
 
@@ -92,7 +92,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude("org.bukkit", "bukkit")
     }
-    // implementation("com.github.retrooper:packetevents-spigot:2.11.2")
+    implementation("com.github.retrooper:packetevents-spigot:2.11.2")
 
     // Utilities
     implementation("org.apache.commons:commons-lang3:3.18.0")
@@ -147,9 +147,9 @@ tasks {
         mergeServiceFiles()
 
         relocate("org.bstats", "eu.koolfreedom.libs.bstats")
-        //relocate("com.github.retrooper", "eu.koolfreedom.libs.packetevents")
-        //relocate("io.github.retrooper", "eu.koolfreedom.libs.packetevents")
-        //relocate("com.google.gson", "eu.koolfreedom.libs.gson")
+        relocate("com.github.retrooper", "eu.koolfreedom.libs.packetevents")
+        relocate("io.github.retrooper", "eu.koolfreedom.libs.packetevents")
+        relocate("com.google.gson", "eu.koolfreedom.libs.gson")
         dependencies {
             include(dependency("org.bstats:.*"))
             include(dependency("org.reflections:.*"))
