@@ -14,7 +14,7 @@ https://modrinth.com/plugin/koolsmpcore
 
 # Compiling
 
-You need Maven to build.
+You need Gradle to build.
 
 ### Through Terminal/CMD
 
