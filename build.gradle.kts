@@ -147,8 +147,6 @@ tasks {
         mergeServiceFiles()
 
         relocate("org.bstats", "eu.koolfreedom.libs.bstats")
-        relocate("com.github.retrooper", "eu.koolfreedom.libs.packetevents")
-        relocate("io.github.retrooper", "eu.koolfreedom.libs.packetevents")
         relocate("com.google.gson", "eu.koolfreedom.libs.gson")
         dependencies {
             include(dependency("org.bstats:.*"))
