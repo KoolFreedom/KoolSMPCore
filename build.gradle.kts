@@ -109,8 +109,8 @@ dependencies {
     implementation("com.discordsrv:discordsrv:1.29.0")
 
     // Metrics
-    implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("org.bstats:bstats-base:3.0.2")
+    implementation("org.bstats:bstats-bukkit:3.1.0")
+    implementation("org.bstats:bstats-base:3.1.0")
 }
 
 tasks {
@@ -146,7 +146,7 @@ tasks {
 
         mergeServiceFiles()
 
-        relocate("org.bstats", "eu.koolfreedom.libs.bstats")
+        relocate("org.bstats", "eu.koolfreedom")
         relocate("com.google.gson", "eu.koolfreedom.libs.gson")
         dependencies {
             include(dependency("org.bstats:.*"))

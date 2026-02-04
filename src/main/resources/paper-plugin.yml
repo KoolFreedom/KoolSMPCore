@@ -6,18 +6,26 @@ description: Core plugin for the KoolFreedom SMP
 dependencies:
   server:
     Vault:
+      load: BEFORE
       required: true
     LuckPerms:
+      load: BEFORE
       required: false
     packetevents:
+      load: BEFORE
       required: false
+      join-classpath: true
     Essentials:
+      load: BEFORE
       required: false
     EssentialsDiscord:
+      load: BEFORE
       required: false
     EssentialsDiscordLink:
+      load: BEFORE
       required: false
     DiscordSRV:
+      load: BEFORE
       required: false
 authors:
   - "gamingto12"
