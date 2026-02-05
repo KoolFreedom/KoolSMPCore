@@ -23,6 +23,7 @@ import eu.koolfreedom.note.NoteManager;
 import eu.koolfreedom.util.*;
 import eu.koolfreedom.punishment.RecordKeeper;
 import eu.koolfreedom.reporting.ReportManager;
+import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import lombok.Getter;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.*;
@@ -134,6 +135,7 @@ public class KoolSMPCore extends JavaPlugin
 
         if (Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
             FLog.info("PacketEvents found, enabling exploit patches.");
+            PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
             PacketEvents.getAPI().load();
             PacketEvents.getAPI().init();
             exploitListener = new ExploitListener();
