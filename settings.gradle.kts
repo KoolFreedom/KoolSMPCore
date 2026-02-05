@@ -1,1 +1,1 @@
-rootProject.name = "KoolSMPCore-DEV"
+rootProject.name = "KoolSMPCore"

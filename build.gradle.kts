@@ -12,7 +12,7 @@ plugins {
 
 group = "eu.koolfreedom"
 version = "4.2.5"
-description = "KoolSMPCore-DEV"
+description = "KoolSMPCore"
 
 java {
     toolchain {
@@ -107,10 +107,6 @@ dependencies {
 
     // Integrations
     implementation("com.discordsrv:discordsrv:1.29.0")
-
-    // Metrics
-    implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("org.bstats:bstats-base:3.1.0")
 }
 
 tasks {
@@ -145,13 +141,7 @@ tasks {
         exclude("META-INF/versions/**")
 
         mergeServiceFiles()
-
-        relocate("org.bstats", "eu.koolfreedom")
         relocate("com.google.gson", "eu.koolfreedom.libs.gson")
-        dependencies {
-            include(dependency("org.bstats:.*"))
-            include(dependency("org.reflections:.*"))
-        }
     }
 
     build {

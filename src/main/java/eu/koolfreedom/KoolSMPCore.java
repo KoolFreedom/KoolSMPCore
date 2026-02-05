@@ -2,7 +2,7 @@ package eu.koolfreedom;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
-import eu.koolfreedom.api.AltManager;
+import eu.koolfreedom.api.*;
 import eu.koolfreedom.bridge.GroupManagement;
 import eu.koolfreedom.banning.BanManager;
 import eu.koolfreedom.bridge.LuckPermsBridge;
@@ -24,7 +24,7 @@ import eu.koolfreedom.util.*;
 import eu.koolfreedom.punishment.RecordKeeper;
 import eu.koolfreedom.reporting.ReportManager;
 import lombok.Getter;
-import org.bstats.bukkit.Metrics;
+//import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.*;
 import org.bukkit.plugin.*;
 import eu.koolfreedom.command.impl.*;
@@ -96,9 +96,17 @@ public class KoolSMPCore extends JavaPlugin
         ).check();
 
 
-        int pluginId = 26369;
-        Metrics metrics = new Metrics(this, pluginId);
-        FLog.info("Enabled Metrics");
+        // https://bstats.org/plugin/bukkit/KoolSMPCore/26369
+        try
+        {
+            int pluginId = 26369;
+            new Metrics(this, pluginId);
+            FLog.info("Enabled Metrics");
+        }
+        catch (Exception e)
+        {
+            FLog.error("Could not start Metrics", e);
+        }
 
         altManager = new AltManager();
         noteManager = new NoteManager();
