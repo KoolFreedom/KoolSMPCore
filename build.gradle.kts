@@ -77,7 +77,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
 
     // Plugin integrations
-    compileOnly("net.essentialsx:EssentialsX:2.20.1") {
+    compileOnly("net.essentialsx:EssentialsX:2.21.1") {
         exclude("org.spigotmc", "spigot-api")
         exclude("org.bukkit", "bukkit")
     }
@@ -102,11 +102,14 @@ dependencies {
     compileOnly("net.dv8tion:JDA:5.0.0-beta.24") {
         exclude(group = "org.slf4j")
     }
-    implementation("org.javassist:javassist:3.30.2-GA")
-    implementation("com.google.code.gson:gson:2.10.1")
 
     // Integrations
-    implementation("com.discordsrv:discordsrv:1.29.0")
+    compileOnly("com.discordsrv:discordsrv:1.29.0")
+
+    // Metrics
+    implementation("org.bstats:bstats-bukkit:3.0.2")
+    implementation("org.bstats:bstats-base:3.0.2")
+    implementation("com.google.code.gson:gson:2.10.1")
 }
 
 tasks {
@@ -141,6 +144,7 @@ tasks {
         exclude("META-INF/versions/**")
 
         mergeServiceFiles()
+        relocate("org.bstats", "eu.koolfreedom.libs.bstats")
         relocate("com.google.gson", "eu.koolfreedom.libs.gson")
     }
 
