@@ -20,11 +20,6 @@ You need Gradle to build.
 
 Open the terminal and cd to the root of this repository (~/KoolSMPCore) and type `./gradlew clean build`. On Windows, use the `gradlew.bat` file.
 
-### Through IntelliJ
-
-If you have loaded the Maven project after being prompted to, you should see a big M on the right sidebar; that is where you can quickly build the project. To do so, click on the Gradle icon on the sidebar, open `Tasks` -> `build` and select the `build` option
-
-
 # Contributing
 
 If you would like to contribue to the plugin in any way, make a fork and add your changes to your fork and then raise a pull request on the main repository link and the main collaborators for the repo will check it and decide whether it's a good addition to the plugin.
