@@ -14,16 +14,11 @@ https://modrinth.com/plugin/koolsmpcore
 
 # Compiling
 
-You need Maven to build.
+You need Gradle to build.
 
 ### Through Terminal/CMD
 
 Open the terminal and cd to the root of this repository (~/KoolSMPCore) and type `./gradlew clean build`. On Windows, use the `gradlew.bat` file.
-
-### Through IntelliJ
-
-If you have loaded the Maven project after being prompted to, you should see a big M on the right sidebar; that is where you can quickly build the project. To do so, click on the Gradle icon on the sidebar, open `Tasks` -> `build` and select the `build` option
-
 
 # Contributing
 

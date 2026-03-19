@@ -102,7 +102,9 @@ permissions:
       - kfc.command.cage
       - kfc.command.koolsmpcore.reload
       - kfc.command.doom
-      - kfc.resync
+      - kfc.command.reports.reopen
+      - kfc.command.reports.handle
+      - kfc.command.reports.close
   kfc.exec:
     description: Permission group offering pretty much everything the plugin has to offer, plus some fun commands
     default: op
