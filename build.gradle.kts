@@ -31,7 +31,7 @@ repositories {
 }
 
 paper {
-    name = rootProject.name.toString()
+    name = rootProject.name
     version = project.version.toString()
     description = "Core plugin for KoolFreedomSMP"
     main = "eu.koolfreedom.KoolSMPCore"
