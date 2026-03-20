@@ -52,10 +52,12 @@ paper {
         register("EssentialsDiscord") {
             required = false
             load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+            joinClasspath = true
         }
         register("EssentialsDiscordLink") {
             required = false
             load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+            joinClasspath = true
         }
         register("DiscordSRV") {
             required = false
@@ -99,12 +101,12 @@ dependencies {
     implementation("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
     implementation("org.reflections:reflections:0.10.2")
-    compileOnly("net.dv8tion:JDA:5.0.0-beta.24") {
-        exclude(group = "org.slf4j")
-    }
 
     // Integrations
     compileOnly("com.discordsrv:discordsrv:1.29.0")
+    compileOnly("net.dv8tion:JDA:5.6.1") {
+        exclude(group = "org.slf4j")
+    }
 
     // Metrics
     implementation("org.bstats:bstats-bukkit:3.0.2")

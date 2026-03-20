@@ -21,9 +21,11 @@ dependencies:
     EssentialsDiscord:
       load: BEFORE
       required: false
+      join-classpath: true
     EssentialsDiscordLink:
       load: BEFORE
       required: false
+      join-classpath: true
     DiscordSRV:
       load: BEFORE
       required: false
