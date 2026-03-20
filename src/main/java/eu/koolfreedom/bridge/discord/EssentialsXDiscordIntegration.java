@@ -46,6 +46,7 @@ import java.time.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 public class EssentialsXDiscordIntegration implements DiscordIntegration<JDADiscordService>
 {
@@ -86,10 +87,6 @@ public class EssentialsXDiscordIntegration implements DiscordIntegration<JDADisc
 			return false;
 		}
 	}
-
-	// ---------------------------------------------------------------------------
-	// Reflection helpers
-	// ---------------------------------------------------------------------------
 
 	Object getRawJda()
 	{
@@ -234,36 +231,102 @@ public class EssentialsXDiscordIntegration implements DiscordIntegration<JDADisc
 		}
 	}
 
-	void sendReportMessage(String channelName, String content,
+	/**
+	 * yanking my fucking hair out any% glitchless speedrun
+	 * getting this integration to work took damn near two whole days to get working.
+	 *
+	 * thank you essentials for no longer shading things and making my life a living hell.
+	 * i never want to go through this again. thank god it's over
+	 */
+	void sendReportMessage(String content,
 						   Object embed, List<Object> buttons,
-						   java.util.function.Consumer<Object> onSuccess)
+						   Consumer<Object> onSuccess)
 	{
 		try
 		{
-			final Object channel = getRawTextChannel(channelName);
-			if (channel == null) return;
+			final Method getDefinedChannel = JDADiscordService.class.getMethod(
+					"getDefinedChannel", String.class, boolean.class);
+			final Object channel = getDefinedChannel.invoke(service, "reports", false);
 
-			Object action;
-			if (content == null)
+			if (channel == null)
 			{
-				final Object emptyArray = java.lang.reflect.Array.newInstance(embed.getClass(), 0);
-				action = findMethod(channel.getClass(), "sendMessageEmbeds")
-						.invoke(channel, embed, emptyArray);
+				FLog.error("sendReportMessage: defined channel 'reports' is null");
+				return;
 			}
-			else
+
+			Object action = null;
+
+			if (embed != null)
 			{
-				action = channel.getClass().getMethod("sendMessage", CharSequence.class)
-						.invoke(channel, content);
-				if (embed != null)
+				for (Method m : channel.getClass().getMethods())
 				{
-					action = findMethod(action.getClass(), "setEmbeds").invoke(action, List.of(embed));
+					if (m.getName().equals("sendMessageEmbeds") && m.getParameterCount() == 1)
+					{
+						try
+						{
+							action = m.invoke(channel, List.of(embed));
+							break;
+						}
+						catch (Exception e)
+						{
+							FLog.error("sendMessageEmbeds failed: " + e.getMessage());
+						}
+					}
 				}
+			}
+
+			if (action == null)
+			{
+				for (Method m : channel.getClass().getMethods())
+				{
+					if (m.getName().equals("sendMessage") && m.getParameterCount() == 1
+							&& m.getParameterTypes()[0] == CharSequence.class)
+					{
+						try
+						{
+							action = m.invoke(channel, content != null ? content : "\u200B");
+							if (embed != null)
+							{
+								action = findMethod(action.getClass(), "setEmbeds")
+										.invoke(action, List.of(embed));
+							}
+							break;
+						}
+						catch (Exception e)
+						{
+							FLog.error("sendMessage failed: " + e.getMessage());
+						}
+					}
+				}
+			}
+
+			if (action == null)
+			{
+				FLog.error("sendReportMessage: could not create message action");
+				return;
 			}
 
 			if (buttons != null && !buttons.isEmpty())
 			{
-				action = findMethod(action.getClass(), "setActionRow")
-						.invoke(action, (Object) buttons.toArray());
+				Method setActionRowMethod = null;
+				for (Method m : action.getClass().getMethods())
+				{
+					if (m.getName().equals("setActionRow")
+							&& m.getParameterCount() == 1
+							&& m.getParameterTypes()[0] == Collection.class)
+					{
+						setActionRowMethod = m;
+						break;
+					}
+				}
+				if (setActionRowMethod != null)
+				{
+					action = setActionRowMethod.invoke(action, buttons);
+				}
+				else
+				{
+					FLog.error("sendReportMessage: could not find setActionRow(Collection)");
+				}
 			}
 
 			queueAction(action, onSuccess, null);
@@ -286,8 +349,21 @@ public class EssentialsXDiscordIntegration implements DiscordIntegration<JDADisc
 
 			if (buttons != null && !buttons.isEmpty())
 			{
-				action = findMethod(action.getClass(), "setActionRow")
-						.invoke(action, (Object) buttons.toArray());
+				Method setActionRowMethod = null;
+				for (Method m : action.getClass().getMethods())
+				{
+					if (m.getName().equals("setActionRow")
+							&& m.getParameterCount() == 1
+							&& m.getParameterTypes()[0] == Collection.class)
+					{
+						setActionRowMethod = m;
+						break;
+					}
+				}
+				if (setActionRowMethod != null)
+				{
+					action = setActionRowMethod.invoke(action, buttons);
+				}
 			}
 
 			queueAction(action, null, err -> { if (onFailure != null) onFailure.run(); });
@@ -541,7 +617,7 @@ public class EssentialsXDiscordIntegration implements DiscordIntegration<JDADisc
 			final Object embed = createEmbedFromReport(report);
 			final List<Object> buttons = createButtonsFromReport(report);
 
-			getParent().sendReportMessage("reports", null, embed, buttons, message ->
+			getParent().sendReportMessage(null, embed, buttons, message ->
 			{
 				try
 				{
@@ -591,7 +667,7 @@ public class EssentialsXDiscordIntegration implements DiscordIntegration<JDADisc
 
 			if (createMessage.get())
 			{
-				getParent().sendReportMessage("reports", "Report updated by " + event.getStaffName(),
+				getParent().sendReportMessage("Report updated by " + event.getStaffName(),
 						embed, buttons, success ->
 						{
 							try
@@ -630,9 +706,15 @@ public class EssentialsXDiscordIntegration implements DiscordIntegration<JDADisc
 				final Object jda = parent.getRawJda();
 				if (jda == null) return null;
 				final ClassLoader cl = jda.getClass().getClassLoader();
-				final Class<?> embedBuilderClass = cl.loadClass(
-						"net.essentialsx.dep.net.dv8tion.jda.api.EmbedBuilder");
-				final Object builder = embedBuilderClass.getConstructor().newInstance();
+
+				final Class<?> messageEmbedClass = cl.loadClass(
+						"net.essentialsx.dep.net.dv8tion.jda.api.entities.MessageEmbed");
+				final Class<?> footerClass = cl.loadClass(
+						"net.essentialsx.dep.net.dv8tion.jda.api.entities.MessageEmbed$Footer");
+				final Class<?> fieldClass = cl.loadClass(
+						"net.essentialsx.dep.net.dv8tion.jda.api.entities.MessageEmbed$Field");
+				final Class<?> embedTypeClass = cl.loadClass(
+						"net.essentialsx.dep.net.dv8tion.jda.api.entities.EmbedType");
 
 				final OfflinePlayer reporter = Bukkit.getOfflinePlayer(report.getReporter());
 				final OfflinePlayer reported = Bukkit.getOfflinePlayer(report.getReported());
@@ -642,31 +724,44 @@ public class EssentialsXDiscordIntegration implements DiscordIntegration<JDADisc
 						+ "Report for " + reported.getName()
 						+ (!reported.isOnline() ? " (offline)" : "");
 
-				embedBuilderClass.getMethod("setTitle", String.class, String.class)
-						.invoke(builder, title, null);
-				embedBuilderClass.getMethod("setDescription", CharSequence.class)
-						.invoke(builder, report.getReason());
-				embedBuilderClass.getMethod("setColor", int.class)
-						.invoke(builder, report.getStatus().getAwtColor().getRGB());
-				embedBuilderClass.getMethod("setFooter", String.class, String.class)
-						.invoke(builder,
+				final List<Object> fields = new ArrayList<>();
+				if (report.getLastNote() != null)
+				{
+					final Object field = fieldClass.getConstructor(String.class, String.class, boolean.class)
+							.newInstance("Staff Note", report.getLastNote(), true);
+					fields.add(field);
+				}
+
+				final Object footer = footerClass.getConstructor(String.class, String.class, String.class)
+						.newInstance(
 								"ID " + report.getId() + "  • Reported by " + reporter.getName(),
-								"https://minotar.net/helm/" + reporter.getName() + ".png");
+								"https://minotar.net/helm/" + reporter.getName() + ".png",
+								null);
+
+				final Object embedType = embedTypeClass.getField("RICH").get(null);
 
 				final ZonedDateTime zdt = ZonedDateTime.of(
 						LocalDateTime.ofEpochSecond(report.getTimestamp(), 0,
 								ZoneId.systemDefault().getRules().getOffset(Instant.now())),
 						ZoneId.systemDefault());
-				embedBuilderClass.getMethod("setTimestamp", java.time.temporal.TemporalAccessor.class)
-						.invoke(builder, zdt);
 
-				if (report.getLastNote() != null)
-				{
-					embedBuilderClass.getMethod("addField", String.class, String.class, boolean.class)
-							.invoke(builder, "Staff Note", report.getLastNote(), true);
-				}
-
-				return embedBuilderClass.getMethod("build").invoke(builder);
+				return messageEmbedClass.getConstructor(
+						String.class, String.class, String.class, embedTypeClass,
+						java.time.OffsetDateTime.class, int.class,
+						cl.loadClass("net.essentialsx.dep.net.dv8tion.jda.api.entities.MessageEmbed$Thumbnail"),
+						cl.loadClass("net.essentialsx.dep.net.dv8tion.jda.api.entities.MessageEmbed$Provider"),
+						cl.loadClass("net.essentialsx.dep.net.dv8tion.jda.api.entities.MessageEmbed$AuthorInfo"),
+						cl.loadClass("net.essentialsx.dep.net.dv8tion.jda.api.entities.MessageEmbed$VideoInfo"),
+						footerClass,
+						cl.loadClass("net.essentialsx.dep.net.dv8tion.jda.api.entities.MessageEmbed$ImageInfo"),
+						List.class
+				).newInstance(
+						null, title, report.getReason(), embedType,
+						zdt.toOffsetDateTime(), report.getStatus().getAwtColor().getRGB(),
+						null, null, null, null,
+						footer, null,
+						fields
+				);
 			}
 			catch (Exception ex)
 			{
