@@ -11,12 +11,12 @@ plugins {
 }
 
 group = "eu.koolfreedom"
-version = "4.2.5"
+version = "4.3"
 description = "KoolSMPCore"
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
 }
 
@@ -38,7 +38,7 @@ paper {
     loader = "eu.koolfreedom.KoolLibraryManager"
     website = "https://github.com/KoolFreedom"
     authors = listOf("gamingto12", "0x7694C9", "videogamesm12", "sapph-ic")
-    apiVersion = "1.21.10"
+    apiVersion = "26.1.2"
     generateLibrariesJson = true
     serverDependencies {
         register("LuckPerms") {
@@ -76,7 +76,7 @@ paper {
 
 dependencies {
     // Paper API
-    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.+")
 
     // Plugin integrations
     compileOnly("net.essentialsx:EssentialsX:2.21.1") {

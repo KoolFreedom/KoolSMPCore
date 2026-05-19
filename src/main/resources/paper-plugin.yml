@@ -34,7 +34,7 @@ authors:
   - "_1kz"
   - "videogamesm12"
   - "sapph-ic"
-api-version: 1.21.10
+api-version: "26.1.2"
 
 permissions:
   kfc.member:
