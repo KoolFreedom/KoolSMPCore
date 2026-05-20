@@ -11,11 +11,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 @CommandParameters(name = "koolsmpcore", description = "Display information about the plugin or reload it.",
-        usage = "/<command> [reload]", aliases = "kfc")
+        usage = "/<command> [reload]")
 public class KoolSMPCoreCommand extends KoolCommand
 {
     @Override
@@ -52,19 +52,31 @@ public class KoolSMPCoreCommand extends KoolCommand
             return true;
         }
 
+        if (args[0].equalsIgnoreCase("update"))
+        {
+            if (!sender.hasPermission("kfc.command.koolsmpcore.update"))
+            {
+                msg(sender, "<red>You don't have permission to do this.");
+                return true;
+            }
+            msg(sender, "<gray>Checking for updates...");
+            plugin.getUpdateChecker().checkAndUpdate(sender);
+            return true;
+        }
+
         return false;
     }
 
     @Override
     public List<String> tabComplete(CommandSender sender, @NotNull Command command, @NotNull String label, String[] args)
     {
-        if (sender.hasPermission("kfc.command.koolsmpcore.reload") && args.length == 1)
+        if (args.length == 1)
         {
-            return Collections.singletonList("reload");
+            List<String> completions = new ArrayList<>();
+            if (sender.hasPermission("kfc.command.koolsmpcore.reload")) completions.add("reload");
+            if (sender.hasPermission("kfc.command.koolsmpcore.update")) completions.add("update");
+            return completions;
         }
-        else
-        {
-            return List.of();
-        }
+        return List.of();
     }
 }
