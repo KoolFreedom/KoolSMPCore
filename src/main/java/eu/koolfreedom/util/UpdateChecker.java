@@ -16,8 +16,6 @@ import java.nio.file.StandardCopyOption;
 public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoName,
                             @Nullable String spigotUrl, @Nullable String modrinthUrl) {
 
-    private static final MiniMessage MM = MiniMessage.miniMessage();
-
     public void check() {
         check(null, false);
     }
@@ -143,7 +141,7 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
 
     private void notify(@Nullable CommandSender sender, String miniMessage) {
         if (sender != null) {
-            sender.sendMessage(MM.deserialize(miniMessage));
+            sender.sendMessage(FUtil.miniMessage(miniMessage));
         } else {
             FLog.info(miniMessage.replaceAll("<[^>]+>", ""));
         }

@@ -89,14 +89,13 @@ public class KoolSMPCore extends JavaPlugin
         FLog.info("Version {}.{}", buildMeta.getVersion(), buildMeta.getNumber());
         FLog.info("Compiled {} by {}", buildMeta.getDate(), buildMeta.getAuthor());
 
-        updateChecker = new UpdateChecker(
+        new UpdateChecker(
                 this,
                 "KoolFreedom",
                 "KoolSMPCore",
                 "https://www.spigotmc.org/resources/koolsmpcore.126127/",
                 "https://modrinth.com/plugin/koolsmpcore"
-        );
-        updateChecker.check();
+        ).check();
 
 
         // https://bstats.org/plugin/bukkit/KoolSMPCore/26369
