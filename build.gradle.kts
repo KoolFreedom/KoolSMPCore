@@ -38,7 +38,7 @@ paper {
     loader = "eu.koolfreedom.KoolLibraryManager"
     website = "https://github.com/KoolFreedom"
     authors = listOf("gamingto12", "0x7694C9", "videogamesm12", "sapph-ic")
-    apiVersion = "26.1.2"
+    apiVersion = "1.21"
     generateLibrariesJson = true
     serverDependencies {
         register("LuckPerms") {
@@ -98,8 +98,8 @@ dependencies {
 
     // Utilities
     implementation("org.apache.commons:commons-lang3:3.18.0")
-    implementation("org.projectlombok:lombok:1.18.30")
-    annotationProcessor("org.projectlombok:lombok:1.18.30")
+    implementation("org.projectlombok:lombok:1.18.46")
+    annotationProcessor("org.projectlombok:lombok:1.18.46")
     implementation("org.reflections:reflections:0.10.2")
 
     // Integrations
