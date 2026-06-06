@@ -67,13 +67,11 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
 
     private void downloadUpdate(String downloadUrl, String latestTag, @Nullable CommandSender sender) {
         try {
-            // Find the current plugin JAR
             Path pluginJar = Path.of(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
             Path pluginsFolder = pluginJar.getParent();
             Path newJar = pluginsFolder.resolve(plugin.getName() + "-" + latestTag + ".jar");
-            Path oldJar = pluginsFolder.resolve(pluginJar.getFileName() + ".old");
+            Path oldJar = pluginsFolder.resolve(pluginJar.getFileName().toString().replace(".jar", ".old.jar"));
 
-            // Download the new JAR
             HttpURLConnection connection = (HttpURLConnection) URI.create(downloadUrl).toURL().openConnection();
             connection.setRequestProperty("Accept", "application/octet-stream");
             connection.setConnectTimeout(10000);
@@ -83,9 +81,8 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
                 Files.copy(in, newJar, StandardCopyOption.REPLACE_EXISTING);
             }
 
-            // Rename old JAR and put new one in place
             Files.move(pluginJar, oldJar, StandardCopyOption.REPLACE_EXISTING);
-            Files.move(newJar, pluginJar, StandardCopyOption.REPLACE_EXISTING);
+            Files.move(newJar, pluginsFolder.resolve(plugin.getName() + "-" + latestTag + ".jar"), StandardCopyOption.REPLACE_EXISTING);
 
             notify(sender, "<green>Update downloaded successfully!");
             notify(sender, "<gray>The update will take effect after the next server restart.");
