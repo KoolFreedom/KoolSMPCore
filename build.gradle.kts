@@ -94,7 +94,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude("org.bukkit", "bukkit")
     }
-    implementation("com.github.retrooper:packetevents-spigot:2.11.2")
+    implementation("com.github.retrooper:packetevents-spigot:2.12.2")
 
     // Utilities
     implementation("org.apache.commons:commons-lang3:3.18.0")
