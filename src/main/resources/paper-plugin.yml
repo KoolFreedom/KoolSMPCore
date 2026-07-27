@@ -58,6 +58,7 @@ permissions:
     default: op
     children:
       - kfc.member
+      - kfc.command.launch
       - kfc.command.adminchat
       - kfc.command.alts
       - kfc.command.ban
