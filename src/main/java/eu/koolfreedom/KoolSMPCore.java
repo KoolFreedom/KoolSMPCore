@@ -15,6 +15,7 @@ import eu.koolfreedom.config.ConfigEntry;
 import eu.koolfreedom.bridge.discord.DiscordSRVIntegration;
 import eu.koolfreedom.bridge.DiscordIntegration;
 import eu.koolfreedom.bridge.discord.EssentialsXDiscordIntegration;
+import eu.koolfreedom.config.MainConfig;
 import eu.koolfreedom.listener.impl.FreezeListener;
 import eu.koolfreedom.freeze.FreezeManager;
 import eu.koolfreedom.listener.impl.*;
@@ -83,6 +84,10 @@ public class KoolSMPCore extends JavaPlugin
         FLog.info("Version {}.{}", buildMeta.getVersion(), buildMeta.getNumber());
         FLog.info("Compiled {} by {}", buildMeta.getDate(), buildMeta.getAuthor());
 
+        // Load the configurations
+        MainConfig.load();
+        FLog.info("Loaded main configuration");
+
         updateChecker = new UpdateChecker(
                 this,
                 "KoolFreedom",
@@ -110,7 +115,7 @@ public class KoolSMPCore extends JavaPlugin
         freezeManager = new FreezeManager();
 
         loadBansConfig();
-        FLog.info("Loaded configurations");
+        FLog.info("Loaded extra configurations");
 
         commandLoader = new CommandLoader(AdminChatCommand.class);
         commandLoader.loadCommands();
