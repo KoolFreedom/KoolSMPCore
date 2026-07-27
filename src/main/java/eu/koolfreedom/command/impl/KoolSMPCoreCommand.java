@@ -18,18 +18,14 @@ import java.util.List;
         usage = "/<command> [reload]")
 public class KoolSMPCoreCommand extends KoolCommand
 {
+    private static final String DIVIDER = "<dark_gray><strikethrough>                                        ";
+
     @Override
     public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
     {
         if (args.length == 0 || !sender.hasPermission("kfc.command.koolsmpcore.reload"))
         {
-            BuildProperties build = plugin.getBuildMeta();
-            msg(sender, "<white><b>KoolSMPCore - The Core of KoolFreedom SMP.");
-            msg(sender, "<gray>Version <white><version>.<build>", Placeholder.unparsed("version", build.getVersion()),
-                    Placeholder.unparsed("build", build.getNumber()));
-            msg(sender, "<gray>Compiled on <white><date></white> by <white><builder></white>.",
-                    Placeholder.unparsed("date", build.getDate()),
-                    Placeholder.unparsed("builder", build.getAuthor()));
+            sendInfo(sender);
             return true;
         }
 
@@ -65,6 +61,22 @@ public class KoolSMPCoreCommand extends KoolCommand
         }
 
         return false;
+    }
+
+    private void sendInfo(CommandSender sender)
+    {
+        String authors = String.join(", ", plugin.getPluginMeta().getAuthors());
+
+        msg(sender, DIVIDER);
+        msg(sender, "<gold><b>KoolSMPCore</b> <gray>- The Core plugin of KoolFreedomSMP");
+        msg(sender, "<dark_gray> » <gray>Version <white><version>",
+                Placeholder.unparsed("version", plugin.getBuildMeta().getVersion()));
+        msg(sender, "<dark_gray> » <gray>Compiled on <white><date></white> by <white><builder></white>.",
+                Placeholder.unparsed("date", plugin.getBuildMeta().getDate()),
+                Placeholder.unparsed("builder", plugin.getBuildMeta().getAuthor()));
+        msg(sender, "<dark_gray> » <gray>Authors <white><authors>",
+                Placeholder.unparsed("authors", authors));
+        msg(sender, DIVIDER);
     }
 
     @Override
