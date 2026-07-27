@@ -17,7 +17,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.util.List;
 
-@CommandParameters(name = "reaction", description = "Reactions")
+@CommandParameters(name = "reaction", description = "Reactions", usage = "/<command> <reaction>")
 public class ReactionCommand extends KoolCommand
 {
     @Override
