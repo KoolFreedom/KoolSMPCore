@@ -15,7 +15,13 @@ public class LaunchCommand extends KoolCommand
     @Override
     public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
     {
-      
+        // almost forgot a permission check LOL
+        if (!sender.hasPermission("kfc.command.launch"))
+        {
+            sender.sendMessage(miniMessage.deserialize("<red>You do not have permission to use this command!</red>"));
+            return true;
+        }
+        
         if (args.length == 0)
         {
             sender.sendMessage(miniMessage.deserialize("<red>Usage: /" + commandLabel + " <player></red>"));
