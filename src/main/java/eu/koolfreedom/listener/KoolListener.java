@@ -1,7 +1,11 @@
 package eu.koolfreedom.listener;
 
 import eu.koolfreedom.KoolSMPCore;
+import eu.koolfreedom.api.AltManager;
+import eu.koolfreedom.freeze.FreezeManager;
+import eu.koolfreedom.listener.impl.LockupManager;
 import eu.koolfreedom.listener.impl.MuteManager;
+import eu.koolfreedom.note.NoteManager;
 import org.bukkit.event.Listener;
 
 /**
@@ -21,4 +25,8 @@ public abstract class KoolListener implements Listener
 
     protected final KoolSMPCore plugin = KoolSMPCore.getInstance();
     protected final MuteManager muteManager = plugin.getMuteManager();
+    protected final FreezeManager freezeManager = plugin.getFreezeManager();
+    protected final LockupManager lockupManager = plugin.getLockupManager();
+    protected final AltManager altManager = plugin.getAltManager();
+    protected final NoteManager noteManager = plugin.getNoteManager();
 }

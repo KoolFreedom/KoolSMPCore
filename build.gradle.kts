@@ -1,18 +1,12 @@
-import net.minecrell.pluginyml.paper.PaperPluginDescription
-import java.util.*
 import java.text.SimpleDateFormat
+import java.util.*
 
 plugins {
     id("java")
     id("maven-publish")
     id("net.kyori.blossom") version "2.2.0"
     id("com.gradleup.shadow") version ("9.3.1")
-    id("de.eldoria.plugin-yml.paper") version ("0.8.0")
 }
-
-group = "eu.koolfreedom"
-version = "4.3"
-description = "KoolSMPCore"
 
 java {
     toolchain {
@@ -28,50 +22,6 @@ repositories {
     maven("https://repo.essentialsx.net/releases/")
     maven("https://jitpack.io/")
     maven("https://nexus.scarsz.me/content/groups/public/")
-}
-
-paper {
-    name = rootProject.name
-    version = project.version.toString()
-    description = "Core plugin for KoolFreedomSMP"
-    main = "eu.koolfreedom.KoolSMPCore"
-    loader = "eu.koolfreedom.KoolLibraryManager"
-    website = "https://github.com/KoolFreedom"
-    authors = listOf("gamingto12", "0x7694C9", "videogamesm12", "sapph-ic")
-    apiVersion = "1.21"
-    generateLibrariesJson = true
-    serverDependencies {
-        register("LuckPerms") {
-            required = false
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-        }
-        register("Essentials") {
-            required = false
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-        }
-        register("EssentialsDiscord") {
-            required = false
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-            joinClasspath = true
-        }
-        register("EssentialsDiscordLink") {
-            required = false
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-            joinClasspath = true
-        }
-        register("DiscordSRV") {
-            required = false
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-        }
-        register("Vault") {
-            required = false
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-        }
-        register("packetevents") {
-            required = false
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-        }
-    }
 }
 
 dependencies {
@@ -148,6 +98,8 @@ tasks {
         mergeServiceFiles()
         relocate("org.bstats", "eu.koolfreedom.libs.bstats")
         relocate("com.google.gson", "eu.koolfreedom.libs.gson")
+        relocate("org.reflections", "eu.koolfreedom.libs.reflections")
+        relocate("javassist", "eu.koolfreedom.libs.javassist")
     }
 
     build {

@@ -1,10 +1,6 @@
 package eu.koolfreedom.listener.impl;
 
-import eu.koolfreedom.KoolSMPCore;
-import eu.koolfreedom.api.AltManager;
-import eu.koolfreedom.freeze.FreezeManager;
 import eu.koolfreedom.listener.KoolListener;
-import eu.koolfreedom.note.NoteManager;
 import eu.koolfreedom.note.PlayerNote;
 import eu.koolfreedom.util.FLog;
 import eu.koolfreedom.util.FUtil;
@@ -20,16 +16,6 @@ import java.util.UUID;
 
 public class PlayerJoinListener extends KoolListener
 {
-    private final KoolSMPCore plugin = KoolSMPCore.getInstance();
-    private final FreezeManager freezeManager = plugin.getFreezeManager();
-    private final MuteManager muteManager = plugin.getMuteManager();
-    private final LockupManager lockupManager = plugin.getLockupManager();
-    private final AltManager altManager = plugin.getAltManager();
-    private final NoteManager noteManager = plugin.getNoteManager();
-
-    // =====================================
-    //  Handle normal successful joins
-    // =====================================
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event)
     {
