@@ -47,8 +47,8 @@ public class LaunchCommand extends KoolCommand
         // Send tuff messages.
         if (sender != target)
         {
-            sender.sendMessage(miniMessage.deserialize("<green>Your wish is my command, attempting to launch:" + target.getName()));
-            sender.sendMessage(miniMessage.deserialize("<green>Launched: <yellow>" + target.getName()));
+            sender.sendMessage(miniMessage.deserialize("<green>Your wish is my command, attempting to launch: <yellow>" + target.getName() + "</yellow></green>"));
+            sender.sendMessage(miniMessage.deserialize("<green>Launched: <yellow>" + target.getName() + "</yellow></green>"));
         }
         
         target.sendMessage(miniMessage.deserialize("<bold><red>Whoosh!</red></bold>"));
