@@ -22,6 +22,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 
 import java.util.*;
@@ -70,6 +71,88 @@ public class ChatListener extends KoolListener
 				{
 					event.setCancelled(true);
 				}
+			});
+		}
+	}
+
+	@EventHandler
+	public void onPlayerCMD(PlayerCommandPreprocessEvent event)
+	{
+		// Let's also check commands while we're at it :)
+		if (ConfigEntry.CHAT_FILTER_ENABLED.getBoolean())
+		{
+			final Player player = event.getPlayer();
+			final String cmd = event.getMessage();
+
+			String content = cmd.startsWith("/") ? cmd.substring(1) : cmd;
+
+			getFilterEntryIfApplicable(player, content).ifPresent(filter ->
+			{
+				if (filter.isCancel())
+				{
+					event.setCancelled(true);
+				}
+
+				Bukkit.getScheduler().runTaskLater(KoolSMPCore.getInstance(), () ->
+				{
+					switch (filter.getAction())
+					{
+						case DOOM:
+						{
+							// Only doom them if they are online, otherwise we just fall back to just banning them
+							if (player.isOnline())
+							{
+								DoomCommand.eviscerate(player, Bukkit.getConsoleSender(), filter.getReason());
+								break;
+							}
+						}
+						case SMITE:
+						{
+							if (player.isOnline())
+							{
+								SmiteCommand.zap(player, Bukkit.getConsoleSender(), filter.getReason());
+								break;
+							}
+						}
+						case BAN:
+						{
+							Ban ban = Ban.fromPlayer(player, Bukkit.getConsoleSender().getName(), filter.getReason(), TimeOffset.getOffset("1d"));
+							KoolSMPCore.getInstance().getBanManager().addBan(ban);
+							KoolSMPCore.getInstance().getRecordKeeper().recordPunishment(Punishment.fromBan(ban));
+							player.kick(ban.getKickMessage(), PlayerKickEvent.Cause.BANNED);
+							Bukkit.getOnlinePlayers().stream().filter(suspect -> FUtil.getIp(player).equalsIgnoreCase(FUtil.getIp(player))).forEach(suspect ->
+									player.kick(ban.getKickMessage()));
+							break;
+						}
+						case LOG:
+						{
+							FLog.warning(filter.getReason(), player.getName(), content);
+							break;
+						}
+						case MUTE:
+						{
+							MuteManager muteManager = KoolSMPCore.getInstance().getMuteManager();
+
+							if (!muteManager.isMuted(player))
+							{
+								muteManager.mute(player);
+								FUtil.staffAction(Bukkit.getConsoleSender(), "Muted <player>",
+										Placeholder.unparsed("player", player.getName()));
+								KoolSMPCore.getInstance().getRecordKeeper().recordPunishment(Punishment.builder()
+										.uuid(player.getUniqueId())
+										.name(player.getName())
+										.ip(player.isOnline() ? FUtil.getIp(player) : null)
+										.by(Bukkit.getConsoleSender().getName())
+										.type("MUTE")
+										.build());
+							}
+						}
+						default:
+						{
+							// Do nothing
+						}
+					}
+				}, filter.getDelay());
 			});
 		}
 	}
@@ -164,7 +247,7 @@ public class ChatListener extends KoolListener
 		{
 			Arrays.stream(message.split(" ")).filter(word -> word.startsWith("@")).filter(word ->
 							!word.equalsIgnoreCase("@everyone") || player.hasPermission("kfc.ping_everyone"))
-					.map(ping -> ping.replaceAll("@", "")).map(Bukkit::getPlayer)
+					.map(ping -> ping.replace("@", "")).map(Bukkit::getPlayer)
 					.filter(Objects::nonNull).distinct().forEach(target -> target.playSound(target.getLocation(),
 							Sound.BLOCK_NOTE_BLOCK_PLING, 1.0F, 1.0F));
 		}
