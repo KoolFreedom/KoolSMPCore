@@ -81,10 +81,17 @@ public class KoolSMPCore extends JavaPlugin
     public void onEnable()
     {
         FLog.info("Created by gamingto12 and 0x7694C9");
-        FLog.info("Version {}.{}", buildMeta.getVersion(), buildMeta.getNumber());
-        FLog.info("Compiled {} by {}", buildMeta.getDate(), buildMeta.getAuthor());
 
-        // Load the configurations
+
+        if (this.buildMeta != null) {
+            FLog.info("Loading version: " + this.buildMeta.getVersion());
+            FLog.info("Version {}.{}", this.buildMeta.getVersion(), this.buildMeta.getNumber());
+            FLog.info("Compiled {} by {}", this.buildMeta.getDate(), this.buildMeta.getAuthor());
+        } else {
+            FLog.warning("BuildProperties could not be loaded");
+            FLog.warning("Please report this.");
+        }
+
         MainConfig.load();
         FLog.info("Loaded main configuration");
 
