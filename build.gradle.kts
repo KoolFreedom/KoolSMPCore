@@ -1,18 +1,12 @@
-import net.minecrell.pluginyml.paper.PaperPluginDescription
-import java.util.*
 import java.text.SimpleDateFormat
+import java.util.*
 
 plugins {
     id("java")
     id("maven-publish")
     id("net.kyori.blossom") version "2.2.0"
     id("com.gradleup.shadow") version ("9.3.1")
-    id("de.eldoria.plugin-yml.paper") version ("0.8.0")
 }
-
-group = "eu.koolfreedom"
-version = "4.3"
-description = "KoolSMPCore"
 
 java {
     toolchain {
@@ -30,53 +24,9 @@ repositories {
     maven("https://nexus.scarsz.me/content/groups/public/")
 }
 
-paper {
-    name = rootProject.name
-    version = project.version.toString()
-    description = "Core plugin for KoolFreedomSMP"
-    main = "eu.koolfreedom.KoolSMPCore"
-    loader = "eu.koolfreedom.KoolLibraryManager"
-    website = "https://github.com/KoolFreedom"
-    authors = listOf("gamingto12", "0x7694C9", "videogamesm12", "sapph-ic")
-    apiVersion = "1.21"
-    generateLibrariesJson = true
-    serverDependencies {
-        register("LuckPerms") {
-            required = false
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-        }
-        register("Essentials") {
-            required = false
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-        }
-        register("EssentialsDiscord") {
-            required = false
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-            joinClasspath = true
-        }
-        register("EssentialsDiscordLink") {
-            required = false
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-            joinClasspath = true
-        }
-        register("DiscordSRV") {
-            required = false
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-        }
-        register("Vault") {
-            required = false
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-        }
-        register("packetevents") {
-            required = false
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-        }
-    }
-}
-
 dependencies {
     // Paper API
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.+")
+    compileOnly("io.papermc.paper:paper-api:26.2.build.+")
 
     // Plugin integrations
     compileOnly("net.essentialsx:EssentialsX:2.21.1") {
@@ -94,7 +44,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude("org.bukkit", "bukkit")
     }
-    implementation("com.github.retrooper:packetevents-spigot:2.12.2")
+    implementation("com.github.retrooper:packetevents-spigot:2.13.0")
 
     // Utilities
     implementation("org.apache.commons:commons-lang3:3.18.0")
@@ -148,6 +98,8 @@ tasks {
         mergeServiceFiles()
         relocate("org.bstats", "eu.koolfreedom.libs.bstats")
         relocate("com.google.gson", "eu.koolfreedom.libs.gson")
+        relocate("org.reflections", "eu.koolfreedom.libs.reflections")
+        relocate("javassist", "eu.koolfreedom.libs.javassist")
     }
 
     build {
@@ -182,6 +134,7 @@ fun getBuildNumber(): Int {
  * Task to increment build number in build.properties
  */
 tasks.register("incrementBuildNumber") {
+    description = ""
     doLast {
         val buildPropsFile = file("src/main/resources/build.properties")
         buildPropsFile.parentFile.mkdirs()

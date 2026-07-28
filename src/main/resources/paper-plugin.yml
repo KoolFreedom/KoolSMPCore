@@ -1,8 +1,8 @@
 name: KoolSMPCore
 main: eu.koolfreedom.KoolSMPCore
-loader: eu.koolfreedom.KoolLibraryManager
-version: "4.3"
+version: 4.3.1
 description: Core plugin for the KoolFreedom SMP
+load: POSTWORLD
 dependencies:
   server:
     Vault:
@@ -34,7 +34,7 @@ authors:
   - "_1kz"
   - "videogamesm12"
   - "sapph-ic"
-api-version: "26.1.2"
+api-version: "26.2"
 
 permissions:
   kfc.member:
@@ -117,5 +117,3 @@ permissions:
       - kfc.command.crash
       - kfc.command.reports.purge
       - kfc.command.koolsmpcore.update
-libraries:
-  - org.javassist:javassist:3.29.1-GA

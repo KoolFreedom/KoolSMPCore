@@ -70,7 +70,7 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
             Path pluginJar = Path.of(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
             Path pluginsFolder = pluginJar.getParent();
             Path newJar = pluginsFolder.resolve(plugin.getName() + "-" + latestTag + ".jar");
-            Path oldJar = pluginsFolder.resolve(pluginJar.getFileName().toString().replace(".jar", ".old.jar"));
+            Path oldJar = pluginsFolder.resolve(pluginJar.getFileName().toString().replace(".jar", ".jar.old"));
 
             HttpURLConnection connection = (HttpURLConnection) URI.create(downloadUrl).toURL().openConnection();
             connection.setRequestProperty("Accept", "application/octet-stream");

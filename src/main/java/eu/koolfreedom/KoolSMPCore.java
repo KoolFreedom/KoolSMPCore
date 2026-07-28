@@ -10,12 +10,12 @@ import eu.koolfreedom.bridge.VanishIntegration;
 import eu.koolfreedom.bridge.vanish.EssentialsVanishIntegration;
 import eu.koolfreedom.bridge.vanish.SuperVanishIntegration;
 import eu.koolfreedom.chat.AntiSpamService;
-import eu.koolfreedom.chat.MiniMessageHandler;
 import eu.koolfreedom.command.CommandLoader;
 import eu.koolfreedom.config.ConfigEntry;
 import eu.koolfreedom.bridge.discord.DiscordSRVIntegration;
 import eu.koolfreedom.bridge.DiscordIntegration;
 import eu.koolfreedom.bridge.discord.EssentialsXDiscordIntegration;
+import eu.koolfreedom.config.MainConfig;
 import eu.koolfreedom.listener.impl.FreezeListener;
 import eu.koolfreedom.freeze.FreezeManager;
 import eu.koolfreedom.listener.impl.*;
@@ -49,23 +49,18 @@ public class KoolSMPCore extends JavaPlugin
     private MuteManager muteManager;
     private RecordKeeper recordKeeper;
     private ReportManager reportManager;
-    @Getter
     private LockupManager lockupManager;
     private FreezeManager freezeManager;
-    @Getter
     private NoteManager noteManager;
-    @Getter
     private AltManager altManager;
     private FreezeListener freezeListener;
     private AntiSpamService antiSpamListener;
-    @Getter
     private AutoUndoManager autoUndoManager;
 
     private CosmeticManager cosmeticManager;
     private ExploitListener exploitListener;
     private ChatListener chatListener;
     private PlayerJoinListener pjListener;
-    private MiniMessageHandler mmHandler;
 
     private GroupManagement groupManager;
     private LuckPermsBridge luckPermsBridge;
@@ -73,7 +68,7 @@ public class KoolSMPCore extends JavaPlugin
     private VanishIntegration<?> vanishBridge;
 
     private BukkitTask announcer = null;
-    @Getter private UpdateChecker updateChecker;
+    private UpdateChecker updateChecker;
 
     @Override
     public void onLoad()
@@ -88,6 +83,10 @@ public class KoolSMPCore extends JavaPlugin
         FLog.info("Created by gamingto12 and 0x7694C9");
         FLog.info("Version {}.{}", buildMeta.getVersion(), buildMeta.getNumber());
         FLog.info("Compiled {} by {}", buildMeta.getDate(), buildMeta.getAuthor());
+
+        // Load the configurations
+        MainConfig.load();
+        FLog.info("Loaded main configuration");
 
         updateChecker = new UpdateChecker(
                 this,
@@ -116,7 +115,7 @@ public class KoolSMPCore extends JavaPlugin
         freezeManager = new FreezeManager();
 
         loadBansConfig();
-        FLog.info("Loaded configurations");
+        FLog.info("Loaded extra configurations");
 
         commandLoader = new CommandLoader(AdminChatCommand.class);
         commandLoader.loadCommands();
@@ -178,7 +177,6 @@ public class KoolSMPCore extends JavaPlugin
         lockupManager = new LockupManager();
         pjListener = new PlayerJoinListener();
         antiSpamListener = new AntiSpamService();
-        mmHandler = new MiniMessageHandler();
         autoUndoManager = new AutoUndoManager(this, muteManager, freezeManager);
     }
 

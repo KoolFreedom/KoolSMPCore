@@ -49,7 +49,7 @@ public class KickCommand extends KoolCommand
                 Placeholder.component("reason_if_present", reason != null ?
                         FUtil.miniMessage("<newline>Reason: <yellow><reason></yellow>",
                                 Placeholder.unparsed("reason", reason)) :
-                        Component.empty())), PlayerKickEvent.Cause.KICK_COMMAND);
+                        Component.empty())), PlayerKickEvent.Cause.KICKED);
 
         FUtil.staffAction(sender, "Kicked <player>" + (reason != null ? ", Reason: <white><reason></white>" : ""),
                 Placeholder.unparsed("player", target.getName()),

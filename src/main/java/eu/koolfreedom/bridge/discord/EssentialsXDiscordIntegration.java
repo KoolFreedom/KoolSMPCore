@@ -1078,8 +1078,7 @@ public class EssentialsXDiscordIntegration implements DiscordIntegration<JDADisc
 						final String url = (String) attachment.getClass()
 								.getMethod("getUrl").invoke(attachment);
 						FUtil.asyncAdminChat(displayName, memberUsername, userGroup,
-								Component.text(url).clickEvent(
-										ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, url)),
+								Component.text(url).clickEvent(ClickEvent.openUrl(url)),
 								parent.key);
 					}
 					catch (Exception ex) { FLog.error("Failed to process attachment", ex); }
