@@ -80,9 +80,6 @@ public class KoolSMPCore extends JavaPlugin
     @Override
     public void onEnable()
     {
-        FLog.info("Created by gamingto12 and 0x7694C9");
-
-
         if (this.buildMeta != null) {
             FLog.info("Loading version: " + this.buildMeta.getVersion());
             FLog.info("Version {}.{}", this.buildMeta.getVersion(), this.buildMeta.getNumber());
@@ -92,6 +89,7 @@ public class KoolSMPCore extends JavaPlugin
             FLog.warning("Please report this.");
         }
 
+        // Load the configurations
         MainConfig.load();
         FLog.info("Loaded main configuration");
 
