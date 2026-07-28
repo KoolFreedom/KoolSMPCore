@@ -9,7 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
-@CommandParameters(name = "Launch", description = "Launch a player backwards 50 blocks")
+@CommandParameters(name = "launch", description = "Launch a player backwards 50 blocks", usage = "/launch <player>")
 public class LaunchCommand extends KoolCommand
 {
     private final MiniMessage miniMessage = MiniMessage.miniMessage();
