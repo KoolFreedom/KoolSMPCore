@@ -26,7 +26,7 @@ repositories {
 
 dependencies {
     // Paper API
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.+")
+    compileOnly("io.papermc.paper:paper-api:26.2.build.+")
 
     // Plugin integrations
     compileOnly("net.essentialsx:EssentialsX:2.21.1") {
@@ -44,7 +44,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude("org.bukkit", "bukkit")
     }
-    implementation("com.github.retrooper:packetevents-spigot:2.12.2")
+    implementation("com.github.retrooper:packetevents-spigot:2.13.0")
 
     // Utilities
     implementation("org.apache.commons:commons-lang3:3.18.0")
@@ -134,6 +134,7 @@ fun getBuildNumber(): Int {
  * Task to increment build number in build.properties
  */
 tasks.register("incrementBuildNumber") {
+    description = ""
     doLast {
         val buildPropsFile = file("src/main/resources/build.properties")
         buildPropsFile.parentFile.mkdirs()

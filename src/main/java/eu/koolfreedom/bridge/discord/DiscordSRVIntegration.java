@@ -216,8 +216,9 @@ public class DiscordSRVIntegration extends ListenerAdapter implements DiscordInt
         // Call separate events for attachments to emulate DiscordSRV behavior
         event.getMessage().getAttachments().forEach(attachment ->
                 FUtil.asyncAdminChat(displayName, member.getUser().getName(), userGroup,
-						Component.text(attachment.getUrl()).clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL,
-								attachment.getUrl())), key));
+                        Component.text(attachment.getUrl())
+                                .clickEvent(ClickEvent.openUrl(attachment.getUrl())),
+                        key));
 
         FUtil.asyncAdminChat(displayName, member.getUser().getName(), userGroup, message, key);
     }
