@@ -17,16 +17,9 @@ public class LaunchCommand extends KoolCommand
     @Override
     public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
     {
-        // almost forgot a permission check LOL
-        if (!sender.hasPermission("kfc.command.launch"))
-        {
-            sender.sendMessage(miniMessage.deserialize("<red>You do not have permission to use this command!</red>"));
-            return true;
-        }
-        
+   
         if (args.length == 0)
         {
-            sender.sendMessage(miniMessage.deserialize("<red>Usage: /" + commandLabel + " <player></red>"));
             return false;
         }
 
@@ -34,7 +27,7 @@ public class LaunchCommand extends KoolCommand
 
         if (target == null)
         {
-            sender.sendMessage(miniMessage.deserialize("<red>Player <yellow>" + args[0] + "</yellow> is not online!</red>"));
+            msg(sender, playerNotFound)
             return true;
         }
       
@@ -49,12 +42,11 @@ public class LaunchCommand extends KoolCommand
         // Send tuff messages.
         if (sender != target)
         {
-            sender.sendMessage(miniMessage.deserialize("<green>Your wish is my command, attempting to launch: <yellow>" + target.getName() + "</yellow></green>"));
-            sender.sendMessage(miniMessage.deserialize("<green>Launched: <yellow>" + target.getName() + "</yellow></green>"));
+            msg(sender, "<green>Your wish is my command.");
+            msg(sender, "<green>Player has been launched"
         }
         
-        target.sendMessage(miniMessage.deserialize("<bold><red>Whoosh!</red></bold>"));
-
+        msg(target, "<red>Woosh!");
         return true;
     }
 }
