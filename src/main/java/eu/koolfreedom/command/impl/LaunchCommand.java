@@ -1,5 +1,7 @@
 package eu.koolfreedom.command.impl;
 
+import eu.koolfreedom.command.KoolCommand;
+import eu.koolfreedom.command.annotation.CommandParameters;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
