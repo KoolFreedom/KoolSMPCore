@@ -31,7 +31,6 @@ public class LaunchCommand extends KoolCommand
             return true;
         }
       
-// make the target get LAUNCHERD!!!!!!!!!! 
         Vector backwardDirection = target.getLocation().getDirection().multiply(-1);
         Vector launchVelocity = backwardDirection.multiply(3.8);
         launchVelocity.setY(1.2);
@@ -39,7 +38,6 @@ public class LaunchCommand extends KoolCommand
         target.setVelocity(launchVelocity);
 
       
-        // Send tuff messages.
         if (sender != target)
         {
             msg(sender, "<green>Your wish is my command.");
