@@ -37,6 +37,11 @@ public class ReactionCommand extends KoolCommand
                 broadcast("<aqua><name> has started to cry :(", Placeholder.unparsed("name", sender.getName()));
                 return true;
             }
+            case "shit" ->
+            {
+                broadcast("<#823d08><name> Has done a big wet sloppy shit", Placeholder.unparsed("name", sender.getName()));
+                return true;
+            }  
             case "hug" ->
             {
                 if (args.length < 2)
