@@ -24,3 +24,4 @@ Open the terminal and cd to the root of this repository (~/KoolSMPCore) and type
 
 If you would like to contribute to the plugin in any way, make a fork and add your changes to your fork.
 After those changes have been made, open a pull request from your fork and a Developer will review your changes.
+More about contributing can be found on [this post from our official forum page](https://koolfreedom.eu.org/d/4-koolfreedom-developer-information)
