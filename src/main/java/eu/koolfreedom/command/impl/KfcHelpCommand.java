@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 
 @CommandParameters(name = "kfchelp", description = "Sends a help message about KoolSmpCore", usage = "/kfchelp")
 
-public class SatisfyAllCommand extends KoolCommand {
+public class KfcHelpCommand extends KoolCommand {
 
     @Override
     public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args) {
