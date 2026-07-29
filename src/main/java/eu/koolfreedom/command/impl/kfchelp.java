@@ -6,7 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-@CommandParameters(name = "kfchelp", description = "Shows help information for KoolSmpCore")
+@CommandParameters(name = "kfchelp", description = "Sends a help message about KoolSmpCore", usage = "/kfchelp")
 
 public class SatisfyAllCommand extends KoolCommand {
 
