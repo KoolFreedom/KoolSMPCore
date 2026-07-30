@@ -3,7 +3,6 @@ import java.util.*
 
 plugins {
     id("java")
-    id("maven-publish")
     id("net.kyori.blossom") version "2.2.0"
     id("com.gradleup.shadow") version ("9.3.1")
 }

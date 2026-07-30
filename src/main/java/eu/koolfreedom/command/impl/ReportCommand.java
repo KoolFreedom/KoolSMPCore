@@ -15,7 +15,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 @CommandParameters(name = "report", description = "Report a misbehaving player to staff.",
-        aliases = {"holyshitfuckinghelp"}, usage = "/<command> <player> <reason>")
+        usage = "/<command> <player> <reason>")
 public class ReportCommand extends KoolCommand
 {
     @Override

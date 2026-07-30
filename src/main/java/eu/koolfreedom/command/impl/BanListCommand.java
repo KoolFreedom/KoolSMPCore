@@ -18,7 +18,7 @@ public class BanListCommand extends KoolCommand
 	{
 		BanManager banManager = plugin.getBanManager();
 
-		if (args.length == 0 || !sender.hasPermission("kfc.command.banlist.reload"))
+		if (args.length == 0 || !sender.hasPermission("kfc.banlist.reload"))
 		{
 			msg(sender, "<gray>There are currently <amount> entries in the ban list.",
 					Placeholder.unparsed("amount", String.valueOf(banManager.getBanCount())));
