@@ -101,13 +101,13 @@ permissions:
     default: op
     children:
       - kfc.admin
-      - kfc.command.banlist.reload
+      - kfc.banlist.reload
       - kfc.command.cage
-      - kfc.command.koolsmpcore.reload
+      - kfc.reload
       - kfc.command.doom
-      - kfc.command.reports.reopen
-      - kfc.command.reports.handle
-      - kfc.command.reports.close
+      - kfc.reports.reopen
+      - kfc.reports.handle
+      - kfc.reports.close
   kfc.exec:
     description: Permission group offering pretty much everything the plugin has to offer, plus some fun commands
     default: op
@@ -115,5 +115,5 @@ permissions:
       - kfc.senior
       - kfc.antispam.bypass
       - kfc.command.crash
-      - kfc.command.reports.purge
-      - kfc.command.koolsmpcore.update
+      - kfc.reports.purge
+      - kfc..update

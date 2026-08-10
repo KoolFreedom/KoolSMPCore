@@ -52,7 +52,7 @@ public class ReportsCommand extends KoolCommand
 
 				try
 				{
-					page = args.length >= 2 ? Math.min(Math.max(Integer.parseInt(args[1]) - 1, 0), paginated.size() - 1) : 0;
+					page = args.length >= 2 ? Math.clamp(Integer.parseInt(args[1]) - 1, 0, paginated.size() - 1) : 0;
 				}
 				catch (NumberFormatException ignored)
 				{
@@ -87,7 +87,7 @@ public class ReportsCommand extends KoolCommand
 
 				try
 				{
-					page = args.length >= 2 ? Math.min(Math.max(Integer.parseInt(args[1]) - 1, 0), paginated.size() - 1) : 0;
+					page = args.length >= 2 ? Math.clamp(Integer.parseInt(args[1]) - 1, 0, paginated.size() - 1) : 0;
 				}
 				catch (NumberFormatException ignored)
 				{
@@ -124,7 +124,7 @@ public class ReportsCommand extends KoolCommand
 			}
 			case "reopen" ->
 			{
-				if (!sender.hasPermission("kfc.command.reports.reopen"))
+				if (!sender.hasPermission("kfc.reports.reopen"))
 				{
 					msg(sender, "<red>You don't have permission to reopen reports.");
 					return true;
@@ -156,7 +156,7 @@ public class ReportsCommand extends KoolCommand
 			}
 			case "handle" ->
 			{
-				if (!sender.hasPermission("kfc.command.reports.handle"))
+				if (!sender.hasPermission("kfc.reports.handle"))
 				{
 					msg(sender, "<red>You don't have permission to handle reports.");
 					return true;
@@ -188,7 +188,7 @@ public class ReportsCommand extends KoolCommand
 			}
 			case "close" ->
 			{
-				if (!sender.hasPermission("kfc.command.reports.close"))
+				if (!sender.hasPermission("kfc.reports.close"))
 				{
 					msg(sender, "<red>You don't have permission to close reports.");
 					return true;
@@ -220,7 +220,7 @@ public class ReportsCommand extends KoolCommand
 			}
 			case "purge" ->
 			{
-				if (!sender.hasPermission("kfc.command.reports.purge"))
+				if (!sender.hasPermission("kfc.reports.purge"))
 				{
 					msg(sender, "<red>You don't have permission to purge reports.");
 					return true;
@@ -295,7 +295,7 @@ public class ReportsCommand extends KoolCommand
 					return args[0].equalsIgnoreCase("reopen") ? reportManager.getClosedReportIDs()
 							: reportManager.getReportIds(dontShowSummary);
 				}
-				else if (args[0].equalsIgnoreCase("purge") && sender.hasPermission("kfc.command.reports.purge"))
+				else if (args[0].equalsIgnoreCase("purge") && sender.hasPermission("kfc.reports.purge"))
 				{
 					return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
 				}

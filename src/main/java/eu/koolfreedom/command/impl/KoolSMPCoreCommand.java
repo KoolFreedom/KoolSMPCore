@@ -23,7 +23,7 @@ public class KoolSMPCoreCommand extends KoolCommand
     @Override
     public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
     {
-        if (args.length == 0 || !sender.hasPermission("kfc.command.koolsmpcore.reload"))
+        if (args.length == 0 || !sender.hasPermission("kfc.reload"))
         {
             sendInfo(sender);
             return true;
@@ -50,7 +50,7 @@ public class KoolSMPCoreCommand extends KoolCommand
 
         if (args[0].equalsIgnoreCase("update"))
         {
-            if (!sender.hasPermission("kfc.command.koolsmpcore.update"))
+            if (!sender.hasPermission("kfc.update"))
             {
                 msg(sender, "<red>You don't have permission to do this.");
                 return true;
@@ -85,8 +85,8 @@ public class KoolSMPCoreCommand extends KoolCommand
         if (args.length == 1)
         {
             List<String> completions = new ArrayList<>();
-            if (sender.hasPermission("kfc.command.koolsmpcore.reload")) completions.add("reload");
-            if (sender.hasPermission("kfc.command.koolsmpcore.update")) completions.add("update");
+            if (sender.hasPermission("kfc.reload")) completions.add("reload");
+            if (sender.hasPermission("kfc.update")) completions.add("update");
             return completions;
         }
         return List.of();
