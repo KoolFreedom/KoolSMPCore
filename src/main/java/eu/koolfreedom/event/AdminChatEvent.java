@@ -3,7 +3,6 @@ package eu.koolfreedom.event;
 import eu.koolfreedom.bridge.GroupManagement;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.key.Namespaced;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;

@@ -1,11 +1,7 @@
 package eu.koolfreedom.command.impl;
 
-import eu.koolfreedom.banning.BanManager;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
-import eu.koolfreedom.freeze.FreezeManager;
-import eu.koolfreedom.listener.impl.MuteManager;
-import eu.koolfreedom.note.NoteManager;
 import eu.koolfreedom.note.PlayerNote;
 import eu.koolfreedom.util.FUtil;
 import net.kyori.adventure.text.Component;
@@ -27,11 +23,6 @@ import java.util.stream.Collectors;
 @CommandParameters(name = "seen", description = "Shows information about a player or IP", usage = "/seen <player|ip>")
 public class SeenCommand extends KoolCommand
 {
-    private final BanManager banManager = plugin.getBanManager();
-    private final NoteManager noteManager = plugin.getNoteManager();
-    private final MuteManager muteManager = plugin.getMuteManager();
-    private final FreezeManager freezeManager = plugin.getFreezeManager();
-
     private final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 
     @Override
@@ -102,11 +93,11 @@ public class SeenCommand extends KoolCommand
                 .filter(n -> n != null && !n.equalsIgnoreCase(name))
                 .collect(Collectors.toList());
 
-        List<PlayerNote> notes = noteManager.getNotes(uuid);
+        List<PlayerNote> notes = plugin.getNoteManager().getNotes(uuid);
 
-        boolean muted = muteManager != null && muteManager.isMuted(target);
-        boolean frozen = target.isOnline() && freezeManager != null && freezeManager.isFrozen((Player) target);
-        boolean banned = banManager.isBanned(target);
+        boolean muted = plugin.getMuteManager() != null && plugin.getMuteManager().isMuted(target);
+        boolean frozen = target.isOnline() && plugin.getFreezeManager() != null && plugin.getFreezeManager().isFrozen((Player) target);
+        boolean banned = plugin.getBanManager().isBanned(target);
         boolean opped = target.isOp();
         boolean white = target.isWhitelisted();
 

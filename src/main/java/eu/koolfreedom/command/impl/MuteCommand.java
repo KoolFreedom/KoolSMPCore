@@ -24,8 +24,6 @@ public class MuteCommand extends KoolCommand
 
         if (args.length == 0)
         {
-            msg(sender, "<gray><amount> player(s) are currently muted.",
-                    Placeholder.unparsed("amount", String.valueOf(mum.getMuteCount())));
             return false;
         }
 

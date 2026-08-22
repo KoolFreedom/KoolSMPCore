@@ -22,7 +22,7 @@ public class AltsCommand extends KoolCommand
     private final AltManager altManager = plugin.getAltManager();
 
     @Override
-    public boolean run(CommandSender sender, org.bukkit.entity.Player player, Command command, String label, String[] args)
+    public boolean run(CommandSender sender, Player player, Command command, String label, String[] args)
     {
         if (args.length != 1)
         {

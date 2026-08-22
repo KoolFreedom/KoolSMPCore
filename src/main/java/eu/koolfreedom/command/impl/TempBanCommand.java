@@ -23,17 +23,7 @@ public class TempBanCommand extends KoolCommand
     @Override
     public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
     {
-        if (args.length == 0)
-        {
-            return false;
-        }
-
-        OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
-        if (!target.isOnline() && !target.hasPlayedBefore())
-        {
-            msg(sender, playerNotFound);
-            return true;
-        }
+        if (args.length == 0) return false;
 
         long duration;
         String reason = null;
@@ -41,7 +31,6 @@ public class TempBanCommand extends KoolCommand
         if (args.length >= 2)
         {
             String dur = args[1].toLowerCase();
-
             if (dur.equals("perm") || dur.equals("permanent"))
             {
                 duration = Long.MAX_VALUE;
@@ -63,37 +52,45 @@ public class TempBanCommand extends KoolCommand
             duration = TimeOffset.getOffset("1d");
         }
 
-        final Ban ban = Ban.fromPlayer(target, sender.getName(), reason, duration);
-        boolean success = plugin.getBanManager().addBan(ban);
+        OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
 
-        if (!success && !target.isOnline())
+        Ban ban;
+        if (!target.isOnline() && !target.hasPlayedBefore())
+        {
+            // Pre-emptive ban — player has never joined, ban by username only
+            ban = Ban.fromUsername(args[0], sender.getName(), reason, duration);
+        }
+        else
+        {
+            ban = Ban.fromPlayer(target, sender.getName(), reason, duration);
+        }
+
+        boolean success = plugin.getBanManager().addBan(ban);
+        if (!success)
         {
             msg(sender, "<red>That user is already banned.");
             return true;
         }
 
-        FUtil.staffAction(sender, "Banned <player>", Placeholder.unparsed("player", target.getName() != null ? target.getName() : args[0]));
+        String displayName = target.getName() != null ? target.getName() : args[0];
+        FUtil.staffAction(sender, "Banned <player>", Placeholder.unparsed("player", displayName));
         plugin.getRecordKeeper().recordPunishment(Punishment.fromBan(ban));
 
         if (target instanceof Player online)
         {
             for (int i = 0; i < 4; i++)
-            {
                 online.getWorld().strikeLightning(online.getLocation());
-            }
             online.setHealth(0);
             online.kick(ban.getKickMessage());
 
             Bukkit.getOnlinePlayers().stream()
-                    .filter(player -> FUtil.getIp(player).equalsIgnoreCase(FUtil.getIp(online)))
-                    .forEach(player ->
+                    .filter(p -> FUtil.getIp(p).equalsIgnoreCase(FUtil.getIp(online)))
+                    .forEach(p ->
                     {
                         for (int i = 0; i < 4; i++)
-                        {
-                            player.getWorld().strikeLightning(player.getLocation());
-                        }
-                        player.setHealth(0);
-                        player.kick(ban.getKickMessage());
+                            p.getWorld().strikeLightning(p.getLocation());
+                        p.setHealth(0);
+                        p.kick(ban.getKickMessage());
                     });
         }
 

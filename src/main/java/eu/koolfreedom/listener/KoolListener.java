@@ -1,32 +1,23 @@
 package eu.koolfreedom.listener;
 
 import eu.koolfreedom.KoolSMPCore;
-import eu.koolfreedom.api.AltManager;
 import eu.koolfreedom.freeze.FreezeManager;
 import eu.koolfreedom.listener.impl.LockupManager;
 import eu.koolfreedom.listener.impl.MuteManager;
-import eu.koolfreedom.note.NoteManager;
+import eu.koolfreedom.player.PlayerRegistry;
 import org.bukkit.event.Listener;
 
-/**
- * Yes, this class can be seen as completely useless, but I'm also fucking stupid.
- * I'm going to forget to register listeners if I continue to make them, so I made this out of desperation.
- *
- * I'm not a good developer at all, I'm actually kinda slow. This helps..... a lot.....
- *
- * - gamingto12
- */
 public abstract class KoolListener implements Listener
 {
     public KoolListener()
     {
-        KoolSMPCore.getInstance().getServer().getPluginManager().registerEvents(this, KoolSMPCore.getInstance());
+        KoolSMPCore.getInstance().getServer().getPluginManager()
+                .registerEvents(this, KoolSMPCore.getInstance());
     }
 
     protected final KoolSMPCore plugin = KoolSMPCore.getInstance();
+    protected final PlayerRegistry playerRegistry = plugin.getPlayerRegistry();
     protected final MuteManager muteManager = plugin.getMuteManager();
     protected final FreezeManager freezeManager = plugin.getFreezeManager();
     protected final LockupManager lockupManager = plugin.getLockupManager();
-    protected final AltManager altManager = plugin.getAltManager();
-    protected final NoteManager noteManager = plugin.getNoteManager();
 }

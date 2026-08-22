@@ -1,73 +1,57 @@
 package eu.koolfreedom.listener.impl;
 
-import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.command.impl.MuteChatCommand;
 import eu.koolfreedom.listener.KoolListener;
 import eu.koolfreedom.util.FUtil;
 import io.papermc.paper.event.player.AsyncChatEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class MuteManager extends KoolListener
 {
-    /** single source of truth */
-    private final Set<UUID> muted = ConcurrentHashMap.newKeySet();
-    private final Set<UUID> commandBlocked = ConcurrentHashMap.newKeySet();
-
-    /* -------------------------------------------------------------------- */
-    /* Public API                                                           */
-    /* -------------------------------------------------------------------- */
+    // --- Public API ---
 
     public void mute(UUID uuid)
     {
-        muted.add(uuid);
+        playerRegistry.setMuted(uuid, true);
     }
 
     public void unmute(UUID uuid)
     {
-        muted.remove(uuid);
-    }
-
-    public int getMuteCount() {
-        return muted.size();
+        playerRegistry.setMuted(uuid, false);
     }
 
     public boolean isMuted(UUID uuid)
     {
-        return muted.contains(uuid);
+        return playerRegistry.isMuted(uuid);
     }
 
     public void setCommandsBlocked(UUID uuid, boolean block)
     {
-        if (block) commandBlocked.add(uuid); else commandBlocked.remove(uuid);
+        playerRegistry.setCommandsBlocked(uuid, block);
     }
 
-    public boolean isCommandsBlocked(UUID uuid) { return commandBlocked.contains(uuid); }
+    public boolean isCommandsBlocked(UUID uuid)
+    {
+        return playerRegistry.isCommandsBlocked(uuid);
+    }
 
     public int wipeMutes()
     {
-        int n = muted.size();
-        muted.clear();
-        return n;
+        return playerRegistry.clearMutes();
     }
 
     public int wipeBlockedCommands()
     {
-        int n = commandBlocked.size();
-        commandBlocked.clear();
-        return n;
+        return playerRegistry.clearCommandsBlocked();
     }
 
-    /* Convenience overloads for Player / OfflinePlayer */
+    // Convenience overloads
     public void mute(Player p)
     {
         mute(p.getUniqueId());
@@ -76,18 +60,18 @@ public class MuteManager extends KoolListener
     {
         unmute(p.getUniqueId());
     }
+
     public boolean isMuted(Player p)
     {
         return isMuted(p.getUniqueId());
     }
+
     public boolean isMuted(OfflinePlayer p)
     {
         return isMuted(p.getUniqueId());
     }
 
-    /* -------------------------------------------------------------------- */
-    /* Event listeners                                                      */
-    /* -------------------------------------------------------------------- */
+    // --- Event listeners ---
 
     @EventHandler
     public void onChat(AsyncChatEvent e)
@@ -97,23 +81,16 @@ public class MuteManager extends KoolListener
             e.getPlayer().sendMessage(FUtil.miniMessage("<gray>You are muted."));
             e.setCancelled(true);
         }
+
+        if (MuteChatCommand.isChatMuted() && !e.getPlayer().hasPermission("kfc.mutechat.bypass"))
+        {
+            e.setCancelled(true);
+            e.getPlayer().sendMessage(FUtil.miniMessage("<red>Chat is currently muted, you cannot speak."));
+        }
     }
 
     @EventHandler
     @SuppressWarnings("deprecation")
-    public void muteChatEvent(AsyncPlayerChatEvent event)
-    {
-        Player player = event.getPlayer();
-
-        if (MuteChatCommand.isChatMuted() && !player.hasPermission("kfc.mutechat.bypass"))
-        {
-            event.setCancelled(true);
-            player.sendMessage(FUtil.miniMessage("<red>Chat is currently muted, you cannot speak."));
-        }
-    }
-
-    // Legacy chat event
-    @EventHandler @SuppressWarnings("deprecation")
     public void onLegacyChat(AsyncPlayerChatEvent e)
     {
         if (isMuted(e.getPlayer())) e.setCancelled(true);
@@ -135,6 +112,12 @@ public class MuteManager extends KoolListener
         {
             e.setCancelled(true);
             e.getPlayer().sendMessage(FUtil.miniMessage("<red>You are muted, you cannot use commands."));
+        }
+
+        if (MuteChatCommand.isChatMuted() && !e.getPlayer().hasPermission("kfc.mutechat.bypass"))
+        {
+            e.setCancelled(true);
+            e.getPlayer().sendMessage(FUtil.miniMessage("<red>Chat is currently muted, you cannot speak."));
         }
     }
 }

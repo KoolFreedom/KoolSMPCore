@@ -1,56 +1,67 @@
 package eu.koolfreedom.freeze;
 
+import eu.koolfreedom.player.PlayerData;
+import eu.koolfreedom.player.PlayerRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.HashSet;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class FreezeManager
 {
-    private final Map<UUID, FreezeData> frozenPlayers = new ConcurrentHashMap<>();
+    private final PlayerRegistry playerRegistry;
+
+    public FreezeManager(PlayerRegistry playerRegistry)
+    {
+        this.playerRegistry = playerRegistry;
+    }
 
     public void freeze(Player player)
     {
-        unfreeze(player);                                   // clear any previous entry
-        frozenPlayers.put(player.getUniqueId(), new FreezeData(player)); // <-- pass Player
+        playerRegistry.get(player).ifPresent(data ->
+        {
+            if (data.getFreezeData() != null) data.getFreezeData().clearTask();
+            data.setFreezeData(new FreezeData(player));
+        });
+        playerRegistry.setFrozen(player.getUniqueId(), true);
     }
 
     public void unfreeze(UUID uuid)
     {
-        FreezeData data = frozenPlayers.remove(uuid);
-        if (data != null) data.clearTask();          // cancel the timer task
+        playerRegistry.get(uuid).ifPresent(data ->
+        {
+            if (data.getFreezeData() != null)
+            {
+                data.getFreezeData().clearTask();
+                data.setFreezeData(null);
+            }
+        });
+        playerRegistry.setFrozen(uuid, false);
 
-        // Optional: close their inventory / notify, if they're online
         Player p = Bukkit.getPlayer(uuid);
-        if (p != null && p.isOnline())
-            p.closeInventory();
+        if (p != null && p.isOnline()) p.closeInventory();
     }
 
-    /** Convenience wrapper for existing code that passes a Player */
     public void unfreeze(Player player)
     {
-        if (player != null)
-            unfreeze(player.getUniqueId());
+        if (player != null) unfreeze(player.getUniqueId());
     }
 
     public boolean isFrozen(Player player)
     {
-        return frozenPlayers.containsKey(player.getUniqueId());
+        return playerRegistry.isFrozen(player.getUniqueId());
     }
 
     public FreezeData getData(Player player)
     {
-        return frozenPlayers.get(player.getUniqueId());
+        return playerRegistry.get(player).map(PlayerData::getFreezeData).orElse(null);
     }
 
-    /** Unfreeze everyone currently frozen */
     public void unfreezeAll()
     {
-        // Avoid ConcurrentModificationException by copying the keys first
-        for (UUID id : new HashSet<>(frozenPlayers.keySet()))
-            unfreeze(id);
+        for (PlayerData data : playerRegistry.getAll())
+        {
+            if (data.isFrozen()) unfreeze(data.getUuid());
+        }
     }
 }

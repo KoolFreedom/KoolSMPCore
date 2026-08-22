@@ -1,8 +1,6 @@
 package eu.koolfreedom.chat;
 
-import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.listener.KoolListener;
-import eu.koolfreedom.listener.impl.MuteManager;
 import eu.koolfreedom.util.FUtil;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;

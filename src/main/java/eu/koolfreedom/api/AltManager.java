@@ -1,33 +1,41 @@
 package eu.koolfreedom.api;
 
-import java.util.*;
+import eu.koolfreedom.player.PlayerRegistry;
 
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
+/**
+ * Thin facade over PlayerRegistry's alt persistence.
+ * Kept so existing call sites don't need changing.
+ */
 public class AltManager
 {
-    private final Map<String, Set<UUID>> ipMap = new HashMap<>();
-    private final Map<UUID, String> lastIpMap  = new HashMap<>();
+    private final PlayerRegistry playerRegistry;
+
+    public AltManager(PlayerRegistry playerRegistry)
+    {
+        this.playerRegistry = playerRegistry;
+    }
 
     public void record(String ip, UUID uuid)
     {
-        ipMap.computeIfAbsent(ip, k -> new HashSet<>()).add(uuid);
-        lastIpMap.put(uuid, ip); // overwrite old mapping
+        playerRegistry.recordAlt(ip, uuid);
     }
 
-    /** All accounts seen from this IP */
     public Set<UUID> getAlts(String ip)
     {
-        return ipMap.getOrDefault(ip, Collections.emptySet());
+        return playerRegistry.getAlts(ip);
     }
 
-    /** Alias */
     public Set<UUID> getAccounts(String ip)
     {
         return getAlts(ip);
     }
 
-    /** Most recent IP for this account */
     public Optional<String> getLastIP(UUID uuid)
     {
-        return Optional.ofNullable(lastIpMap.get(uuid));
+        return playerRegistry.getLastIp(uuid);
     }
 }

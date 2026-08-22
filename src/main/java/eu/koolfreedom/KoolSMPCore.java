@@ -2,38 +2,38 @@ package eu.koolfreedom;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
-import eu.koolfreedom.api.*;
-import eu.koolfreedom.bridge.GroupManagement;
+import eu.koolfreedom.api.AltManager;
 import eu.koolfreedom.banning.BanManager;
+import eu.koolfreedom.bridge.DiscordIntegration;
+import eu.koolfreedom.bridge.GroupManagement;
 import eu.koolfreedom.bridge.LuckPermsBridge;
 import eu.koolfreedom.bridge.VanishIntegration;
+import eu.koolfreedom.bridge.discord.DiscordSRVIntegration;
+import eu.koolfreedom.bridge.discord.EssentialsXDiscordIntegration;
 import eu.koolfreedom.bridge.vanish.EssentialsVanishIntegration;
 import eu.koolfreedom.bridge.vanish.SuperVanishIntegration;
 import eu.koolfreedom.chat.AntiSpamService;
 import eu.koolfreedom.command.CommandLoader;
+import eu.koolfreedom.command.impl.AdminChatCommand;
 import eu.koolfreedom.config.ConfigEntry;
-import eu.koolfreedom.bridge.discord.DiscordSRVIntegration;
-import eu.koolfreedom.bridge.DiscordIntegration;
-import eu.koolfreedom.bridge.discord.EssentialsXDiscordIntegration;
 import eu.koolfreedom.config.MainConfig;
-import eu.koolfreedom.listener.impl.FreezeListener;
 import eu.koolfreedom.freeze.FreezeManager;
 import eu.koolfreedom.listener.impl.*;
 import eu.koolfreedom.note.NoteManager;
-import eu.koolfreedom.util.*;
+import eu.koolfreedom.player.PlayerRegistry;
 import eu.koolfreedom.punishment.RecordKeeper;
 import eu.koolfreedom.reporting.ReportManager;
+import eu.koolfreedom.util.*;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import lombok.Getter;
 import org.bstats.bukkit.Metrics;
-import org.bukkit.plugin.java.*;
-import org.bukkit.plugin.*;
-import eu.koolfreedom.command.impl.*;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.*;
+import java.util.List;
 
 @Getter
 public class KoolSMPCore extends JavaPlugin
@@ -42,26 +42,29 @@ public class KoolSMPCore extends JavaPlugin
     private static KoolSMPCore instance;
 
     private BuildProperties buildMeta;
-
     private CommandLoader commandLoader;
 
+    // Storage — must be first, everything else depends on it
+    private PlayerRegistry playerRegistry;
+
+    // Managers
     private BanManager banManager;
+    private NoteManager noteManager;
+    private AltManager altManager;
     private MuteManager muteManager;
     private RecordKeeper recordKeeper;
     private ReportManager reportManager;
     private LockupManager lockupManager;
     private FreezeManager freezeManager;
-    private NoteManager noteManager;
-    private AltManager altManager;
     private FreezeListener freezeListener;
     private AntiSpamService antiSpamListener;
     private AutoUndoManager autoUndoManager;
-
     private CosmeticManager cosmeticManager;
     private ExploitListener exploitListener;
     private ChatListener chatListener;
     private PlayerJoinListener pjListener;
 
+    // Bridges
     private GroupManagement groupManager;
     private LuckPermsBridge luckPermsBridge;
     private DiscordIntegration<?> discordBridge;
@@ -84,25 +87,24 @@ public class KoolSMPCore extends JavaPlugin
         FLog.info("Version {}.{}", buildMeta.getVersion(), buildMeta.getNumber());
         FLog.info("Compiled {} by {}", buildMeta.getDate(), buildMeta.getAuthor());
 
-        // Load the configurations
+        playerRegistry = new PlayerRegistry();
+
+        noteManager = new NoteManager(playerRegistry);
+        altManager = new AltManager(playerRegistry);
+        freezeManager = new FreezeManager(playerRegistry);
+
         MainConfig.load();
         FLog.info("Loaded main configuration");
 
         updateChecker = new UpdateChecker(
-                this,
-                "KoolFreedom",
-                "KoolSMPCore",
+                this, "KoolFreedom", "KoolSMPCore",
                 "https://www.spigotmc.org/resources/koolsmpcore.126127/",
-                "https://modrinth.com/plugin/koolsmpcore"
-        );
+                "https://modrinth.com/plugin/koolsmpcore");
         updateChecker.check();
 
-
-        // https://bstats.org/plugin/bukkit/KoolSMPCore/26369
         try
         {
-            int pluginId = 26369;
-            new Metrics(this, pluginId);
+            new Metrics(this, 26369);
             FLog.info("Enabled Metrics");
         }
         catch (Exception e)
@@ -110,31 +112,25 @@ public class KoolSMPCore extends JavaPlugin
             FLog.error("Could not start Metrics", e);
         }
 
-        altManager = new AltManager();
-        noteManager = new NoteManager();
-        freezeManager = new FreezeManager();
+        loadManagers();
+        FLog.info("Loaded managers");
 
-        loadBansConfig();
-        FLog.info("Loaded extra configurations");
+        loadListeners();
+        FLog.info("Loaded listeners");
 
         commandLoader = new CommandLoader(AdminChatCommand.class);
         commandLoader.loadCommands();
         FLog.info("Loaded {} commands", commandLoader.getKoolCommands().size());
 
-        loadListeners();
-        FLog.info("Loaded listeners");
-
         groupManager = new GroupManagement();
         FLog.info("Loaded group manager");
 
-        // Set up announcer
         resetAnnouncer();
-
         loadBridges();
         FLog.info("Bridges built");
 
-
-        if (Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
+        if (Bukkit.getPluginManager().isPluginEnabled("packetevents"))
+        {
             FLog.info("PacketEvents found, enabling exploit patches.");
             PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
             PacketEvents.getAPI().load();
@@ -142,35 +138,33 @@ public class KoolSMPCore extends JavaPlugin
             exploitListener = new ExploitListener();
             PacketEvents.getAPI().getEventManager().registerListener(exploitListener, PacketListenerPriority.HIGHEST);
         }
-        else {
+        else
+        {
             FLog.warning("PacketEvents not found! Exploit patches will not be able to function!");
         }
-
     }
 
     @Override
     public void onDisable()
     {
-        if (Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
+        if (Bukkit.getPluginManager().isPluginEnabled("packetevents"))
             PacketEvents.getAPI().terminate();
-        }
-        FLog.info("KoolSMPCore has been disabled");
 
-        banManager.save();
-        reportManager.save();
+        playerRegistry.close();
+        FLog.info("KoolSMPCore has been disabled");
     }
 
-    public void loadBansConfig()
+    public void loadManagers()
     {
         banManager = new BanManager();
         banManager.load();
         recordKeeper = new RecordKeeper();
+        reportManager = new ReportManager();
     }
 
     public void loadListeners()
     {
         muteManager = new MuteManager();
-        reportManager = new ReportManager();
         cosmeticManager = new CosmeticManager();
         chatListener = new ChatListener();
         freezeListener = new FreezeListener();

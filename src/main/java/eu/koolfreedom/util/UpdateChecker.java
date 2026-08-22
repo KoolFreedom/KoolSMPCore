@@ -1,7 +1,6 @@
 package eu.koolfreedom.util;
 
 import eu.koolfreedom.KoolSMPCore;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.Nullable;

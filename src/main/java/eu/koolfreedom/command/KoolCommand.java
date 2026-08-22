@@ -29,6 +29,7 @@ public abstract class KoolCommand extends Command implements PluginIdentifiableC
 
 	protected final String playerNotFound = "<gray>Could not find the specified player.";
 	protected final String playersOnly = "<red>This command can only be executed in-game.";
+	protected final String noPermission = "<red>You do not have permission to execute this command!";
 
 	/**
 	 * Constructor to initialize commands. Commands created this way <b>must</b> be annotated with the

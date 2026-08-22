@@ -44,7 +44,6 @@ import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.time.*;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -623,7 +622,7 @@ public class EssentialsXDiscordIntegration implements DiscordIntegration<JDADisc
 				{
 					final String id = (String) message.getClass().getMethod("getId").invoke(message);
 					report.getAdditionalData().set("discordMessageId", id);
-					CompletableFuture.runAsync(() -> KoolSMPCore.getInstance().getReportManager().save());
+					KoolSMPCore.getInstance().getPlayerRegistry().saveReport(report);
 				}
 				catch (Exception ex) { FLog.error("Failed to store report message ID", ex); }
 			});
@@ -674,7 +673,7 @@ public class EssentialsXDiscordIntegration implements DiscordIntegration<JDADisc
 							{
 								final String id = (String) success.getClass().getMethod("getId").invoke(success);
 								report.getAdditionalData().set("discordMessageId", id);
-								CompletableFuture.runAsync(() -> KoolSMPCore.getInstance().getReportManager().save());
+								KoolSMPCore.getInstance().getPlayerRegistry().saveReport(report);
 							}
 							catch (Exception ex) { FLog.error("Failed to store updated report message ID", ex); }
 						});

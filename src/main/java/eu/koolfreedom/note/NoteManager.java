@@ -1,34 +1,40 @@
 package eu.koolfreedom.note;
 
-import java.util.*;
+import eu.koolfreedom.player.PlayerRegistry;
 
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Thin facade over PlayerRegistry's note persistence.
+ * Kept so existing call sites (commands, ChatListener, etc.) don't need changing.
+ */
 public class NoteManager
 {
-    private final Map<UUID, List<PlayerNote>> notes = new HashMap<>();
+    private final PlayerRegistry playerRegistry;
 
-    public void addNote(UUID playerUUID, PlayerNote note)
+    public NoteManager(PlayerRegistry playerRegistry)
     {
-        notes.computeIfAbsent(playerUUID, k -> new ArrayList<>()).add(note);
+        this.playerRegistry = playerRegistry;
     }
 
-    public void removeNote(UUID playerUUID, PlayerNote note)
+    public void addNote(UUID uuid, PlayerNote note)
     {
-        List<PlayerNote> playerNotes = notes.get(playerUUID);
-        if (playerNotes == null)
-        {
-            return;
-        }
-
-        playerNotes.remove(note);
+        playerRegistry.addNote(uuid, note);
     }
 
-    public List<PlayerNote> getNotes(UUID playerUUID)
+    public void removeNote(UUID uuid, PlayerNote note)
     {
-        return notes.getOrDefault(playerUUID, List.of());
+        playerRegistry.removeNote(uuid, note);
     }
 
-    public boolean hasNotes(UUID playerUUID)
+    public List<PlayerNote> getNotes(UUID uuid)
     {
-        return notes.containsKey(playerUUID);
+        return playerRegistry.getNotes(uuid);
+    }
+
+    public boolean hasNotes(UUID uuid)
+    {
+        return playerRegistry.hasNotes(uuid);
     }
 }

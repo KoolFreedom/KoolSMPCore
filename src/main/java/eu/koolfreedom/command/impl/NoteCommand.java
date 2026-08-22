@@ -30,7 +30,7 @@ public class NoteCommand extends KoolCommand
     public boolean run(CommandSender sender, Player player, Command cmd,
                        String label, String[] args)
     {
-        if (args.length < 2) // need at least sub-cmd + player
+        if (args.length < 2)
             return false;
 
         String sub = args[0].toLowerCase();
@@ -45,14 +45,16 @@ public class NoteCommand extends KoolCommand
 
         UUID uuid = target.getUniqueId();
 
-        switch (sub) {
-            /* ========== /note add ========== */
-            case "add" -> {
-                if (!sender.hasPermission("kfc.notes.add")) {
-                    msg(sender, "<red>You lack permission to add notes.");
+        switch (sub)
+        {
+            case "add" ->
+            {
+                if (!sender.hasPermission("kfc.notes.add"))
+                {
+                    msg(sender, noPermission);
                     return true;
                 }
-                if (args.length < 3) return false; // no message given
+                if (args.length < 3) return false;
 
                 String message = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
                 PlayerNote note = new PlayerNote(sender.getName(), message, LocalDateTime.now());
@@ -63,10 +65,11 @@ public class NoteCommand extends KoolCommand
                 return true;
             }
 
-            /* ========== /note remove ======== */
-            case "remove" -> {
-                if (!sender.hasPermission("kfc.notes.remove")) {
-                    msg(sender, "<red>No permission!");
+            case "remove" ->
+            {
+                if (!sender.hasPermission("kfc.notes.remove"))
+                {
+                    msg(sender, noPermission);
                     return true;
                 }
                 if (args.length < 3) return false;
@@ -75,15 +78,17 @@ public class NoteCommand extends KoolCommand
                 return true;
             }
 
-            /* ========== /note view ========== */
-            case "view" -> {
-                if (!sender.hasPermission("kfc.notes.view")) {
-                    msg(sender, "<red>You lack permission to view notes.");
+            case "view" ->
+            {
+                if (!sender.hasPermission("kfc.notes.view"))
+                {
+                    msg(sender, noPermission);
                     return true;
                 }
 
-                var notes = plugin.getNoteManager().getNotes(uuid);
-                if (notes.isEmpty()) {
+                List<PlayerNote> notes = plugin.getNoteManager().getNotes(uuid);
+                if (notes.isEmpty())
+                {
                     msg(sender, "<gray>No notes for <player>.",
                             Placeholder.unparsed("player", Objects.requireNonNull(target.getName())));
                     return true;
@@ -92,20 +97,20 @@ public class NoteCommand extends KoolCommand
                 msg(sender, "<gold>Notes for <yellow><player></yellow>:</gold>",
                         Placeholder.unparsed("player", Objects.requireNonNull(target.getName())));
 
-                for (int i = 0; i < notes.size(); i++) {
+                for (int i = 0; i < notes.size(); i++)
+                {
                     PlayerNote n = notes.get(i);
                     msg(sender,
-                            "<gray>" + (i+1) + ". <white>[<time>] <author>: <message></white>",
+                            "<gray>" + (i + 1) + ". <white>[<time>] <author>: <message></white>",
                             Placeholder.unparsed("time", n.timestamp().toString()),
                             Placeholder.unparsed("author", n.author()),
-                            Placeholder.unparsed("message", n.message())
-                    );
+                            Placeholder.unparsed("message", n.message()));
                 }
                 return true;
             }
         }
 
-        return false; // unknown sub-command
+        return false;
     }
 
     private void handleNoteRemove(CommandSender sender, OfflinePlayer target, String indexArg)
@@ -113,29 +118,36 @@ public class NoteCommand extends KoolCommand
         UUID targetUUID = target.getUniqueId();
         List<PlayerNote> noteList = plugin.getNoteManager().getNotes(targetUUID);
 
-        if (noteList == null || noteList.isEmpty())
+        if (noteList.isEmpty())
         {
             sender.sendMessage(FUtil.miniMessage("<red>That player has no notes."));
             return;
         }
 
         int index;
-        try {
+        try
+        {
             index = Integer.parseInt(indexArg) - 1;
-        } catch (NumberFormatException ex) {
+        }
+        catch (NumberFormatException ex)
+        {
             sender.sendMessage(FUtil.miniMessage("<red>Invalid note index: <i>" + indexArg + "</i>"));
             return;
         }
 
-        if (index < 0 || index >= noteList.size()) {
+        if (index < 0 || index >= noteList.size())
+        {
             sender.sendMessage(FUtil.miniMessage("<red>Note index out of bounds."));
             return;
         }
 
-        PlayerNote removed = noteList.remove(index);
+        // Get the note first, then remove via NoteManager which handles
+        // both the DB write and the session cache — never mutate the
+        // unmodifiable list returned by getNotes() directly.
+        PlayerNote removed = noteList.get(index);
         plugin.getNoteManager().removeNote(targetUUID, removed);
 
-        sender.sendMessage(FUtil.miniMessage("<green>Removed note #" + (index + 1) +
-                " from <yellow>" + target.getName() + "</yellow>."));
+        sender.sendMessage(FUtil.miniMessage("<green>Removed note #" + (index + 1)
+                + " from <yellow>" + target.getName() + "</yellow>."));
     }
 }

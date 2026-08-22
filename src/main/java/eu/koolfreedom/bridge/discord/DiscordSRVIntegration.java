@@ -42,7 +42,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("unused")
@@ -351,7 +350,7 @@ public class DiscordSRVIntegration extends ListenerAdapter implements DiscordInt
                 .queue(message ->
                 {
                     report.getAdditionalData().set("discordMessageId", message.getId());
-                    CompletableFuture.runAsync(() -> KoolSMPCore.getInstance().getReportManager().save());
+                    KoolSMPCore.getInstance().getPlayerRegistry().saveReport(report);
                 });
     }
 
@@ -387,7 +386,7 @@ public class DiscordSRVIntegration extends ListenerAdapter implements DiscordInt
                     .queue(success ->
                     {
                         report.getAdditionalData().set("discordMessageId", success.getId());
-                        CompletableFuture.runAsync(() -> KoolSMPCore.getInstance().getReportManager().save());
+                        KoolSMPCore.getInstance().getPlayerRegistry().saveReport(report);
                     });
         }
     }
