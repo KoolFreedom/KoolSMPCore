@@ -12,10 +12,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 @CommandParameters(
         name = "note",
@@ -149,5 +151,30 @@ public class NoteCommand extends KoolCommand
 
         sender.sendMessage(FUtil.miniMessage("<green>Removed note #" + (index + 1)
                 + " from <yellow>" + target.getName() + "</yellow>."));
+    }
+
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
+    {
+        if (args.length == 1)
+        {
+            List<String> subs = new ArrayList<>();
+            if (sender.hasPermission("kfc.notes.add")) subs.add("add");
+            if (sender.hasPermission("kfc.notes.remove")) subs.add("remove");
+            if (sender.hasPermission("kfc.notes.view")) subs.add("view");
+            return subs;
+        }
+        else if (args.length == 2)
+        {
+            return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
+        }
+        else if (args.length == 3 && args[0].equalsIgnoreCase("remove"))
+        {
+            OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
+            int noteCount = plugin.getNoteManager().getNotes(target.getUniqueId()).size();
+            return IntStream.rangeClosed(1, noteCount).mapToObj(String::valueOf).toList();
+        }
+
+        return List.of();
     }
 }

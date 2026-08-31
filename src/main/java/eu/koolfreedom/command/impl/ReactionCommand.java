@@ -6,6 +6,7 @@ import eu.koolfreedom.util.FUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -14,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -225,5 +227,36 @@ public class ReactionCommand extends KoolCommand
                 return true;
             }
         }
+    }
+
+    @Override
+    public List<String> tabComplete(CommandSender sender, @NotNull Command command, @NotNull String label, String[] args)
+    {
+        final List<String> reactions = List.of("cry", "hug", "kiss", "pat", "poke", "ship", "slap");
+
+        if (args.length == 1)
+        {
+            return reactions;
+        }
+
+        final String sub = args[0].toLowerCase();
+
+        if (sub.equals("cry"))
+        {
+            return List.of();
+        }
+
+        if (args.length == 2 && reactions.contains(sub))
+        {
+            return Bukkit.getOnlinePlayers().stream().map(Player::getName)
+                    .filter(name -> !name.equalsIgnoreCase(sender.getName())).toList();
+        }
+
+        if (args.length == 3 && sub.equals("ship"))
+        {
+            return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
+        }
+
+        return List.of();
     }
 }

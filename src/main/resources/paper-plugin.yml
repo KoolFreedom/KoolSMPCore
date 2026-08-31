@@ -42,17 +42,11 @@ permissions:
     default: not op
     children:
       - kfc.command.admininfo
-      - kfc.command.cry
-      - kfc.command.hug
-      - kfc.command.kiss
       - kfc.command.koolsmpcore
-      - kfc.command.pat
       - kfc.command.playtime
-      - kfc.command.poke
+      - kfc.command.reaction
       - kfc.command.report
       - kfc.command.seen
-      - kfc.command.ship
-      - kfc.command.slap
   kfc.admin:
     description: Permission group offering basic administrative tools, but leaving the more important stuff locked away
     default: op
