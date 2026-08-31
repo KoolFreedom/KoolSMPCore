@@ -1,19 +1,27 @@
 package eu.koolfreedom.util;
 
-import eu.koolfreedom.KoolSMPCore;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.Nullable;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.Nullable;
+
+import eu.koolfreedom.KoolSMPCore;
 
 public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoName,
                             @Nullable String spigotUrl, @Nullable String modrinthUrl) {
+
+    private static final Pattern TAG_NAME_PATTERN = Pattern.compile("\"tag_name\"\\s*:\\s*\"([^\"]+)\"");
+    private static final Pattern DOWNLOAD_URL_PATTERN = Pattern.compile("\"browser_download_url\"\\s*:\\s*\"([^\"]+\\.jar)\"");
 
     public void check() {
         check(null, false);
@@ -36,7 +44,7 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
                     return;
                 }
 
-                String currentVersion = plugin.getPluginMeta().getVersion();
+                String currentVersion = getCurrentVersion();
                 if (!isOutdated(currentVersion, release.tag())) {
                     notify(sender, String.format("<green>You are already running the latest version of <white>%s <green>(<white>%s<green>).",
                             plugin.getName(), currentVersion));
@@ -49,8 +57,8 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
                 }
 
                 if (release.downloadUrl() == null) {
-                    notify(sender, "<red>No JAR file found in the latest release. Download manually:");
-                    notify(sender, String.format("<gray>• GitHub: <white>https://github.com/%s/%s/releases/latest", repoOwner, repoName));
+                    notify(sender, "<red>No JAR file found in the latest release.");
+                    notify(sender, buildManualDownloadMessage());
                     return;
                 }
 
@@ -58,18 +66,34 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
                 downloadUpdate(release.downloadUrl(), release.tag(), sender);
 
             } catch (Exception e) {
-                FLog.error("Failed to check for updates: " + e.getMessage());
+                FLog.error("Failed to check for updates: " + e.getMessage(), e);
                 notify(sender, "<red>Failed to check for updates: " + e.getMessage());
             }
         });
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private String getCurrentVersion() {
+        String buildVersion = plugin.getBuildMeta() != null ? plugin.getBuildMeta().getVersion() : null;
+        if (isMeaningful(buildVersion)) {
+            return buildVersion;
+        }
+
+        String metaVersion = plugin.getPluginMeta() != null ? plugin.getPluginMeta().getVersion() : null;
+        return isMeaningful(metaVersion) ? metaVersion : "unknown";
+    }
+
+    private boolean isMeaningful(@Nullable String value) {
+        return value != null && !value.isBlank() && !"unknown".equalsIgnoreCase(value);
     }
 
     private void downloadUpdate(String downloadUrl, String latestTag, @Nullable CommandSender sender) {
         try {
             Path pluginJar = Path.of(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
             Path pluginsFolder = pluginJar.getParent();
+            String jarName = pluginJar.getFileName().toString();
             Path newJar = pluginsFolder.resolve(plugin.getName() + "-" + latestTag + ".jar");
-            Path oldJar = pluginsFolder.resolve(pluginJar.getFileName().toString().replace(".jar", ".jar.old"));
+            Path oldJar = pluginsFolder.resolve(jarName.replaceFirst("\\.jar$", ".jar.old"));
 
             HttpURLConnection connection = (HttpURLConnection) URI.create(downloadUrl).toURL().openConnection();
             connection.setRequestProperty("Accept", "application/octet-stream");
@@ -89,7 +113,7 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
             FLog.info(String.format("Update to %s downloaded. Restart the server to apply.", latestTag));
 
         } catch (Exception e) {
-            FLog.error("Failed to download update: " + e.getMessage());
+            FLog.error("Failed to download update: " + e.getMessage(), e);
             notify(sender, "<red>Failed to download update: " + e.getMessage());
         }
     }
@@ -100,6 +124,12 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
         connection.setRequestProperty("Accept", "application/vnd.github+json");
         connection.setConnectTimeout(5000);
         connection.setReadTimeout(5000);
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode >= 400) {
+            String error = connection.getResponseMessage();
+            throw new IllegalStateException("GitHub API responded with HTTP " + responseCode + ": " + error);
+        }
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
             StringBuilder response = new StringBuilder();
@@ -112,27 +142,41 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
         }
     }
 
-    private boolean isOutdated(String current, String latest) {
-        return !normalize(latest).equalsIgnoreCase(normalize(current));
+    static boolean isOutdated(String current, String latest) {
+        return !VersionUtil.normalizeVersion(latest).equalsIgnoreCase(VersionUtil.normalizeVersion(current));
     }
 
     private void notifyUpdateAvailable(@Nullable CommandSender sender, String current, String latest) {
+        String githubUrl = String.format("https://github.com/%s/%s/releases/latest", repoOwner, repoName);
         String[] lines = {
                 "<yellow>------------------------------------------------",
                 String.format("<yellow>An update is available for <white>%s<yellow>!", plugin.getName()),
                 String.format("<gray>Current version: <white>%s", current),
                 String.format("<gray>Latest version:  <white>%s", latest),
-                "<gray>Download links:",
-                String.format("<gray>• GitHub:   <white>https://github.com/%s/%s/releases/latest", repoOwner, repoName),
+                "<gray>Use `/koolsmpcore update` to install it automatically.",
+                "<gray>If that didn't work, then you can download the plugin here and update manually:",
+                String.format("<gray>• GitHub: <white>%s", githubUrl),
                 spigotUrl != null && !spigotUrl.isEmpty() ? "<gray>• SpigotMC: <white>" + spigotUrl : null,
                 modrinthUrl != null && !modrinthUrl.isEmpty() ? "<gray>• Modrinth: <white>" + modrinthUrl : null,
-                "<gray>Alternatively, you can run `/koolsmpcore update` to automatically install the update",
                 "<yellow>------------------------------------------------"
         };
 
         for (String line : lines) {
             if (line != null) notify(sender, line);
         }
+    }
+
+    private String buildManualDownloadMessage() {
+        String githubUrl = String.format("https://github.com/%s/%s/releases/latest", repoOwner, repoName);
+        StringBuilder builder = new StringBuilder("<gray>If that didn't work, then you can download the plugin here and update manually:\n");
+        builder.append(String.format("<gray>• GitHub: <white>%s\n", githubUrl));
+        if (spigotUrl != null && !spigotUrl.isEmpty()) {
+            builder.append(String.format("<gray>• SpigotMC: <white>%s\n", spigotUrl));
+        }
+        if (modrinthUrl != null && !modrinthUrl.isEmpty()) {
+            builder.append(String.format("<gray>• Modrinth: <white>%s", modrinthUrl));
+        }
+        return builder.toString();
     }
 
     private void notify(@Nullable CommandSender sender, String miniMessage) {
@@ -143,30 +187,14 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
         }
     }
 
-    private String normalize(String version) {
-        return version.replaceFirst("(?i)^v", "").trim();
-    }
-
     private String extractTagName(String json) {
-        try {
-            return json.split("\"tag_name\":\"")[1].split("\"")[0];
-        } catch (Exception e) {
-            return null;
-        }
+        Matcher matcher = TAG_NAME_PATTERN.matcher(json);
+        return matcher.find() ? matcher.group(1) : null;
     }
 
     private String extractDownloadUrl(String json) {
-        try {
-            // Find the first .jar asset's browser_download_url
-            String[] parts = json.split("\"browser_download_url\":\"");
-            for (int i = 1; i < parts.length; i++) {
-                String url = parts[i].split("\"")[0];
-                if (url.endsWith(".jar")) return url;
-            }
-            return null;
-        } catch (Exception e) {
-            return null;
-        }
+        Matcher matcher = DOWNLOAD_URL_PATTERN.matcher(json);
+        return matcher.find() ? matcher.group(1) : null;
     }
 
     private record ReleaseInfo(String tag, @Nullable String downloadUrl) {}

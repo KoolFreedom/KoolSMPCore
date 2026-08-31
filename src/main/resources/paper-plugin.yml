@@ -1,6 +1,6 @@
 name: KoolSMPCore
 main: eu.koolfreedom.KoolSMPCore
-version: 4.3.1
+version: ${buildVersion}
 description: Core plugin for the KoolFreedom SMP
 load: POSTWORLD
 dependencies:

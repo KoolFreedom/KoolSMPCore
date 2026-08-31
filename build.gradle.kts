@@ -83,7 +83,36 @@ tasks {
                 "buildDate" to buildDate
             ))
         }
+
+        filesMatching("paper-plugin.yml") {
+            expand(mapOf(
+                "project.version" to project.version,
+                "buildVersion" to project.version
+            ))
+        }
+
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+
+    register("validatePaperPluginVersion") {
+        description = "Validates the {buildVersion} placeholder in paper-plugin.yml"
+        dependsOn("processResources")
+
+        doLast {
+            val generated = layout.buildDirectory.file("resources/main/paper-plugin.yml").get().asFile
+            val content = generated.readText()
+            val expected = "version: ${project.version}"
+
+            require(content.contains(expected)) {
+                "paper-plugin.yml did not expand the project version. Expected '$expected' but found:\n$content"
+            }
+
+            println("Validated paper-plugin.yml version: ${project.version}")
+        }
+    }
+
+    check {
+        dependsOn("validatePaperPluginVersion")
     }
 
     shadowJar {
