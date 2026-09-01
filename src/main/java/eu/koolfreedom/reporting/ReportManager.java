@@ -19,6 +19,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ReportManager extends KoolListener
 {
@@ -26,7 +27,7 @@ public class ReportManager extends KoolListener
 
 	public ReportManager()
 	{
-		reportMap = KoolSMPCore.getInstance().getPlayerRegistry().loadAllReports();
+		reportMap = new ConcurrentHashMap<>(KoolSMPCore.getInstance().getPlayerRegistry().loadAllReports());
 		FLog.info("{} report(s) loaded.", reportMap.size());
 	}
 

@@ -156,11 +156,16 @@ public class DiscordSRVIntegration extends ListenerAdapter implements DiscordInt
         final GroupManagement.Group fallback = KoolSMPCore.getInstance().getGroupManager().getGroupByNameOr("discord", discordGroup);
 
         final Member member = event.getMember();
+        if (member == null)
+            return;
+
         final Component message = convert(MessageUtil.reserializeToMinecraft(event.getMessage().getContentRaw()));
         final GroupManagement.Group userGroup = switch (ConfigEntry.DISCORD_GROUP_MODE_SWITCH.getInteger())
         {
-            case 1 -> KoolSMPCore.getInstance().getGroupManager().getGroupByNameOr(member.getRoles().getFirst().getName(),
-                    !member.getRoles().isEmpty() ? getGroupFromRole(member.getRoles().getFirst()) : fallback);
+            case 1 -> !member.getRoles().isEmpty()
+                ? KoolSMPCore.getInstance().getGroupManager().getGroupByNameOr(member.getRoles().getFirst().getName(),
+                getGroupFromRole(member.getRoles().getFirst()))
+                : fallback;
             case 2 -> !member.getRoles().isEmpty() ? getGroupFromRole(member.getRoles().getFirst()) : fallback;
             default -> fallback;
         };
@@ -169,7 +174,7 @@ public class DiscordSRVIntegration extends ListenerAdapter implements DiscordInt
         Component reply = Component.empty();
         if (event.getMessage().getReferencedMessage() != null)
         {
-            final Message replyMessage = event.getMessage().getReferencedMessage();
+            final Message replyMessage = Objects.requireNonNull(event.getMessage().getReferencedMessage());
             final Component replyComponent = convert(MessageUtil.reserializeToMinecraft(replyMessage.getContentRaw()));
             final Member replyMember = replyMessage.getMember();
 
@@ -235,15 +240,16 @@ public class DiscordSRVIntegration extends ListenerAdapter implements DiscordInt
         }
 
         final Message message = event.getMessage();
-        final Button button = event.getButton();
-        final Member member = event.getMember();
+        final Button button = Objects.requireNonNull(event.getButton());
+        final Member member = Objects.requireNonNull(event.getMember());
         final Component userDisplay = Component.text(member.getAsMention());
+        final String buttonId = button.getId();
         final Optional<Report> optionalReport = KoolSMPCore.getInstance().getReportManager().getReports(true).stream().filter(report ->
                 report.getAdditionalData().getString("discordMessageId", "-1").equalsIgnoreCase(message.getId())).findAny();
 
-        if (message.getAuthor() == plugin.getJda().getSelfUser() && button.getId() != null)
+        if (message.getAuthor() == plugin.getJda().getSelfUser() && buttonId != null)
         {
-            switch (button.getId().toLowerCase())
+            switch (buttonId.toLowerCase())
             {
                 case "handled" ->
                 {
@@ -442,30 +448,9 @@ public class DiscordSRVIntegration extends ListenerAdapter implements DiscordInt
             return;
         }
 
-        String displayName;
         String webhookAvatar = plugin.getJda().getSelfUser().getAvatarUrl();
         final String message = MessageUtil.reserializeToDiscord(convert(event.getMessage()));
-
-        // The command came from someone running the command from within console
-        if (sender instanceof PaperForwardingCommandSender srv)
-        {
-            displayName = plugin.getJda().getSelfUser().getEffectiveName();
-        }
-        // The command came from a
-        else if (sender instanceof ConsoleCommandSender || sender instanceof RemoteConsoleCommandSender)
-        {
-            displayName = sender.getName();
-        }
-        else if (sender instanceof Mob mob)
-        {
-            displayName = FUtil.plainText(mob.customName());
-        }
-        else
-        {
-            displayName = FUtil.plainText(event.getSenderDisplay());
-        }
-
-        // TODO: Implement more... "native" support instead of this hackjob, lmao
+        final String displayName = getSenderDisplayName(sender, event.getSenderDisplay());
 
         if (DiscordSRV.config().getBoolean("Experiment_WebhookChatMessageDelivery"))
         {
@@ -484,6 +469,23 @@ public class DiscordSRVIntegration extends ListenerAdapter implements DiscordInt
     }
 
     // -- UTILITY/CONVERSION METHODS -- //
+
+    private String getSenderDisplayName(CommandSender sender, Component fallback)
+    {
+        if (sender instanceof PaperForwardingCommandSender)
+            return plugin.getJda().getSelfUser().getEffectiveName();
+
+        if (sender instanceof ConsoleCommandSender || sender instanceof RemoteConsoleCommandSender)
+            return sender.getName();
+
+        if (sender instanceof Mob mob && mob.customName() != null)
+            return FUtil.plainText(mob.customName());
+
+        if (fallback != null)
+            return FUtil.plainText(fallback);
+
+        return sender.getName();
+    }
 
     private boolean channelDoesNotMatch(String name, String channelId)
     {

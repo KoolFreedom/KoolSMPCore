@@ -12,6 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -113,7 +114,16 @@ public class OrbitCommand extends KoolCommand implements Listener
     @EventHandler
     public void onEffectRemoval(EntityPotionEffectEvent event)
     {
-        if (event.getEntity() instanceof Player player && orbitMap.containsKey(player.getUniqueId())
+        // Cast to the stable supertype before calling getEntity() - EntityEvent's getEntity() has
+        // always returned plain Entity and always will. Calling it through a reference typed as
+        // EntityPotionEffectEvent binds to whatever return type THAT specific class declares, which is
+        // exactly what's version-sensitive here (some Paper builds add a covariant override narrowing
+        // it to LivingEntity, some don't). This works on both, because when a class DOES override with
+        // a covariant return type, the compiler is required to also generate a synthetic bridge method
+        // matching the original Entity-returning signature for binary compatibility - so the older
+        // signature is always callable either way.
+        if (((EntityEvent) event).getEntity() instanceof Player player
+                && orbitMap.containsKey(player.getUniqueId())
                 && (event.getAction() == EntityPotionEffectEvent.Action.REMOVED || event.getAction() == EntityPotionEffectEvent.Action.CLEARED))
         {
             grantPotionEffects(player);

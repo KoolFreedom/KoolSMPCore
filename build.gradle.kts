@@ -38,7 +38,7 @@ dependencies {
     compileOnly("net.essentialsx:EssentialsXDiscordLink:2.21.1") {
         exclude("org.spigotmc", "spigot-api")
     }
-    implementation("com.github.LeonMangler:SuperVanish:6.2.18-3")
+    compileOnly("com.github.LeonMangler:SuperVanish:6.2.18-3")
     compileOnly("net.luckperms:api:5.4")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude("org.bukkit", "bukkit")
@@ -47,6 +47,7 @@ dependencies {
 
     // Utilities
     implementation("org.apache.commons:commons-lang3:3.18.0")
+    implementation("org.xerial:sqlite-jdbc:3.50.3.0")
     implementation("org.projectlombok:lombok:1.18.46")
     annotationProcessor("org.projectlombok:lombok:1.18.46")
     implementation("org.reflections:reflections:0.10.2")
