@@ -25,6 +25,7 @@ import eu.koolfreedom.punishment.RecordKeeper;
 import eu.koolfreedom.reporting.ReportManager;
 import eu.koolfreedom.util.*;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import lombok.Getter;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
@@ -40,11 +41,8 @@ public class KoolSMPCore extends JavaPlugin
 {
     @Getter
     private static KoolSMPCore instance;
-
     private BuildProperties buildMeta;
     private CommandLoader commandLoader;
-
-    // Storage — must be first, everything else depends on it
     private PlayerRegistry playerRegistry;
 
     // Managers
@@ -118,8 +116,10 @@ public class KoolSMPCore extends JavaPlugin
         loadListeners();
         FLog.info("Loaded listeners");
 
-        commandLoader = new CommandLoader(AdminChatCommand.class);
-        commandLoader.loadCommands();
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event ->
+        {
+            new CommandLoader(AdminChatCommand.class).loadCommands(event.registrar());
+        });
         FLog.info("Loaded {} commands", commandLoader.getKoolCommands().size());
 
         groupManager = new GroupManagement();

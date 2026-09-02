@@ -1,18 +1,24 @@
 package eu.koolfreedom.command;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.util.FLog;
 import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -22,198 +28,167 @@ import java.util.*;
  * <p>The foundation of all commands in KoolSMPCore. Commands are currently registered in the plugin's onEnable method
  * 	through the {@link CommandLoader}.</p>
  */
-public abstract class KoolCommand extends Command implements PluginIdentifiableCommand
+public abstract class KoolCommand
 {
 	@Getter
-	protected final KoolSMPCore plugin = KoolSMPCore.getInstance();
+	protected static final KoolSMPCore plugin = KoolSMPCore.getInstance();
 
-	protected final String playerNotFound = "<gray>Could not find the specified player.";
 	protected final String playersOnly = "<red>This command can only be executed in-game.";
 	protected final String noPermission = "<red>You do not have permission to execute this command!";
+	protected final String noReasonProvided = "<gray>Must provide a reason.";
+	protected final String playerNotFound = "<gray>Could not find specified player";
 
-	/**
-	 * Constructor to initialize commands. Commands created this way <b>must</b> be annotated with the
-	 * 	{@link CommandParameters} annotations to be accepted, or else an {@link IllegalStateException} is thrown.
-	 */
+	private final CommandParameters parameters;
+
 	protected KoolCommand()
 	{
-		super("temporary", "temporary", "temporary", new ArrayList<>());
-
 		if (!getClass().isAnnotationPresent(CommandParameters.class))
 		{
-			throw new IllegalStateException("Commands of this type require the CommandParameters annotation");
+			throw new IllegalStateException("Commands must be annotated with @CommandParameters");
 		}
 
-		final CommandParameters parameters = Objects.requireNonNull(getClass().getAnnotation(CommandParameters.class));
-
-		setName(parameters.name());
-		setDescription(parameters.description());
-		setUsage(parameters.usage());
-		setPermission(parameters.permission().isBlank() ? "kfc.command." + getName() : parameters.permission());
-		setAliases(Arrays.stream(parameters.aliases()).toList());
+		this.parameters = Objects.requireNonNull(getClass().getAnnotation(CommandParameters.class));
 	}
 
-	@Override
-	public final boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args)
+	public final String getName()
 	{
-		// Plugin is disabled, lmao
-		if (plugin == null || !plugin.isEnabled())
-		{
-			return true;
-		}
+		return parameters.name();
+	}
 
-		// Make sure they have permission and if they don't, refuse to run the command.
-		if (!testPermissionSilent(sender))
-		{
-			msg(sender, "<red>You don't have permission to run this command.");
-			return true;
-		}
+	public final String getDescription()
+	{
+		return parameters.description();
+	}
 
-		try
+	public final List<String> getAliases()
+	{
+		return List.of(parameters.aliases());
+	}
+
+	public final String getPermissionNode()
+	{
+		return parameters.permission().isBlank() ? "kfc." + getName() : parameters.permission();
+	}
+
+	public boolean canUse(CommandSender sender)
+	{
+		return sender.hasPermission(getPermissionNode());
+	}
+
+	public abstract void build(LiteralArgumentBuilder<CommandSourceStack> root);
+
+	protected static LiteralArgumentBuilder<CommandSourceStack> literal(String name)
+	{
+		return Commands.literal(name);
+	}
+
+	protected static <T> RequiredArgumentBuilder<CommandSourceStack, T> argument(String name, ArgumentType<T> type)
+	{
+		return Commands.argument(name, type);
+	}
+
+	/**
+	 * A {@link Command} body that doesn't need to return the Brigadier success code itself - {@link #executes}
+	 * supplies that, along with the permission check and error handling every command previously duplicated.
+	 */
+	@FunctionalInterface
+	protected interface FallibleCommand
+	{
+		void run(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException;
+	}
+
+	/**
+	 * Wraps a command body with the same permission re-check, disabled-plugin guard, and catch-all error handling
+	 * the old {@code BasicCommand#execute} performed. {@link CommandSyntaxException} is left to propagate - that's
+	 * Brigadier's own mechanism for showing a red error to the sender, so don't swallow it.
+	 */
+	protected final Command<CommandSourceStack> executes(FallibleCommand logic)
+	{
+		return ctx ->
 		{
-			if (!run(sender, sender instanceof Player player ? player : null, this, commandLabel, args))
+			CommandSender sender = ctx.getSource().getSender();
+
+			if (plugin == null || !plugin.isEnabled())
 			{
-				msg(sender, "<gray>Usage: <white><usage></white>", Placeholder.component("usage",
-						FUtil.miniMessage(getUsage(), Placeholder.unparsed("command", commandLabel))));
-				return false;
+				return 0;
 			}
-		}
-		catch (Throwable ex)
-		{
-			msg(sender, "<red>Command execution error: <error>", Placeholder.unparsed("error", ex.toString()));
-			FLog.error("Command error", ex);
-		}
 
-		return true;
+			if (!canUse(sender))
+			{
+				msg(sender, noPermission);
+				return 0;
+			}
+
+			try
+			{
+				logic.run(ctx);
+				return Command.SINGLE_SUCCESS;
+			}
+			catch (CommandSyntaxException ex)
+			{
+				throw ex;
+			}
+			catch (Throwable ex)
+			{
+				msg(sender, "<red>Command execution error: <error>", Placeholder.unparsed("error", ex.toString()));
+				FLog.error("Command error in {}", getName(), ex);
+				return 0;
+			}
+		};
 	}
 
-	@Override
-	public final @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String commandLabel,
-												   @NotNull String[] args) throws IllegalArgumentException
+	/**
+	 * Resolves a single-player argument registered with {@code ArgumentTypes.player()}. Throws
+	 * {@link CommandSyntaxException} - rendered to the sender automatically by Brigadier - if the selector matched
+	 * no one currently online.
+	 */
+	protected static Player player(CommandContext<CommandSourceStack> ctx, String argName) throws CommandSyntaxException
 	{
-		List<String> tabCompletions = List.of();
-
-		// Return an empty list of tab completions if the plugin isn't available, the sender doesn't have permission
-		// 	to run the command, or args is empty
-		if (plugin == null || !plugin.isEnabled() || !testPermissionSilent(sender) || args.length == 0)
-		{
-			return tabCompletions;
-		}
-
-		try
-		{
-			tabCompletions = tabComplete(sender, this, commandLabel, args);
-		}
-		catch (Throwable ex)
-		{
-			tabCompletions = List.of();
-			FLog.error("An error occurred while attempting to tab complete command '" + getName() + "'", ex);
-			msg(sender, "<red>Tab completion error: <message>", Placeholder.unparsed("message", ex.toString()));
-		}
-
-		// The tab completer returned null, so fallback to regular
-		if (tabCompletions == null)
-		{
-			tabCompletions = super.tabComplete(sender, commandLabel, args);
-		}
-
-		// Remove irrelevant options and only show the ones matching what we have in store.
-		return tabCompletions.stream().filter(entry -> entry.toLowerCase().startsWith(args[args.length - 1].toLowerCase())).toList();
+		return ctx.getArgument(argName, PlayerSelectorArgumentResolver.class).resolve(ctx.getSource()).getFirst();
 	}
 
-	/**
-	 * Gets tab completions for the command as the sender based on the given arguments. This method is wrapped by
-	 * 	{@link #tabComplete(CommandSender, String, String[])} to handle permission checks and then tab completes the
-	 * 	command while also catching any possible exceptions that might be thrown by a particular command. While it does
-	 * 	tab complete everything, you should still catch any cases of exceptions caused by user errors.
-	 * @param sender		The {@link CommandSender} tab completing the command
-	 * @param command		The {@link Command} object.
-	 * @param commandLabel	The alias the sender chose to use to run the command.
-	 * @param args          An array of strings used for the command arguments.
-	 * @return				A list of Strings containing possible arguments. The aforementioned wrapper method will
-	 * 						suggest any arguments provided that start with the input given by the user. If returning
-	 * 						null, the plugin will fallback to the default way of tab completions, which is to just throw
-	 * 						a list of users. To return no tab completions, return an empty list instead using something
-	 * 						like {@link List#of()} or {@link Collections#emptyList()}.
-	 */
-	public @Nullable List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
+	protected static CommandSender sender(CommandContext<CommandSourceStack> ctx)
 	{
-		return List.of();
+		return ctx.getSource().getSender();
 	}
 
-	/**
-	 * Executes the command as the sender. This method is wrapped by {@link #execute(CommandSender, String, String[])}
-	 * 	to handle permission checks and then run the command while also catching any possible exceptions that might be
-	 * 	thrown by a particular command. While it does catch everything, you should still catch any cases of exceptions
-	 * 	caused by user error (i.e., a NumberFormatException being thrown).
-	 * @param sender		The {@link CommandSender} running the command
-	 * @param playerSender	The sender represented as a {@link Player} if they are one, otherwise it returns null. This
-	 *                      behavior is great for when you want to exclude sources that aren't in-game (like console)
-	 *                      from performing a specific task or running the command.
-	 * @param command		The {@link Command} object.
-	 * @param commandLabel 	The alias the sender chose to use to run the command.
-	 * @param args			An array of strings used for the command arguments.
-	 * @return				True if the user provided the correct arguments. If this returns false, a usage message will
-	 * 						be shown to the sender.
-	 */
-	public abstract boolean run(CommandSender sender, Player playerSender, Command command, String commandLabel, String[] args);
+	protected static @Nullable Player playerSender(CommandContext<CommandSourceStack> ctx)
+	{
+		return sender(ctx) instanceof Player player ? player : null;
+	}
 
-	/**
-	 * Send a MiniMessage-formatted message to the provided CommandSender.
-	 * @param sender		CommandSender
-	 * @param message		String
-	 * @param placeholders	TagResolver[]
-	 */
 	protected final void msg(CommandSender sender, String message, TagResolver... placeholders)
 	{
 		sender.sendRichMessage(message, placeholders);
 	}
 
-	/**
-	 * Send an Adventure message to the provided CommandSender.
-	 * @param sender		CommandSender
-	 * @param message		Component
-	 */
 	protected final void msg(CommandSender sender, Component message)
 	{
 		sender.sendMessage(message);
 	}
 
-	/**
-	 * Broadcast an Adventure message to the server.
-	 * @param message		Component
-	 */
 	protected final void broadcast(Component message)
 	{
 		FUtil.broadcast(message);
 	}
 
-	/**
-	 * Broadcast an Adventure message to everyone with a specific permission.
-	 * @param message		Component
-	 */
 	protected final void broadcast(Component message, String permission)
 	{
 		FUtil.broadcast(message, permission);
 	}
 
-	/**
-	 * Broadcast a MiniMessage-formatted message to the server.
-	 * @param message		String
-	 * @param placeholders	TagResolver[]
-	 */
 	protected final void broadcast(String message, TagResolver... placeholders)
 	{
 		FUtil.broadcast(message, placeholders);
 	}
 
-	/**
-	 * Broadcast a MiniMessage-formatted message to everyone with a specific permission.
-	 * @param message		String
-	 * @param placeholders	TagResolver[]
-	 */
 	protected final void broadcast(String permission, String message, TagResolver... placeholders)
 	{
 		FUtil.broadcast(permission, message, placeholders);
+	}
+
+	protected boolean isConsole(CommandSender sender)
+	{
+		return !(sender instanceof Player);
 	}
 }

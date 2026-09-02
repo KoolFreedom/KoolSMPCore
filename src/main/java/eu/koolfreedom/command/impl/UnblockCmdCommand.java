@@ -1,16 +1,15 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.listener.impl.MuteManager;
 import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
-import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.util.List;
 
 @CommandParameters(
         name      = "unblockcmd",
@@ -21,47 +20,21 @@ import java.util.List;
 public class UnblockCmdCommand extends KoolCommand
 {
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command cmd, String label, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        if (args.length != 1)
-        {
-            return false;
-        }
+        root.then(argument("target", ArgumentTypes.player())
+                .executes(executes(ctx -> unblockPlayer(sender(ctx), plugin.getMuteManager(), player(ctx, "target")))));
+    }
 
-        Player target = Bukkit.getPlayer(args[0]);
-        if (target == null)
-        {
-            msg(sender, playerNotFound);
-            return true;
-        }
-
-        MuteManager manager = plugin.getMuteManager();
-
+    private void unblockPlayer(CommandSender sender, MuteManager manager, Player target)
+    {
         if (!manager.isCommandsBlocked(target.getUniqueId()))
         {
-            msg(sender, "<red>That player's commands aren't blocked.");
-            return true;
+            msg(sender, "<red>That player's commands aren't blocked");
+            return;
         }
 
         manager.setCommandsBlocked(target.getUniqueId(), false);
-
-        FUtil.staffAction(sender,
-                "Unblocked commands for <player>",
-                Placeholder.unparsed("player", target.getName()));
-
-        msg(sender,
-                "<gray>Unblocked commands for <player>",
-                Placeholder.unparsed("player", target.getName()));
-
-        target.sendMessage(FUtil.miniMessage("<green>Your command block has been lifted."));
-
-        return true;
-    }
-
-    @Override
-    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
-    {
-        return args.length == 1 ? Bukkit.getOnlinePlayers().stream().map(Player::getName)
-                .filter(name -> !name.equalsIgnoreCase(sender.getName())).toList() : List.of();
+        FUtil.staffAction(sender, "Unblocked commands for <player>", Placeholder.unparsed("player", target.getName()));
     }
 }

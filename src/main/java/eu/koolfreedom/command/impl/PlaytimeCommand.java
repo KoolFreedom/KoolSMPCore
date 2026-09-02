@@ -1,46 +1,54 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.util.List;
 
 @CommandParameters(name = "playtime", description = "Shows your or another player's playtime", usage = "/playtime [player]")
 public class PlaytimeCommand extends KoolCommand
 {
     @Override
-    public boolean run(CommandSender sender, Player player, Command cmd, String label, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
+    {
+        root.executes(executes(ctx -> playtime(sender(ctx), playerSender(ctx), null)))
+                .then(argument("target", StringArgumentType.word())
+                        .executes(executes(ctx -> playtime(sender(ctx), playerSender(ctx),
+                                StringArgumentType.getString(ctx, "target")))));
+    }
+
+    private void playtime(CommandSender sender, Player playerSender, String targetName)
     {
         OfflinePlayer target;
 
-        if (args.length == 0)
+        if (targetName == null)
         {
-            if (!(sender instanceof Player))
+            if (playerSender == null)
             {
                 msg(sender, "<red>You must specify a player from console.");
-                return true;
+                return;
             }
-            target = player;
+            target = playerSender;
         }
         else
         {
             if (!sender.hasPermission("kfc.playtime.others"))
             {
                 msg(sender, "<red>You don’t have permission to view others’ playtime.");
-                return true;
+                return;
             }
-            target = Bukkit.getOfflinePlayer(args[0]);
+            target = Bukkit.getOfflinePlayer(targetName);
             if (target == null || (!target.hasPlayedBefore() && !target.isOnline()))
             {
                 msg(sender, playerNotFound);
-                return true;
+                return;
             }
         }
 
@@ -51,7 +59,6 @@ public class PlaytimeCommand extends KoolCommand
 
         String formatted = formatDuration(playtimeSeconds);
         msg(sender, FUtil.miniMessage("<gray>" + target.getName() + " has played for <red>" + formatted + "</red>."));
-        return true;
     }
 
     private String formatDuration(long totalSeconds)
@@ -67,13 +74,5 @@ public class PlaytimeCommand extends KoolCommand
         if (minutes > 0) sb.append(minutes).append("m ");
         if (secs > 0) sb.append(secs).append("s");
         return sb.toString().trim();
-    }
-
-    @Override
-    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
-    {
-        return args.length == 1 && sender.hasPermission("kfc.playtime.others")
-                ? Bukkit.getOnlinePlayers().stream().map(Player::getName).toList()
-                : List.of();
     }
 }

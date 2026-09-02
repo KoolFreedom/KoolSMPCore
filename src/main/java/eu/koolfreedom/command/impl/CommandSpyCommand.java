@@ -1,8 +1,10 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.config.ConfigEntry;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
@@ -29,28 +31,29 @@ public class CommandSpyCommand extends KoolCommand implements Listener
     }
 
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        if (playerSender == null)
+        root.executes(executes(ctx ->
         {
-            msg(sender, playersOnly);
-            return true;
-        }
+            if (isConsole(sender(ctx)))
+            {
+                msg(sender(ctx), playersOnly);
+                return;
+            }
 
-        PersistentDataContainer container = playerSender.getPersistentDataContainer();
+            PersistentDataContainer container = playerSender(ctx).getPersistentDataContainer();
 
-        if (!container.getOrDefault(commandSpyKey, PersistentDataType.BOOLEAN, false))
-        {
-            msg(sender, "<gray>CommandSpy <green>enabled</green>.");
-            container.set(commandSpyKey, PersistentDataType.BOOLEAN, true);
-        }
-        else
-        {
-            msg(sender, "<gray>CommandSpy <red>disabled</red>.");
-            container.set(commandSpyKey, PersistentDataType.BOOLEAN, false);
-        }
-
-        return true;
+            if (!container.getOrDefault(commandSpyKey, PersistentDataType.BOOLEAN, false))
+            {
+                msg(sender(ctx), "<gray>CommandSpy <green>enabled</green>.");
+                container.set(commandSpyKey, PersistentDataType.BOOLEAN, true);
+            }
+            else
+            {
+                msg(sender(ctx), "<gray>CommandSpy <red>disabled</red>.");
+                container.set(commandSpyKey, PersistentDataType.BOOLEAN, false);
+            }
+        }));
     }
 
     @EventHandler
@@ -59,7 +62,7 @@ public class CommandSpyCommand extends KoolCommand implements Listener
         Player sender = event.getPlayer();
         String commandMessage = event.getMessage();
 
-        Bukkit.getOnlinePlayers().stream().filter(player -> player.hasPermission(Objects.requireNonNull(getPermission())))
+        Bukkit.getOnlinePlayers().stream().filter(player -> player.hasPermission(getPermissionNode()))
                 .filter(player -> player.getPersistentDataContainer().getOrDefault(commandSpyKey, PersistentDataType.BOOLEAN, false))
                 .filter(player -> !sender.equals(player))
                 .forEach(player -> msg(player, ConfigEntry.FORMATS_COMMANDSPY.getString(),

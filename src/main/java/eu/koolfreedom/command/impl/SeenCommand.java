@@ -1,15 +1,17 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.note.PlayerNote;
 import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -26,27 +28,25 @@ public class SeenCommand extends KoolCommand
     private final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 
     @Override
-    public boolean run(CommandSender sender, Player player, Command cmd, String label, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        if (args.length != 1)
-        {
-            msg(sender, "<gray>Usage: /seen <player|ip>");
-            return true;
-        }
+        root.then(argument("target", StringArgumentType.word())
+                .executes(executes(ctx -> seen(sender(ctx), StringArgumentType.getString(ctx, "target")))));
+    }
 
-        String input = args[0];
-
+    private void seen(CommandSender sender, String input)
+    {
         if (FUtil.isValidIP(input))
         {
             List<OfflinePlayer> targets = FUtil.getOfflinePlayersByIp(input);
             if (targets.isEmpty())
             {
                 msg(sender, "<red>No players found with IP <white>" + input + "</white>.");
-                return true;
+                return;
             }
             msg(sender, FUtil.miniMessage("<gold>Players with IP <white>" + input + "</white>:"));
             targets.forEach(p -> displayPlayer(sender, p, input));
-            return true;
+            return;
         }
 
         OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(input);
@@ -56,11 +56,10 @@ public class SeenCommand extends KoolCommand
             if (target == null)
             {
                 msg(sender, playerNotFound);
-                return true;
+                return;
             }
         }
         displayPlayer(sender, target, null);
-        return true;
     }
 
     @SuppressWarnings("deprecation")
@@ -150,12 +149,5 @@ public class SeenCommand extends KoolCommand
         if (minutes > 0) sb.append(minutes).append("m ");
         if (secs > 0) sb.append(secs).append("s");
         return sb.toString().trim();
-    }
-
-    @Override
-    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
-    {
-        return args.length == 1 ? Bukkit.getOnlinePlayers().stream().map(Player::getName)
-                .filter(name -> !name.equalsIgnoreCase(sender.getName())).toList() : List.of();
     }
 }

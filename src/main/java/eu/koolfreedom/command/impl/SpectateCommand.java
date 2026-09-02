@@ -1,7 +1,10 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -16,44 +19,32 @@ import java.util.List;
 public class SpectateCommand extends KoolCommand
 {
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        if (playerSender == null)
-        {
-            msg(sender, playersOnly);
-            return true;
-        }
+        root.then(argument("target", ArgumentTypes.player())
+                .executes(executes(ctx ->
+                {
+                    if (isConsole(sender(ctx)))
+                    {
+                        msg(sender(ctx), playersOnly);
+                        return;
+                    }
 
-        if (args.length == 0)
-        {
-            return false;
-        }
+                    Player target = player(ctx, "target");
 
-        Player target = Bukkit.getPlayer(args[0]);
-        if (target == null)
-        {
-            msg(sender, playerNotFound);
-            return true;
-        }
+                    if (target.getGameMode() == GameMode.SPECTATOR)
+                    {
+                        msg(sender(ctx), "<red>That player is also in spectator mode.");
+                        return;
+                    }
 
-        if (target.getGameMode() == GameMode.SPECTATOR)
-        {
-            msg(sender, "<red>That player is also in spectator mode.");
-            return true;
-        }
+                    Player playerSender = playerSender(ctx);
+                    assert playerSender != null;
+                    playerSender.setGameMode(GameMode.SPECTATOR);
+                    playerSender.setSpectatorTarget(target);
+                    playerSender.teleport(target.getLocation());
 
-        playerSender.setGameMode(GameMode.SPECTATOR);
-        playerSender.setSpectatorTarget(target);
-        playerSender.teleport(target.getLocation());
-
-        msg(sender, "<green>Now spectating <player>.", Placeholder.unparsed("player", target.getName()));
-        return true;
-    }
-
-    @Override
-    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
-    {
-        return args.length == 1 ? Bukkit.getOnlinePlayers().stream().filter(player -> player.getGameMode() != GameMode.SPECTATOR)
-                .map(Player::getName).toList() : List.of();
+                    msg(sender(ctx), "<green>Now spectating <player>.", Placeholder.unparsed("player", target.getName()));
+                })));
     }
 }

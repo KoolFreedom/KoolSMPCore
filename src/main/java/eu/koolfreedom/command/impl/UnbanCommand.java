@@ -1,28 +1,30 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.banning.Ban;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 @CommandParameters(name = "unban", description = "Unban a player or IP address.", usage = "/<command> <playerOrIp>",
         aliases = {"pardon", "pardon-ip", "unbanip"})
 public class UnbanCommand extends KoolCommand
 {
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        if (args.length != 1)
-        {
-            return false;
-        }
+        root.then(argument("target", StringArgumentType.word())
+                .executes(executes(ctx -> unban(sender(ctx), StringArgumentType.getString(ctx, "target")))));
+    }
 
-        Ban ban = plugin.getBanManager().removeBan(args[0]);
+    private void unban(CommandSender sender, String targetArg)
+    {
+        Ban ban = plugin.getBanManager().removeBan(targetArg);
 
         if (ban == null)
         {
@@ -45,7 +47,5 @@ public class UnbanCommand extends KoolCommand
                 FUtil.staffAction(sender, "Unbanned an IP address");
             }
         }
-
-        return true;
     }
 }

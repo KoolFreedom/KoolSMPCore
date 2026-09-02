@@ -1,20 +1,22 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.api.AltManager;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 @CommandParameters(name = "alts", description = "Shows other accounts known to be associated with a player or IP", usage = "/alts <player|ip>")
 public class AltsCommand extends KoolCommand
@@ -22,15 +24,14 @@ public class AltsCommand extends KoolCommand
     private final AltManager altManager = plugin.getAltManager();
 
     @Override
-    public boolean run(CommandSender sender, Player player, Command command, String label, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        if (args.length != 1)
-        {
-            msg(sender, "<gray>Usage: /alts <player|ip>");
-            return true;
-        }
+        root.then(argument("target", StringArgumentType.word())
+                .executes(executes(ctx -> alts(sender(ctx), StringArgumentType.getString(ctx, "target")))));
+    }
 
-        String input = args[0];
+    private void alts(CommandSender sender, String input)
+    {
         String ip;
 
         if (FUtil.isValidIP(input))
@@ -43,14 +44,14 @@ public class AltsCommand extends KoolCommand
             if (target == null || (!target.hasPlayedBefore() && !target.isOnline()))
             {
                 msg(sender, playerNotFound);
-                return true;
+                return;
             }
 
             ip = altManager.getLastIP(target.getUniqueId()).orElse(null);
             if (ip == null)
             {
                 msg(sender, "<red>No IP history found for <white>" + target.getName());
-                return true;
+                return;
             }
         }
 
@@ -58,7 +59,7 @@ public class AltsCommand extends KoolCommand
         if (matches.isEmpty())
         {
             msg(sender, "<red>No other accounts found for IP <white>" + ip);
-            return true;
+            return;
         }
 
         msg(sender, "<red>Accounts linked to IP <white>" + ip + "</white>:");
@@ -80,14 +81,5 @@ public class AltsCommand extends KoolCommand
 
             msg(sender, line.build());
         }
-
-        return true;
-    }
-
-    @Override
-    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
-    {
-        return args.length == 1 ? Bukkit.getOnlinePlayers().stream().map(Player::getName)
-                .filter(name -> !name.equalsIgnoreCase(sender.getName())).toList() : List.of();
     }
 }

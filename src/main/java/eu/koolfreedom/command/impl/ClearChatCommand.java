@@ -1,8 +1,10 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
@@ -14,9 +16,9 @@ import org.bukkit.entity.Player;
 public class ClearChatCommand extends KoolCommand
 {
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () ->
+        root.executes(executes(ctx -> Bukkit.getScheduler().runTaskAsynchronously(plugin, () ->
         {
             // Messages are not unique between players with this implementation, mainly for better optimization, but it
             //  still works pretty effectively
@@ -31,13 +33,11 @@ public class ClearChatCommand extends KoolCommand
 
                 final Component blankComponent = blank.color(TextColor.color(FUtil.randomNumber(0, 0xFFFFFF)));
 
-                Bukkit.getOnlinePlayers().stream().filter(player -> !player.hasPermission("kfc.command.clearchat.immune"))
+                Bukkit.getOnlinePlayers().stream().filter(player -> !player.hasPermission("kfc.admin"))
                         .forEach(player -> player.sendMessage(blankComponent));
             }
 
-            FUtil.staffAction(sender, "Cleared the chat");
-        });
-
-        return true;
+            FUtil.staffAction(sender(ctx), "Cleared the chat");
+        })));
     }
 }

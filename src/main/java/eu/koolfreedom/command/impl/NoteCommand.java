@@ -1,23 +1,21 @@
 package eu.koolfreedom.command.impl;
 
-import eu.koolfreedom.command.annotation.CommandParameters;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.KoolCommand;
+import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.note.PlayerNote;
-import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.IntStream;
 
 @CommandParameters(
         name = "note",
@@ -25,156 +23,119 @@ import java.util.stream.IntStream;
         usage = "/note <add|view|remove> <player> [message|index]",
         aliases = {"notes"}
 )
-@SuppressWarnings("ConstantConditions")
 public class NoteCommand extends KoolCommand
 {
     @Override
-    public boolean run(CommandSender sender, Player player, Command cmd,
-                       String label, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        if (args.length < 2)
-            return false;
-
-        String sub = args[0].toLowerCase();
-        String targetName = args[1];
-        OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
-
-        if (target == null || (!target.hasPlayedBefore() && !target.isOnline()))
-        {
-            msg(sender, playerNotFound);
-            return true;
-        }
-
-        UUID uuid = target.getUniqueId();
-
-        switch (sub)
-        {
-            case "add" ->
-            {
-                if (!sender.hasPermission("kfc.notes.add"))
-                {
-                    msg(sender, noPermission);
-                    return true;
-                }
-                if (args.length < 3) return false;
-
-                String message = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
-                PlayerNote note = new PlayerNote(sender.getName(), message, LocalDateTime.now());
-                plugin.getNoteManager().addNote(uuid, note);
-
-                msg(sender, "<green>Note added for <yellow><player></yellow>.",
-                        Placeholder.unparsed("player", Objects.requireNonNull(target.getName())));
-                return true;
-            }
-
-            case "remove" ->
-            {
-                if (!sender.hasPermission("kfc.notes.remove"))
-                {
-                    msg(sender, noPermission);
-                    return true;
-                }
-                if (args.length < 3) return false;
-
-                handleNoteRemove(sender, target, args[2]);
-                return true;
-            }
-
-            case "view" ->
-            {
-                if (!sender.hasPermission("kfc.notes.view"))
-                {
-                    msg(sender, noPermission);
-                    return true;
-                }
-
-                List<PlayerNote> notes = plugin.getNoteManager().getNotes(uuid);
-                if (notes.isEmpty())
-                {
-                    msg(sender, "<gray>No notes for <player>.",
-                            Placeholder.unparsed("player", Objects.requireNonNull(target.getName())));
-                    return true;
-                }
-
-                msg(sender, "<gold>Notes for <yellow><player></yellow>:</gold>",
-                        Placeholder.unparsed("player", Objects.requireNonNull(target.getName())));
-
-                for (int i = 0; i < notes.size(); i++)
-                {
-                    PlayerNote n = notes.get(i);
-                    msg(sender,
-                            "<gray>" + (i + 1) + ". <white>[<time>] <author>: <message></white>",
-                            Placeholder.unparsed("time", n.timestamp().toString()),
-                            Placeholder.unparsed("author", n.author()),
-                            Placeholder.unparsed("message", n.message()));
-                }
-                return true;
-            }
-        }
-
-        return false;
+        root.then(literal("add").then(argument("target", StringArgumentType.word())
+                        .then(argument("message", StringArgumentType.greedyString())
+                                .executes(executes(ctx -> add(sender(ctx), StringArgumentType.getString(ctx, "target"),
+                                        StringArgumentType.getString(ctx, "message")))))))
+                .then(literal("remove").then(argument("target", StringArgumentType.word())
+                        .then(argument("index", IntegerArgumentType.integer(1))
+                                .executes(executes(ctx -> remove(sender(ctx), StringArgumentType.getString(ctx, "target"),
+                                        IntegerArgumentType.getInteger(ctx, "index")))))))
+                .then(literal("view").then(argument("target", StringArgumentType.word())
+                        .executes(executes(ctx -> view(sender(ctx), StringArgumentType.getString(ctx, "target"))))));
     }
 
-    private void handleNoteRemove(CommandSender sender, OfflinePlayer target, String indexArg)
+    private void add(CommandSender sender, String targetName, String message)
     {
+        if (!sender.hasPermission("kfc.notes.add"))
+        {
+            msg(sender, noPermission);
+            return;
+        }
+
+        OfflinePlayer target = resolveTarget(sender, targetName);
+        if (target == null) return;
+
+        PlayerNote note = new PlayerNote(sender.getName(), message, LocalDateTime.now());
+        plugin.getNoteManager().addNote(target.getUniqueId(), note);
+
+        msg(sender, "<green>Note added for <yellow><player></yellow>.",
+                Placeholder.unparsed("player", Objects.requireNonNull(target.getName())));
+    }
+
+    private void remove(CommandSender sender, String targetName, int index)
+    {
+        if (!sender.hasPermission("kfc.notes.remove"))
+        {
+            msg(sender, noPermission);
+            return;
+        }
+
+        OfflinePlayer target = resolveTarget(sender, targetName);
+        if (target == null) return;
+
         UUID targetUUID = target.getUniqueId();
         List<PlayerNote> noteList = plugin.getNoteManager().getNotes(targetUUID);
 
         if (noteList.isEmpty())
         {
-            sender.sendMessage(FUtil.miniMessage("<red>That player has no notes."));
+            msg(sender, "<red>That player has no notes.");
             return;
         }
 
-        int index;
-        try
+        int zeroIndex = index - 1;
+        if (zeroIndex < 0 || zeroIndex >= noteList.size())
         {
-            index = Integer.parseInt(indexArg) - 1;
-        }
-        catch (NumberFormatException ex)
-        {
-            sender.sendMessage(FUtil.miniMessage("<red>Invalid note index: <i>" + indexArg + "</i>"));
+            msg(sender, "<red>Note index out of bounds.");
             return;
         }
 
-        if (index < 0 || index >= noteList.size())
-        {
-            sender.sendMessage(FUtil.miniMessage("<red>Note index out of bounds."));
-            return;
-        }
-
-        // Get the note first, then remove via NoteManager which handles
-        // both the DB write and the session cache — never mutate the
-        // unmodifiable list returned by getNotes() directly.
-        PlayerNote removed = noteList.get(index);
+        // Get the note first, then remove via NoteManager which handles both the DB write and the
+        // session cache — never mutate the unmodifiable list returned by getNotes() directly.
+        PlayerNote removed = noteList.get(zeroIndex);
         plugin.getNoteManager().removeNote(targetUUID, removed);
 
-        sender.sendMessage(FUtil.miniMessage("<green>Removed note #" + (index + 1)
-                + " from <yellow>" + target.getName() + "</yellow>."));
+        msg(sender, "<green>Removed note #<index> from <yellow><player></yellow>.",
+                Placeholder.unparsed("index", String.valueOf(index)),
+                Placeholder.unparsed("player", Objects.requireNonNull(target.getName())));
     }
 
-    @Override
-    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
+    private void view(CommandSender sender, String targetName)
     {
-        if (args.length == 1)
+        if (!sender.hasPermission("kfc.notes.view"))
         {
-            List<String> subs = new ArrayList<>();
-            if (sender.hasPermission("kfc.notes.add")) subs.add("add");
-            if (sender.hasPermission("kfc.notes.remove")) subs.add("remove");
-            if (sender.hasPermission("kfc.notes.view")) subs.add("view");
-            return subs;
-        }
-        else if (args.length == 2)
-        {
-            return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
-        }
-        else if (args.length == 3 && args[0].equalsIgnoreCase("remove"))
-        {
-            OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
-            int noteCount = plugin.getNoteManager().getNotes(target.getUniqueId()).size();
-            return IntStream.rangeClosed(1, noteCount).mapToObj(String::valueOf).toList();
+            msg(sender, noPermission);
+            return;
         }
 
-        return List.of();
+        OfflinePlayer target = resolveTarget(sender, targetName);
+        if (target == null) return;
+
+        List<PlayerNote> notes = plugin.getNoteManager().getNotes(target.getUniqueId());
+        if (notes.isEmpty())
+        {
+            msg(sender, "<gray>No notes for <player>.",
+                    Placeholder.unparsed("player", Objects.requireNonNull(target.getName())));
+            return;
+        }
+
+        msg(sender, "<gold>Notes for <yellow><player></yellow>:</gold>",
+                Placeholder.unparsed("player", Objects.requireNonNull(target.getName())));
+
+        for (int i = 0; i < notes.size(); i++)
+        {
+            PlayerNote n = notes.get(i);
+            msg(sender,
+                    "<gray>" + (i + 1) + ". <white>[<time>] <author>: <message></white>",
+                    Placeholder.unparsed("time", n.timestamp().toString()),
+                    Placeholder.unparsed("author", n.author()),
+                    Placeholder.unparsed("message", n.message()));
+        }
+    }
+
+    private OfflinePlayer resolveTarget(CommandSender sender, String targetName)
+    {
+        OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
+        if (!target.hasPlayedBefore() && !target.isOnline())
+        {
+            msg(sender, playerNotFound);
+            return null;
+        }
+        return target;
     }
 }

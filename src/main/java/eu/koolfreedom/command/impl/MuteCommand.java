@@ -1,52 +1,46 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.listener.impl.MuteManager;
 import eu.koolfreedom.punishment.Punishment;
 import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
-import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.List;
 import java.util.UUID;
 
 @CommandParameters(name = "mute", description = "Mutes a player with optional duration and reason.", usage = "/<command> <player>")
 public class MuteCommand extends KoolCommand
 {
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command cmd, String label, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
+    {
+        root.then(literal("purge").executes(executes(ctx -> purge(sender(ctx)))))
+                .then(argument("target", ArgumentTypes.player())
+                        .executes(executes(ctx -> toggleMute(sender(ctx), player(ctx, "target")))));
+    }
+
+    private void purge(CommandSender sender)
+    {
+        int unmuted = plugin.getMuteManager().wipeMutes();
+        msg(sender, "<gray><amount> players were unmuted.",
+                Placeholder.unparsed("amount", String.valueOf(unmuted)));
+        FUtil.staffAction(sender, "Unmuted all players");
+    }
+
+    private void toggleMute(CommandSender sender, Player target)
     {
         MuteManager mum = plugin.getMuteManager();
-
-        if (args.length == 0)
-        {
-            return false;
-        }
-
-        if (args[0].equalsIgnoreCase("purge"))
-        {
-            int unmuted = mum.wipeMutes();
-            msg(sender, "<gray><amount> players were unmuted.",
-                    Placeholder.unparsed("amount", String.valueOf(unmuted)));
-            FUtil.staffAction(sender, "Unmuted all players");
-            return true;
-        }
-
-        Player target = Bukkit.getPlayer(args[0]);
-        if (target == null)
-        {
-            msg(sender, playerNotFound);
-            return true;
-        }
 
         if (target.hasPermission("kfc.command.mute.immune"))
         {
             msg(sender, "<red>That player can't be muted.");
-            return true;
+            return;
         }
 
         UUID uuid = target.getUniqueId();
@@ -57,10 +51,9 @@ public class MuteCommand extends KoolCommand
             mum.unmute(uuid);
             FUtil.staffAction(sender, "Unmuted <player>", Placeholder.unparsed("player", name));
             plugin.getAutoUndoManager().cancelAutoUnmute(uuid);
-            return true;
+            return;
         }
 
-        // Mute
         mum.mute(uuid);
         FUtil.staffAction(sender, "Muted <player>", Placeholder.unparsed("player", name));
         plugin.getAutoUndoManager().scheduleAutoUnmute(target);
@@ -72,17 +65,5 @@ public class MuteCommand extends KoolCommand
                 .by(sender.getName())
                 .type("MUTE")
                 .build());
-
-        return true;
-    }
-
-    @Override
-    public List<String> tabComplete(CommandSender sender, Command command, String label, String[] args)
-    {
-        return args.length == 1
-                ? Bukkit.getOnlinePlayers().stream()
-                .filter(player -> !player.hasPermission("kfc.command.mute.immune"))
-                .map(Player::getName).toList()
-                : List.of();
     }
 }

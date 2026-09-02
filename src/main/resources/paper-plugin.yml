@@ -41,52 +41,48 @@ permissions:
     description: Permissions for regular players
     default: not op
     children:
-      - kfc.command.admininfo
-      - kfc.command.koolsmpcore
-      - kfc.command.playtime
-      - kfc.command.reaction
-      - kfc.command.report
-      - kfc.command.seen
+      - kfc.admininfo
+      - kfc.koolsmpcore
+      - kfc.playtime
+      - kfc.reaction
+      - kfc.report
+      - kfc.seen
   kfc.admin:
     description: Permission group offering basic administrative tools, but leaving the more important stuff locked away
     default: op
     children:
       - kfc.member
-      - kfc.command.adminchat
-      - kfc.command.alts
-      - kfc.command.ban
-      - kfc.command.banip
-      - kfc.command.banlist
-      - kfc.command.blockcommand
-      - kfc.command.clearchat
-      - kfc.command.clearchat.immune
-      - kfc.command.commandspy
-      - kfc.command.freeze
-      - kfc.command.heal
-      - kfc.command.kick
-      - kfc.command.lockup
-      - kfc.command.mute
-      - kfc.command.mute.immune
-      - kfc.command.mutechat
-      - kfc.mutechat.bypass
+      - kfc.adminchat
+      - kfc.alts
+      - kfc.ban
+      - kfc.banip
+      - kfc.banlist
+      - kfc.blockcommand
+      - kfc.clearchat
+      - kfc.commandspy
+      - kfc.freeze
+      - kfc.heal
+      - kfc.kick
+      - kfc.lockup
+      - kfc.mute
+      - kfc.mutechat
       - kfc.notes.add
       - kfc.notes.view
       - kfc.notes.remove
-      - kfc.command.note
-      - kfc.command.orbit
-      - kfc.command.rawsay
-      - kfc.command.reports
-      - kfc.command.satisfyall
-      - kfc.command.say
+      - kfc.note
+      - kfc.orbit
+      - kfc.rawsay
+      - kfc.reports
+      - kfc.satisfyall
+      - kfc.say
       - kfc.seen.viewip
-      - kfc.command.smite
-      - kfc.command.spectate
-      - kfc.command.tban
-      - kfc.command.troll
-      - kfc.command.unban
-      - kfc.command.unblockcmd
-      - kfc.command.warn
-      - kfc.command.warn.immune
+      - kfc.smite
+      - kfc.spectate
+      - kfc.tban
+      - kfc.troll
+      - kfc.unban
+      - kfc.unblockcmd
+      - kfc.warn
       - kfc.ping_everyone
       - kfc.playtime.others
   kfc.senior:
@@ -95,9 +91,9 @@ permissions:
     children:
       - kfc.admin
       - kfc.banlist.reload
-      - kfc.command.cage
+      - kfc.cage
       - kfc.reload
-      - kfc.command.doom
+      - kfc.doom
       - kfc.reports.reopen
       - kfc.reports.handle
       - kfc.reports.close
@@ -107,6 +103,6 @@ permissions:
     children:
       - kfc.senior
       - kfc.antispam.bypass
-      - kfc.command.crash
+      - kfc.crash
       - kfc.reports.purge
-      - kfc..update
+      - kfc.update

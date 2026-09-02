@@ -1,13 +1,13 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.Objects;
 
@@ -15,7 +15,12 @@ import java.util.Objects;
 public class SatisfyAllCommand extends KoolCommand
 {
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
+    {
+        root.executes(executes(ctx -> satisfyAll(sender(ctx))));
+    }
+
+    private void satisfyAll(CommandSender sender)
     {
         Bukkit.getOnlinePlayers().forEach(player ->
         {
@@ -26,6 +31,5 @@ public class SatisfyAllCommand extends KoolCommand
             player.setFireTicks(0);
         });
         FUtil.staffAction(sender, "Healed all players");
-        return true;
     }
 }
