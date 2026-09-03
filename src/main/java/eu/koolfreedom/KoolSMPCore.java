@@ -120,7 +120,7 @@ public class KoolSMPCore extends JavaPlugin
         {
             new CommandLoader(AdminChatCommand.class).loadCommands(event.registrar());
         });
-        FLog.info("Loaded {} commands", commandLoader.getKoolCommands().size());
+        FLog.info("Loaded commands");
 
         groupManager = new GroupManagement();
         FLog.info("Loaded group manager");

@@ -31,7 +31,7 @@ public class CrashCommand extends KoolCommand
     private void crashParticles(Player target)
     {
         target.spawnParticle(Particle.ASH, target.getLocation(), 999999999);
-        msg(target, "<green>Your wish is my command.");
+        msg(target, "<green>:)");
     }
 
     private void crashJVM(Player target, CommandSender sender)
