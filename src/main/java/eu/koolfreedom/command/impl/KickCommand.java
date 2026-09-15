@@ -37,16 +37,21 @@ public class KickCommand extends KoolCommand
                 .reason(reason)
                 .build());
 
-        target.kick(FUtil.miniMessage("<red>You have been kicked from the server." +
+        target.kick(getKickMessage(sender, reason));
+
+        FUtil.staffAction(sender, "Kicked <player>" + (reason != null ? ", Reason: <white><reason></white>" : ""),
+                Placeholder.unparsed("player", target.getName()),
+                Placeholder.unparsed("reason", reason != null ? reason : ""));
+    }
+
+    private Component getKickMessage(CommandSender sender, String reason)
+    {
+        return FUtil.miniMessage("<red>You have been kicked from the server." +
                         "<newline>Kicked by: <yellow><sender></yellow><reason_if_present>",
                 Placeholder.unparsed("sender", sender.getName()),
                 Placeholder.component("reason_if_present", reason != null ?
                         FUtil.miniMessage("<newline>Reason: <yellow><reason></yellow>",
                                 Placeholder.unparsed("reason", reason)) :
-                        Component.empty())), PlayerKickEvent.Cause.KICKED);
-
-        FUtil.staffAction(sender, "Kicked <player>" + (reason != null ? ", Reason: <white><reason></white>" : ""),
-                Placeholder.unparsed("player", target.getName()),
-                Placeholder.unparsed("reason", reason != null ? reason : ""));
+                        Component.empty()));
     }
 }
