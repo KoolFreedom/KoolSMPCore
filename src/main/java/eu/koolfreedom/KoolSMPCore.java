@@ -87,7 +87,7 @@ public class KoolSMPCore extends JavaPlugin
 
         noteManager = new NoteManager(playerRegistry);
         altManager = new AltManager(playerRegistry);
-        freezeManager = new FreezeManager(playerRegistry);
+        freezeManager = new FreezeManager();
 
         MainConfig.load();
         FLog.info("Loaded main configuration");

@@ -80,41 +80,27 @@ public class Report
 				.build();
 	}
 
-	public ConfigurationSection toConfigurationSection()
-	{
-		final MemoryConfiguration section = new MemoryConfiguration();
-		section.set("reporter", reporter.toString());
-		section.set("reported", reported.toString());
-		section.set("reason", reason);
-		section.set("timestamp", timestamp);
-		section.set("status", status.name());
-		section.set("lastNote", lastNote);
-		section.set("handlers", handlers);
-		section.set("extra", additionalData);
-		return section;
-	}
-
 	public void addHandler(String handlerId)
 	{
 		handlers.remove(handlerId);
 		handlers.addLast(handlerId);
 	}
 
-	public boolean update(Component displayName, String staffName, String staffId, ReportStatus newStatus, String note)
+	public void update(Component displayName, String staffName, String staffId, ReportStatus newStatus, String note)
 	{
-		return update(new PlayerReportUpdateEvent(false, displayName, staffName, staffId, getStatus(), newStatus, note, this));
+		update(new PlayerReportUpdateEvent(false, displayName, staffName, staffId, getStatus(), newStatus, note, this));
 	}
 
-	public boolean updateAsync(Component displayName, String staffName, String staffId, ReportStatus newStatus, String note)
+	public void updateAsync(Component displayName, String staffName, String staffId, ReportStatus newStatus, String note)
 	{
-		return update(new PlayerReportUpdateEvent(true, displayName, staffName, staffId, getStatus(), newStatus, note, this));
+		update(new PlayerReportUpdateEvent(true, displayName, staffName, staffId, getStatus(), newStatus, note, this));
 	}
 
-	private boolean update(PlayerReportUpdateEvent event)
+	private void update(PlayerReportUpdateEvent event)
 	{
 		if (isResolved() && event.getNewStatus() != ReportStatus.REOPENED)
 		{
-			return false;
+			return;
 		}
 
 		if (event.getNewNote() != null)
@@ -126,7 +112,6 @@ public class Report
 		addHandler(event.getStaffId());
 
 		event.callEvent();
-		return true;
 	}
 
 	public PlayerReportEvent createEvent()
