@@ -67,9 +67,12 @@ public class BanManager extends KoolListener
 		return banMap.values().stream().filter(b -> !b.isExpired()).count();
 	}
 
-	public Collection<Ban> getBans()
+	public List<Ban> getActiveBans()
 	{
-		return Collections.unmodifiableCollection(banMap.values());
+		return banMap.values().stream()
+				.filter(ban -> !ban.isExpired())
+				.sorted(Comparator.comparingLong(Ban::getId).reversed())
+				.toList();
 	}
 
 	/**

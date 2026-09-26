@@ -13,12 +13,13 @@
 # To apply any changes, save them and reload the configuration with /koolsmpcore reload.
 
 server:
-  motd: '<randomize>KoolFreedom SMP (Native 1.21.1)'
+  motd: '<randomize>KoolFreedom SMP (Native 26.2)'
   whitelist_motd: '<red>Whitelist is on!'
   full_motd: '<red>Server is full!'
   tablist_header: ' <newline>  <light_purple>Welcome to <gold>KoolFreedom SMP</gold>!  <newline> '
   tablist_footer: ' <newline>  <light_purple>Join our <dark_purple>/discord</dark_purple> <newline>  '
   ban_url: 'Put your own forum/website here.'
+  permban_url: 'Put your own forum/website here.'
 
 # All things related to the announcer
 announcer:

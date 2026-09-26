@@ -90,7 +90,6 @@ permissions:
     default: op
     children:
       - kfc.admin
-      - kfc.banlist.reload
       - kfc.cage
       - kfc.reload
       - kfc.doom

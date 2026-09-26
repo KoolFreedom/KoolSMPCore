@@ -106,9 +106,14 @@ public class Ban
 			msg.append("<newline>Reason: <yellow><reason></yellow>");
 		if (canExpire())
 			msg.append("<newline>Expires: <yellow><expires></yellow>");
-		msg.append("<newline><red>You can appeal at <yellow>")
-				.append(ConfigEntry.SERVER_APPEAL_URL.getString())
-				.append("</yellow>");
+		if (expires == Long.MAX_VALUE)
+			msg.append("<newline><red>You can appeal at <yellow>")
+					.append(ConfigEntry.SERVER_PERMBAN_APPEAL_URL.getString())
+					.append("</yellow>");
+		else
+			msg.append("<newline><red>You can appeal at <yellow>")
+					.append(ConfigEntry.SERVER_APPEAL_URL.getString())
+					.append("</yellow>");
 
 		return FUtil.miniMessage(msg.toString(),
 				Placeholder.unparsed("expires", EXPIRATION_FORMAT.format(

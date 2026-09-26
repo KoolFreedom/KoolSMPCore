@@ -14,6 +14,7 @@ public enum ConfigEntry
     SERVER_TABLIST_HEADER(String.class, "server.tablist_header"),
     SERVER_TABLIST_FOOTER(String.class, "server.tablist_footer"),
     SERVER_APPEAL_URL(String.class, "server.ban_url"),
+    SERVER_PERMBAN_APPEAL_URL(String.class, "server.permban_url"),
     ANNOUNCER_ENABLED(Boolean.class, "announcer.enable"),
     ANNOUNCER_DELAY(Integer.class, "announcer.delay"),
     ANNOUNCER_MESSAGES(List.class, "announcer.messages"),
