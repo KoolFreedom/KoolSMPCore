@@ -211,14 +211,28 @@ groups:
     name: owner
     color: red
     displayName: <red>Owner
+
+# Exploit protection
+# This configuration section is linked to the ExploitListener/ExploitPunisher classes.
+# %player% will always resolve the player's username, so do not change that. Also note
+#   that punishment reasons in KoolSMPCore do not support color codes, so please leave it plain.
 exploits:
   enabled: true
   crash:
     tab_complete:
-      punishment: "kick %player% Malicious packets." # Leave blank if you want to disable punishments.
+      punishment: "doom %player% Malicious packets."
       enabled: true
     bundle:
       punishment: "doom %player% Malicious packets."
+      enabled: true
+    book:
+      punishment: "kick %player% Malicious packets."
+      enabled: true
+    sign:
+      punishment: "kick %player% Malicious packets."
+      enabled: true
+    window_click:
+      punishment: "kick %player% Malicious packets."
       enabled: true
   dupe:
     book_and_quill:
@@ -230,4 +244,11 @@ exploits:
   misc:
     abilities:
       punishment: "kick %player% Malicious packets."
+      enabled: true
+  spam:
+    command:
+      punishment: "kick %player% Command spam."
+      enabled: true
+    chat:
+      punishment: "kick %player% Chat spam."
       enabled: true

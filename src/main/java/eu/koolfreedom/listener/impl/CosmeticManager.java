@@ -24,20 +24,13 @@ public class CosmeticManager extends KoolListener
     @EventHandler
     public void onServerPing(ServerListPingEvent event)
     {
-        /* ------------------------------------------------------------ */
-        /*  0) Grab the BanManager once                                */
-        /* ------------------------------------------------------------ */
         BanManager banManager = KoolSMPCore.getInstance().getBanManager();
-
-        /* ------------------------------------------------------------ */
-        /*  1) IP‑ban check                                            */
-        /* ------------------------------------------------------------ */
-        String ip = event.getAddress().getHostAddress();          // raw IP string
-        Optional<Ban> ipBan = banManager.findBan(ip);             // BanManager API
+        String ip = event.getAddress().getHostAddress();
+        Optional<Ban> ipBan = banManager.findBan(ip);
 
         if (ipBan.isPresent())
         {
-            Ban ban = ipBan.get();                     // never expired (findBan filters)
+            Ban ban = ipBan.get();
 
             // Build a short MOTD for the ping screen
             StringBuilder mm = new StringBuilder("<red><b>You are banned from this server.");
@@ -52,9 +45,6 @@ public class CosmeticManager extends KoolListener
             return; // don’t run any further MOTD logic
         }
 
-        /* ------------------------------------------------------------ */
-        /*  2) Whitelist / server‑full fall‑backs                      */
-        /* ------------------------------------------------------------ */
         if (Bukkit.hasWhitelist())
         {
             event.motd(FUtil.miniMessage(ConfigEntry.SERVER_WHITELIST_MOTD.getString()));
@@ -67,9 +57,6 @@ public class CosmeticManager extends KoolListener
             return;
         }
 
-        /* ------------------------------------------------------------ */
-        /*  3) Normal MOTD                                             */
-        /* ------------------------------------------------------------ */
         event.motd(FUtil.miniMessage(ConfigEntry.SERVER_MOTD.getString()));
     }
 
@@ -92,19 +79,6 @@ public class CosmeticManager extends KoolListener
         }
 
         player.playerListName(KoolSMPCore.getInstance().getGroupManager().getColoredName(player));
-
-        KoolSMPCore.getInstance().getGroupManager().applyNametagColor(player);
-    }
-
-    @EventHandler
-    public void onQuit(PlayerQuitEvent e)
-    {
-        String name = e.getPlayer().getName();
-        Scoreboard main = Bukkit.getScoreboardManager().getMainScoreboard();
-        for (Team team : main.getTeams())
-        {
-            team.removeEntry(name);
-        }
     }
 
 }

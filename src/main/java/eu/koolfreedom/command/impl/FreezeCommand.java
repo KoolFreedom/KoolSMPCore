@@ -31,6 +31,7 @@ public class FreezeCommand extends KoolCommand
             FUtil.staffAction(sender, "Unfroze <target>", Placeholder.unparsed("target", target.getName()));
             msg(sender, "<gray>Unfroze <target>", Placeholder.unparsed("target", target.getName()));
             msg(target, "<gray>You have been unfrozen");
+            plugin.getAutoUndoManager().cancelAutoUnfreeze(target.getUniqueId());
             return;
         }
 
@@ -38,5 +39,6 @@ public class FreezeCommand extends KoolCommand
         FUtil.staffAction(sender, "Froze <target>", Placeholder.unparsed("target", target.getName()));
         msg(sender, "<gray>You have frozen <target>", Placeholder.unparsed("target", target.getName()));
         msg(target, "<gray>You have been frozen!");
+        plugin.getAutoUndoManager().scheduleAutoUnfreeze(target);
     }
 }

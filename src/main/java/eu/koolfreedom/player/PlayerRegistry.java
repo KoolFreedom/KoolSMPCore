@@ -3,7 +3,7 @@ package eu.koolfreedom.player;
 import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.banning.Ban;
 import eu.koolfreedom.listener.KoolListener;
-import eu.koolfreedom.note.PlayerNote;
+import eu.koolfreedom.punishment.note.PlayerNote;
 import eu.koolfreedom.punishment.Punishment;
 import eu.koolfreedom.reporting.Report;
 import eu.koolfreedom.util.FLog;

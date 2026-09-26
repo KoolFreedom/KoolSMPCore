@@ -1,7 +1,7 @@
 package eu.koolfreedom.player;
 
 import eu.koolfreedom.freeze.FreezeData;
-import eu.koolfreedom.note.PlayerNote;
+import eu.koolfreedom.punishment.note.PlayerNote;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.entity.Player;

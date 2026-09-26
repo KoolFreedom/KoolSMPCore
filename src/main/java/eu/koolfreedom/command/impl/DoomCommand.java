@@ -41,7 +41,6 @@ public class DoomCommand extends KoolCommand
     {
         // Get the technical side of things out of the way first, we want this user banned first and foremost
         final Ban ban = Ban.fromPlayer(target, sender.getName(), reason != null ? reason : "You've met with a terrible fate, haven't you?", Long.MAX_VALUE);
-        final KoolSMPCore plugin = KoolSMPCore.getInstance();
         plugin.getBanManager().addBan(ban);
         plugin.getRecordKeeper().recordPunishment(Punishment.fromBan(ban));
 

@@ -12,14 +12,13 @@ import eu.koolfreedom.bridge.discord.DiscordSRVIntegration;
 import eu.koolfreedom.bridge.discord.EssentialsXDiscordIntegration;
 import eu.koolfreedom.bridge.vanish.EssentialsVanishIntegration;
 import eu.koolfreedom.bridge.vanish.SuperVanishIntegration;
-import eu.koolfreedom.chat.AntiSpamService;
 import eu.koolfreedom.command.CommandLoader;
 import eu.koolfreedom.command.impl.AdminChatCommand;
 import eu.koolfreedom.config.ConfigEntry;
 import eu.koolfreedom.config.MainConfig;
 import eu.koolfreedom.freeze.FreezeManager;
 import eu.koolfreedom.listener.impl.*;
-import eu.koolfreedom.note.NoteManager;
+import eu.koolfreedom.punishment.note.NoteManager;
 import eu.koolfreedom.player.PlayerRegistry;
 import eu.koolfreedom.punishment.RecordKeeper;
 import eu.koolfreedom.reporting.ReportManager;
@@ -42,7 +41,6 @@ public class KoolSMPCore extends JavaPlugin
     @Getter
     private static KoolSMPCore instance;
     private BuildProperties buildMeta;
-    private CommandLoader commandLoader;
     private PlayerRegistry playerRegistry;
 
     // Managers
@@ -55,7 +53,7 @@ public class KoolSMPCore extends JavaPlugin
     private LockupManager lockupManager;
     private FreezeManager freezeManager;
     private FreezeListener freezeListener;
-    private AntiSpamService antiSpamListener;
+    private ExploitPunisher exploitPunisher;
     private AutoUndoManager autoUndoManager;
     private CosmeticManager cosmeticManager;
     private ExploitListener exploitListener;
@@ -137,6 +135,7 @@ public class KoolSMPCore extends JavaPlugin
             PacketEvents.getAPI().init();
             exploitListener = new ExploitListener();
             PacketEvents.getAPI().getEventManager().registerListener(exploitListener, PacketListenerPriority.HIGHEST);
+            exploitPunisher = new ExploitPunisher();
         }
         else
         {
@@ -170,7 +169,6 @@ public class KoolSMPCore extends JavaPlugin
         freezeListener = new FreezeListener();
         lockupManager = new LockupManager();
         pjListener = new PlayerJoinListener();
-        antiSpamListener = new AntiSpamService();
         autoUndoManager = new AutoUndoManager(this, muteManager, freezeManager);
     }
 

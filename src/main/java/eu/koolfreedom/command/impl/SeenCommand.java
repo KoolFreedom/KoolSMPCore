@@ -4,7 +4,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
-import eu.koolfreedom.note.PlayerNote;
+import eu.koolfreedom.punishment.note.PlayerNote;
 import eu.koolfreedom.util.FUtil;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
