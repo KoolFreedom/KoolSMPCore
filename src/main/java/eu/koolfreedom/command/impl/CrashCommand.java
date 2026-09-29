@@ -25,7 +25,7 @@ public class CrashCommand extends KoolCommand
     {
         root.then(argument("target", ArgumentTypes.player())
                 .then(literal("particles").executes(executes(ctx -> crashParticles(player(ctx, "target")))))
-                .then(literal("jvm_oom").executes(executes(ctx -> crashJVM(player(ctx, "target"), sender(ctx))))));
+                .then(literal("translation").executes(executes(ctx -> crashTranslation(player(ctx, "target"), sender(ctx))))));
     }
 
     private void crashParticles(Player target)
@@ -34,7 +34,7 @@ public class CrashCommand extends KoolCommand
         msg(target, "<green>:)");
     }
 
-    private void crashJVM(Player target, CommandSender sender)
+    private void crashTranslation(Player target, CommandSender sender)
     {
         target.openBook(Book.builder()
                 .author(Component.text(sender.getName()))
