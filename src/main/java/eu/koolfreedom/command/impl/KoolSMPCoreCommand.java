@@ -4,6 +4,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.config.MainConfig;
+import eu.koolfreedom.util.BuildProperties;
 import eu.koolfreedom.util.FLog;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -12,26 +13,22 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
         usage = "/<command> [reload]")
 public class KoolSMPCoreCommand extends KoolCommand
 {
-    private static final String DIVIDER = "<dark_gray><strikethrough>                                        ";
-
     @Override
     public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
         root.executes(executes(ctx ->
                 {
-                    String authors = String.join(", ", plugin.getPluginMeta().getAuthors());
-
-                    msg(sender(ctx), DIVIDER);
-                    msg(sender(ctx), "<gold><b>KoolSMPCore</b> <gray>- The Core Plugin of KoolFreedom SMP");
-                    msg(sender(ctx), "<dark_gray> » <gray>Version <white><version>",
-                            Placeholder.unparsed("version", plugin.getPluginMeta().getVersion()));
-                    msg(sender(ctx), "<dark_gray> » <gray>Authors <white><authors>",
+                    final String authors = String.join(", ", plugin.getPluginMeta().getAuthors());
+                    BuildProperties build = plugin.getBuildMeta();
+                    msg(sender(ctx), "<gradient:#38d6c8:#8eb8ff><bold>KoolSMPCore</bold></gradient> <dark_gray>•</dark_gray> <gray>Core plugin of KoolFreedom SMP");
+                    msg(sender(ctx), "<gray>Version <white>" + build.getVersion() + "." + build.getNumber());
+                    msg(sender(ctx), "<gray>Built <white>" + build.getDate() + " <dark_gray>by</dark_gray> <white>" + build.getAuthor());
+                    msg(sender(ctx), "<gray>Authors <white><authors>",
                             Placeholder.unparsed("authors", authors));
-                    msg(sender(ctx), DIVIDER);
                 }))
                 .then(literal("reload").executes(executes(ctx ->
                 {
-                    if (!sender(ctx).hasPermission("venomcore.reload"))
+                    if (!sender(ctx).hasPermission("kfc.senior"))
                     {
                         msg(sender(ctx), noPermission);
                         return;

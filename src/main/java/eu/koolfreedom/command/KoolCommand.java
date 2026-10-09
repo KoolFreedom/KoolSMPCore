@@ -35,7 +35,6 @@ public abstract class KoolCommand
 
 	protected final String playersOnly = "<red>This command can only be executed in-game.";
 	protected final String noPermission = "<red>You do not have permission to execute this command!";
-	protected final String noReasonProvided = "<gray>Must provide a reason.";
 	protected final String playerNotFound = "<gray>Could not find specified player";
 
 	private final CommandParameters parameters;

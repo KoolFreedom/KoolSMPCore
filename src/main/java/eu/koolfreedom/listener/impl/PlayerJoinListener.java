@@ -69,19 +69,16 @@ public class PlayerJoinListener extends KoolListener
 
         // --- Alt detection ---
         String ip = FUtil.getIp(player);
-        if (ip != null)
+        Set<UUID> alts = playerRegistry.getAlts(ip);
+        if (alts.size() > 1)
         {
-            Set<UUID> alts = playerRegistry.getAlts(ip);
-            if (alts.size() > 1)
-            {
-                int altCount = alts.size() - 1;
-                FUtil.broadcast("kfc.admin",
-                        "<gradient:#00f5d4:#9fffac>⚠ <b>Alt Alert</b></gradient> "
-                                + "<gray>-</gray> <#9fffea>" + player.getName()
-                                + "</#9fffea> <gray>shares an IP with</gray> "
-                                + "<#aaff80>" + altCount + "</#aaff80> <gray>other account(s).</gray>");
-                FLog.info("[Alt Alert] " + player.getName() + " shares an IP with " + altCount + " other account(s).");
-            }
+            int altCount = alts.size() - 1;
+            FUtil.broadcast("kfc.admin",
+                    "<gradient:#00f5d4:#9fffac>⚠ <b>Alt Alert</b></gradient> "
+                            + "<gray>-</gray> <#9fffea>" + player.getName()
+                            + "</#9fffea> <gray>shares an IP with</gray> "
+                            + "<#aaff80>" + altCount + "</#aaff80> <gray>other account(s).</gray>");
+            FLog.info("[Alt Alert] " + player.getName() + " shares an IP with " + altCount + " other account(s).");
         }
     }
 }

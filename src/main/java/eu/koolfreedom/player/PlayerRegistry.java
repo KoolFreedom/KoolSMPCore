@@ -222,12 +222,11 @@ public class PlayerRegistry extends KoolListener
         return get(uuid).map(PlayerData::isCommandsBlocked).orElseGet(() -> getBooleanFieldSync(uuid, "commands_blocked"));
     }
 
-    public int clearCommandsBlocked()
+    public void clearCommandsBlocked()
     {
         int count = countBooleanFieldSync("commands_blocked");
         getAll().forEach(data -> data.applyCommandsBlocked(false));
         updateAllFieldSync("commands_blocked", 0);
-        return count;
     }
 
     public void setFrozen(UUID uuid, boolean v)

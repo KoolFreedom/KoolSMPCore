@@ -46,9 +46,9 @@ public class MuteManager extends KoolListener
         return playerRegistry.clearMutes();
     }
 
-    public int wipeBlockedCommands()
+    public void wipeBlockedCommands()
     {
-        return playerRegistry.clearCommandsBlocked();
+        playerRegistry.clearCommandsBlocked();
     }
 
     // Convenience overloads

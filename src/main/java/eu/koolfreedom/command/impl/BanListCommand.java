@@ -61,7 +61,7 @@ public class BanListCommand extends KoolCommand
 
 		int start = (page - 1) * PAGE_SIZE;
 		int end = Math.min(start + PAGE_SIZE, bans.size());
-		boolean canViewIps = sender.hasPermission("aurora.admin");
+		boolean canViewIps = sender.hasPermission("kfc.admin");
 
 		msg(sender, "<dark_gray>━━━━━━━━ <red>Active Bans (Page <page>/<pages>)</red> ━━━━━━━━",
 				Placeholder.unparsed("page", String.valueOf(page)),
