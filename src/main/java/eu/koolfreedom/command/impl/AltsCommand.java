@@ -2,7 +2,7 @@ package eu.koolfreedom.command.impl;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import eu.koolfreedom.api.AltManager;
+import eu.koolfreedom.player.AltManager;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.util.FUtil;

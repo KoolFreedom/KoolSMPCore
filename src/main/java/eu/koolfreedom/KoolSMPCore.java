@@ -1,8 +1,17 @@
 package eu.koolfreedom;
 
+import java.util.List;
+
+import org.bstats.bukkit.Metrics;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
+
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
-import eu.koolfreedom.api.AltManager;
+
 import eu.koolfreedom.banning.BanManager;
 import eu.koolfreedom.bridge.DiscordIntegration;
 import eu.koolfreedom.bridge.GroupManagement;
@@ -17,23 +26,26 @@ import eu.koolfreedom.command.impl.AdminChatCommand;
 import eu.koolfreedom.config.ConfigEntry;
 import eu.koolfreedom.config.MainConfig;
 import eu.koolfreedom.freeze.FreezeManager;
-import eu.koolfreedom.listener.impl.*;
-import eu.koolfreedom.punishment.note.NoteManager;
+import eu.koolfreedom.listener.impl.ChatListener;
+import eu.koolfreedom.listener.impl.CosmeticManager;
+import eu.koolfreedom.listener.impl.ExploitListener;
+import eu.koolfreedom.listener.impl.ExploitPunisher;
+import eu.koolfreedom.listener.impl.FreezeListener;
+import eu.koolfreedom.listener.impl.LockupManager;
+import eu.koolfreedom.listener.impl.MuteManager;
+import eu.koolfreedom.listener.impl.PlayerJoinListener;
+import eu.koolfreedom.player.AltManager;
 import eu.koolfreedom.player.PlayerRegistry;
 import eu.koolfreedom.punishment.RecordKeeper;
+import eu.koolfreedom.punishment.note.NoteManager;
 import eu.koolfreedom.reporting.ReportManager;
-import eu.koolfreedom.util.*;
+import eu.koolfreedom.util.BuildProperties;
+import eu.koolfreedom.util.FLog;
+import eu.koolfreedom.util.FUtil;
+import eu.koolfreedom.util.UpdateChecker;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import lombok.Getter;
-import org.bstats.bukkit.Metrics;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
-
-import java.util.List;
 
 @Getter
 public class KoolSMPCore extends JavaPlugin
@@ -54,7 +66,6 @@ public class KoolSMPCore extends JavaPlugin
     private FreezeManager freezeManager;
     private FreezeListener freezeListener;
     private ExploitPunisher exploitPunisher;
-    private AutoUndoManager autoUndoManager;
     private CosmeticManager cosmeticManager;
     private ExploitListener exploitListener;
     private ChatListener chatListener;
@@ -169,7 +180,6 @@ public class KoolSMPCore extends JavaPlugin
         freezeListener = new FreezeListener();
         lockupManager = new LockupManager();
         pjListener = new PlayerJoinListener();
-        autoUndoManager = new AutoUndoManager(this, muteManager, freezeManager);
     }
 
     public void loadBridges()

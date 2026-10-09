@@ -1,6 +1,4 @@
-package eu.koolfreedom.api;
-
-import eu.koolfreedom.player.PlayerRegistry;
+package eu.koolfreedom.player;
 
 import java.util.Optional;
 import java.util.Set;

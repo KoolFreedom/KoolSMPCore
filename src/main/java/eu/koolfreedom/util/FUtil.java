@@ -1,7 +1,7 @@
 package eu.koolfreedom.util;
 
 import eu.koolfreedom.KoolSMPCore;
-import eu.koolfreedom.api.AltManager;
+import eu.koolfreedom.player.AltManager;
 import eu.koolfreedom.bridge.GroupManagement;
 import eu.koolfreedom.config.ConfigEntry;
 import eu.koolfreedom.event.AdminChatEvent;
