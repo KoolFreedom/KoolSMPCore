@@ -1,15 +1,16 @@
 package eu.koolfreedom.banning;
 
-import eu.koolfreedom.listener.KoolListener;
-import eu.koolfreedom.util.FLog;
-import eu.koolfreedom.util.FUtil;
+import java.net.InetSocketAddress;
+import java.util.*;
+
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerLoginEvent;
 
-import java.net.InetSocketAddress;
-import java.util.*;
+import eu.koolfreedom.listener.KoolListener;
+import eu.koolfreedom.util.FLog;
+import eu.koolfreedom.util.FUtil;
 
 public class BanManager extends KoolListener
 {
@@ -66,9 +67,12 @@ public class BanManager extends KoolListener
 		return banMap.values().stream().filter(b -> !b.isExpired()).count();
 	}
 
-	public Collection<Ban> getBans()
+	public List<Ban> getActiveBans()
 	{
-		return Collections.unmodifiableCollection(banMap.values());
+		return banMap.values().stream()
+				.filter(ban -> !ban.isExpired())
+				.sorted(Comparator.comparingLong(Ban::getId).reversed())
+				.toList();
 	}
 
 	/**
@@ -97,8 +101,13 @@ public class BanManager extends KoolListener
 
 	public Ban removeBan(long id)
 	{
+		return removeBan(id, false);
+	}
+
+	public Ban removeBan(long id, boolean allowPermanent)
+	{
 		Ban ban = banMap.get(id);
-		if (ban != null && !ban.canExpire()) return ban; // permanent, refuse removal
+		if (ban != null && !ban.canExpire() && !allowPermanent) return null;
 		Ban removed = banMap.remove(id);
 		if (removed != null) playerRegistry.deleteBan(id);
 		return removed;
@@ -106,13 +115,15 @@ public class BanManager extends KoolListener
 
 	public Ban removeBan(String value)
 	{
+		return removeBan(value, false);
+	}
+
+	public Ban removeBan(String value, boolean allowPermanent)
+	{
 		Optional<Ban> opt = findBan(value);
 		if (opt.isEmpty()) return null;
 		Ban ban = opt.get();
-		if (!ban.canExpire()) return ban; // permanent, refuse removal
-		banMap.remove(ban.getId());
-		playerRegistry.deleteBan(ban.getId());
-		return ban;
+		return removeBan(ban.getId(), allowPermanent);
 	}
 
 	// --- Login enforcement ---

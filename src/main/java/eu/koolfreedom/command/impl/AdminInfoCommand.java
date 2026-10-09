@@ -1,13 +1,12 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.config.ConfigEntry;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.*;
 
@@ -18,15 +17,17 @@ public class AdminInfoCommand extends KoolCommand
             .stream().map(info -> MiniMessage.miniMessage().deserialize(info)).toList();
 
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command cmd, String label, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        if (ADMIN_INFO.isEmpty())
+        root.executes(executes(ctx ->
         {
-            msg(sender, "<red>There is currently nothing configured for config section 'admininfo', contact the server's administrator to resolve this error.");
-            return true;
-        }
+            if (ADMIN_INFO.isEmpty())
+            {
+                msg(sender(ctx), "<red>There is currently nothing configured for config section 'admininfo', contact the server's administrator to resolve this error.");
+                return;
+            }
 
-        ADMIN_INFO.forEach(component -> msg(sender, component));
-        return true;
+            ADMIN_INFO.forEach(component -> msg(sender(ctx), component));
+        }));
     }
 }

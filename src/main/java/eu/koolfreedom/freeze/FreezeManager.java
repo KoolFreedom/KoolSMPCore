@@ -1,67 +1,86 @@
 package eu.koolfreedom.freeze;
 
-import eu.koolfreedom.player.PlayerData;
-import eu.koolfreedom.player.PlayerRegistry;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.UUID;
+import eu.koolfreedom.event.PlayerFreezeEvent;
+import org.bukkit.scheduler.BukkitTask;
 
 public class FreezeManager
 {
-    private final PlayerRegistry playerRegistry;
-
-    public FreezeManager(PlayerRegistry playerRegistry)
-    {
-        this.playerRegistry = playerRegistry;
-    }
+    private final Map<UUID, FreezeData> frozenPlayers = new ConcurrentHashMap<>();
+    @Getter
+    private BukkitTask unfreezeTask;
 
     public void freeze(Player player)
     {
-        playerRegistry.get(player).ifPresent(data ->
-        {
-            if (data.getFreezeData() != null) data.getFreezeData().clearTask();
-            data.setFreezeData(new FreezeData(player));
-        });
-        playerRegistry.setFrozen(player.getUniqueId(), true);
+        unfreeze(player);
+
+        FreezeData data = new FreezeData(player);
+
+        PlayerFreezeEvent event = new PlayerFreezeEvent(player, PlayerFreezeEvent.FreezeState.FROZEN, data);
+        Bukkit.getPluginManager().callEvent(event);
+
+        if (event.isCancelled())
+            return;
+
+        frozenPlayers.put(player.getUniqueId(), data);
     }
 
     public void unfreeze(UUID uuid)
     {
-        playerRegistry.get(uuid).ifPresent(data ->
-        {
-            if (data.getFreezeData() != null)
-            {
-                data.getFreezeData().clearTask();
-                data.setFreezeData(null);
-            }
-        });
-        playerRegistry.setFrozen(uuid, false);
+        FreezeData data = frozenPlayers.remove(uuid);
+        if (data == null)
+            return; // wasn't frozen, don't fire a spurious event
 
         Player p = Bukkit.getPlayer(uuid);
-        if (p != null && p.isOnline()) p.closeInventory();
+        if (p != null && p.isOnline())
+        {
+            p.closeInventory();
+            Bukkit.getPluginManager().callEvent(
+                    new PlayerFreezeEvent(p, PlayerFreezeEvent.FreezeState.UNFROZEN, data)
+            );
+        }
     }
 
     public void unfreeze(Player player)
     {
-        if (player != null) unfreeze(player.getUniqueId());
+        if (player != null)
+            unfreeze(player.getUniqueId());
     }
 
     public boolean isFrozen(Player player)
     {
-        return playerRegistry.isFrozen(player.getUniqueId());
+        return frozenPlayers.containsKey(player.getUniqueId());
     }
 
     public FreezeData getData(Player player)
     {
-        return playerRegistry.get(player).map(PlayerData::getFreezeData).orElse(null);
+        return frozenPlayers.get(player.getUniqueId());
+    }
+
+    public boolean isFrozen()
+    {
+        return unfreezeTask != null;
+    }
+
+    public void clearTask()
+    {
+        if (unfreezeTask != null) unfreezeTask.cancel();
+        unfreezeTask = null;
     }
 
     public void unfreezeAll()
     {
-        for (PlayerData data : playerRegistry.getAll())
+        for (UUID id : new HashSet<>(frozenPlayers.keySet()))
         {
-            if (data.isFrozen()) unfreeze(data.getUuid());
+            unfreeze(id);
         }
     }
 }

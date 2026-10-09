@@ -1,4 +1,4 @@
-package eu.koolfreedom.note;
+package eu.koolfreedom.punishment.note;
 
 import java.time.LocalDateTime;
 

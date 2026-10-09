@@ -1,17 +1,17 @@
 package eu.koolfreedom.command.impl;
 
 import com.google.common.net.InetAddresses;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.banning.Ban;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.punishment.Punishment;
 import eu.koolfreedom.util.FUtil;
 import eu.koolfreedom.util.TimeOffset;
-import org.apache.commons.lang3.ArrayUtils;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,25 +21,29 @@ import java.util.List;
 public class BanIPCommand extends KoolCommand
 {
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        if (args.length == 0)
-        {
-            return false;
-        }
+        root.then(argument("ip", StringArgumentType.word())
+                .executes(executes(ctx -> banIp(sender(ctx), StringArgumentType.getString(ctx, "ip"), null)))
+                .then(argument("reason", StringArgumentType.greedyString())
+                        .executes(executes(ctx -> banIp(sender(ctx), StringArgumentType.getString(ctx, "ip"),
+                                StringArgumentType.getString(ctx, "reason"))))));
+    }
 
-        if (!InetAddresses.isInetAddress(args[0]))
+    private void banIp(CommandSender sender, String ipArg, String reason)
+    {
+        if (!InetAddresses.isInetAddress(ipArg))
         {
             msg(sender, "<red>That is not a valid IP address.");
-            return true;
+            return;
         }
 
-        final String ip = args[0].toLowerCase();
+        final String ip = ipArg.toLowerCase();
         final Ban ban = Ban.builder().by(sender.getName())
                 .id(System.currentTimeMillis())
                 .expires(System.currentTimeMillis() + TimeOffset.getOffset("1d"))
                 .ips(new ArrayList<>(List.of(ip)))
-                .reason(args.length > 1 ? String.join(" ", ArrayUtils.remove(args, 0)) : null)
+                .reason(reason)
                 .build();
 
         boolean success = plugin.getBanManager().addBan(ban);
@@ -47,7 +51,7 @@ public class BanIPCommand extends KoolCommand
         if (!success)
         {
             msg(sender, "<red>That IP address is already permanently banned.");
-            return true;
+            return;
         }
 
         FUtil.staffAction(sender, "Banned an IP address");
@@ -56,7 +60,6 @@ public class BanIPCommand extends KoolCommand
         // Now for the fun part...
         Bukkit.getOnlinePlayers().stream().filter(player -> FUtil.getIp(player).equalsIgnoreCase(ip)).forEach(player ->
         {
-            // Now for the fun part...
             for (int i = 0; i < 4; i++)
             {
                 player.getWorld().strikeLightning(player.getLocation());
@@ -66,13 +69,5 @@ public class BanIPCommand extends KoolCommand
             // We had our fun, they're gone
             player.kick(ban.getKickMessage());
         });
-
-        return true;
-    }
-
-    @Override
-    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
-    {
-        return args.length == 1 ? Bukkit.getOnlinePlayers().stream().map(FUtil::getIp).toList() : List.of();
     }
 }

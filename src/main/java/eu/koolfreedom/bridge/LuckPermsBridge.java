@@ -71,7 +71,6 @@ public class LuckPermsBridge
                     {
                         Bukkit.getScheduler().runTask(KoolSMPCore.getInstance(), () -> {
                             player.playerListName(KoolSMPCore.getInstance().getGroupManager().getColoredName(player));
-                            KoolSMPCore.getInstance().getGroupManager().applyNametagColor(player);
                         });
                     }
                 }

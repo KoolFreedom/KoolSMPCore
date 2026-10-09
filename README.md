@@ -2,7 +2,7 @@
 
 This is the official source code repository for the KoolSMPCore plugin
 
-KoolSMPCore is a plugin primarily made to support the KoolFreedom SMP Minecraft Server, but you are more than welcome to use the source code for your own server.
+KoolSMPCore is a plugin primarily made to support the KoolFreedom SMP Minecraft Server, but you are more than welcome to use the plugin for your own server.
 
 # Alternative Download
 
@@ -14,14 +14,16 @@ https://modrinth.com/plugin/koolsmpcore
 
 # Compiling
 
-You need Gradle to build.
+You need Gradle to build. Please use the correct file when compiling the plugin.
 
-### Through Terminal/CMD
+## Windows
 
-Open the terminal and cd to the root of this repository (~/KoolSMPCore) and type `./gradlew clean build`. On Windows, use the `gradlew.bat` file.
+Use the `gradlew.bat` file | Example: `gradlew.bat clean build`
+
+## macOS/Linux
+
+Use the `gradlew` file | Example: `./gradlew clean build`
 
 # Contributing
 
-If you would like to contribute to the plugin in any way, make a fork and add your changes to your fork.
-After those changes have been made, open a pull request from your fork and a Developer will review your changes.
-More about contributing can be found on [this post from our official forum page](https://koolfreedom.eu.org/d/4-koolfreedom-developer-information)
+Please refer to `CONTRIBUTING.md` to learn about contributing to KoolSMPCore.

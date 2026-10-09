@@ -1,7 +1,7 @@
 package eu.koolfreedom.player;
 
-import eu.koolfreedom.freeze.FreezeData;
-import eu.koolfreedom.note.PlayerNote;
+import eu.koolfreedom.freeze.FreezeManager;
+import eu.koolfreedom.punishment.note.PlayerNote;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.entity.Player;
@@ -27,7 +27,7 @@ public class PlayerData
     // Session-only (never persisted)
     private final long joinTime = System.currentTimeMillis();
     @Setter private BukkitRunnable lockupTask = null;
-    @Setter private FreezeData freezeData = null;
+    @Setter private FreezeManager freezeData = null;
 
     // Persistent fields — mutated via PlayerRegistry which writes through to the DB
     private boolean muted;
@@ -56,7 +56,7 @@ public class PlayerData
     }
 
     /**
-     * Constructor used for brand new players with no existing DB row.
+     * Constructor used for brand-new players with no existing DB row.
      */
     public PlayerData(Player player)
     {
@@ -85,9 +85,9 @@ public class PlayerData
 
     // --- Derived state ---
 
-    public boolean isFrozenInSession()
+    public boolean isFrozenInSession(Player player)
     {
-        return freezeData != null && freezeData.isFrozen();
+        return freezeData != null && freezeData.isFrozen(player);
     }
 
     public long getPlaytimeMillis()

@@ -3,7 +3,7 @@ package eu.koolfreedom.player;
 import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.banning.Ban;
 import eu.koolfreedom.listener.KoolListener;
-import eu.koolfreedom.note.PlayerNote;
+import eu.koolfreedom.punishment.note.PlayerNote;
 import eu.koolfreedom.punishment.Punishment;
 import eu.koolfreedom.reporting.Report;
 import eu.koolfreedom.util.FLog;
@@ -65,7 +65,7 @@ public class PlayerRegistry extends KoolListener
         }
     }
 
-    private void createTables() throws SQLException
+    private synchronized void createTables() throws SQLException
     {
         try (Statement s = connection.createStatement())
         {
@@ -222,12 +222,11 @@ public class PlayerRegistry extends KoolListener
         return get(uuid).map(PlayerData::isCommandsBlocked).orElseGet(() -> getBooleanFieldSync(uuid, "commands_blocked"));
     }
 
-    public int clearCommandsBlocked()
+    public void clearCommandsBlocked()
     {
         int count = countBooleanFieldSync("commands_blocked");
         getAll().forEach(data -> data.applyCommandsBlocked(false));
         updateAllFieldSync("commands_blocked", 0);
-        return count;
     }
 
     public void setFrozen(UUID uuid, boolean v)
@@ -254,43 +253,13 @@ public class PlayerRegistry extends KoolListener
 
     public void addNote(UUID uuid, PlayerNote note)
     {
-        async(() ->
-        {
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "INSERT INTO player_notes (uuid, author, message, timestamp) VALUES (?, ?, ?, ?)"))
-            {
-                ps.setString(1, uuid.toString());
-                ps.setString(2, note.author());
-                ps.setString(3, note.message());
-                ps.setString(4, note.timestamp().toString());
-                ps.executeUpdate();
-            }
-            catch (SQLException e)
-            {
-                FLog.error("addNote: " + e.getMessage());
-            }
-        });
+        async(() -> addNoteSync(uuid, note));
         get(uuid).ifPresent(d -> d.cacheNote(note));
     }
 
     public void removeNote(UUID uuid, PlayerNote note)
     {
-        async(() ->
-        {
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "DELETE FROM player_notes WHERE uuid=? AND author=? AND message=? AND timestamp=?"))
-            {
-                ps.setString(1, uuid.toString());
-                ps.setString(2, note.author());
-                ps.setString(3, note.message());
-                ps.setString(4, note.timestamp().toString());
-                ps.executeUpdate();
-            }
-            catch (SQLException e)
-            {
-                FLog.error("removeNote: " + e.getMessage());
-            }
-        });
+        async(() -> removeNoteSync(uuid, note));
         get(uuid).ifPresent(d -> d.uncacheNote(note));
     }
 
@@ -309,7 +278,7 @@ public class PlayerRegistry extends KoolListener
         async(() -> recordAltSync(ip, uuid));
     }
 
-    public Set<UUID> getAlts(String ip)
+    public synchronized Set<UUID> getAlts(String ip)
     {
         Set<UUID> alts = new HashSet<>();
         try (PreparedStatement ps = connection.prepareStatement(
@@ -326,7 +295,7 @@ public class PlayerRegistry extends KoolListener
         return alts;
     }
 
-    public Optional<String> getLastIp(UUID uuid)
+    public synchronized Optional<String> getLastIp(UUID uuid)
     {
         return get(uuid).map(d -> Optional.ofNullable(d.getLastKnownIp())).orElseGet(() ->
         {
@@ -352,21 +321,10 @@ public class PlayerRegistry extends KoolListener
 
     public void deleteBan(long id)
     {
-        async(() ->
-        {
-            try (PreparedStatement ps = connection.prepareStatement("DELETE FROM bans WHERE id=?"))
-            {
-                ps.setLong(1, id);
-                ps.executeUpdate();
-            }
-            catch (SQLException e)
-            {
-                FLog.error("deleteBan: " + e.getMessage());
-            }
-        });
+        async(() -> deleteBanSync(id));
     }
 
-    public Map<Long, Ban> loadAllBans()
+    public synchronized Map<Long, Ban> loadAllBans()
     {
         Map<Long, Ban> bans = new LinkedHashMap<>();
         try (Statement s = connection.createStatement();
@@ -390,7 +348,7 @@ public class PlayerRegistry extends KoolListener
         async(() -> savePunishmentSync(p));
     }
 
-    public Map<Long, Punishment> loadAllPunishments()
+    public synchronized Map<Long, Punishment> loadAllPunishments()
     {
         Map<Long, Punishment> map = new LinkedHashMap<>();
         try (Statement s = connection.createStatement();
@@ -424,21 +382,10 @@ public class PlayerRegistry extends KoolListener
 
     public void deleteReport(String id)
     {
-        async(() ->
-        {
-            try (PreparedStatement ps = connection.prepareStatement("DELETE FROM reports WHERE id=?"))
-            {
-                ps.setString(1, id);
-                ps.executeUpdate();
-            }
-            catch (SQLException e)
-            {
-                FLog.error("deleteReport: " + e.getMessage());
-            }
-        });
+        async(() -> deleteReportSync(id));
     }
 
-    public Map<String, Report> loadAllReports()
+    public synchronized Map<String, Report> loadAllReports()
     {
         Map<String, Report> map = new LinkedHashMap<>();
         try (Statement s = connection.createStatement();
@@ -602,7 +549,7 @@ public class PlayerRegistry extends KoolListener
         if (count > 0) FLog.info("Migrated {} legacy report(s) into SQLite.", count);
     }
 
-    private PlayerData loadOrCreate(Player player)
+    private synchronized PlayerData loadOrCreate(Player player)
     {
         try (PreparedStatement ps = connection.prepareStatement(
                 "SELECT * FROM player_data WHERE uuid=?"))
@@ -641,7 +588,67 @@ public class PlayerRegistry extends KoolListener
         }
     }
 
-    private List<PlayerNote> loadNotesSync(UUID uuid)
+    private synchronized void addNoteSync(UUID uuid, PlayerNote note)
+    {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "INSERT INTO player_notes (uuid, author, message, timestamp) VALUES (?, ?, ?, ?)"))
+        {
+            ps.setString(1, uuid.toString());
+            ps.setString(2, note.author());
+            ps.setString(3, note.message());
+            ps.setString(4, note.timestamp().toString());
+            ps.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            FLog.error("addNote: " + e.getMessage());
+        }
+    }
+
+    private synchronized void removeNoteSync(UUID uuid, PlayerNote note)
+    {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "DELETE FROM player_notes WHERE uuid=? AND author=? AND message=? AND timestamp=?"))
+        {
+            ps.setString(1, uuid.toString());
+            ps.setString(2, note.author());
+            ps.setString(3, note.message());
+            ps.setString(4, note.timestamp().toString());
+            ps.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            FLog.error("removeNote: " + e.getMessage());
+        }
+    }
+
+    private synchronized void deleteBanSync(long id)
+    {
+        try (PreparedStatement ps = connection.prepareStatement("DELETE FROM bans WHERE id=?"))
+        {
+            ps.setLong(1, id);
+            ps.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            FLog.error("deleteBan: " + e.getMessage());
+        }
+    }
+
+    private synchronized void deleteReportSync(String id)
+    {
+        try (PreparedStatement ps = connection.prepareStatement("DELETE FROM reports WHERE id=?"))
+        {
+            ps.setString(1, id);
+            ps.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            FLog.error("deleteReport: " + e.getMessage());
+        }
+    }
+
+    private synchronized List<PlayerNote> loadNotesSync(UUID uuid)
     {
         List<PlayerNote> notes = new ArrayList<>();
         try (PreparedStatement ps = connection.prepareStatement(
@@ -663,7 +670,7 @@ public class PlayerRegistry extends KoolListener
         return notes;
     }
 
-    private void recordAltSync(String ip, UUID uuid)
+    private synchronized void recordAltSync(String ip, UUID uuid)
     {
         try (PreparedStatement ps = connection.prepareStatement(
                 "INSERT OR IGNORE INTO player_alts (ip, uuid) VALUES (?, ?)"))
@@ -678,7 +685,7 @@ public class PlayerRegistry extends KoolListener
         }
     }
 
-    private void updateFieldSync(UUID uuid, String col, Object val)
+    private synchronized void updateFieldSync(UUID uuid, String col, Object val)
     {
         try (PreparedStatement ps = connection.prepareStatement(
                 "UPDATE player_data SET " + col + "=? WHERE uuid=?"))
@@ -693,7 +700,7 @@ public class PlayerRegistry extends KoolListener
         }
     }
 
-    private boolean getBooleanFieldSync(UUID uuid, String col)
+    private synchronized boolean getBooleanFieldSync(UUID uuid, String col)
     {
         try (PreparedStatement ps = connection.prepareStatement(
                 "SELECT " + col + " FROM player_data WHERE uuid=?"))
@@ -709,7 +716,7 @@ public class PlayerRegistry extends KoolListener
         }
     }
 
-    private int countBooleanFieldSync(String col)
+    private synchronized int countBooleanFieldSync(String col)
     {
         try (Statement s = connection.createStatement();
              ResultSet rs = s.executeQuery("SELECT COUNT(*) AS count FROM player_data WHERE " + col + "=1"))
@@ -723,7 +730,7 @@ public class PlayerRegistry extends KoolListener
         }
     }
 
-    private void updateAllFieldSync(String col, Object val)
+    private synchronized void updateAllFieldSync(String col, Object val)
     {
         try (PreparedStatement ps = connection.prepareStatement(
                 "UPDATE player_data SET " + col + "=?"))
@@ -742,7 +749,7 @@ public class PlayerRegistry extends KoolListener
         async(() -> updateFieldSync(uuid, col, val));
     }
 
-    private void saveBanSync(Ban ban)
+    private synchronized void saveBanSync(Ban ban)
     {
         try (PreparedStatement ps = connection.prepareStatement("""
             INSERT OR REPLACE INTO bans (id, uuid, name, by, reason, expires, ips)
@@ -763,7 +770,7 @@ public class PlayerRegistry extends KoolListener
         }
     }
 
-    private void savePunishmentSync(Punishment p)
+    private synchronized void savePunishmentSync(Punishment p)
     {
         try (PreparedStatement ps = connection.prepareStatement("""
             INSERT OR REPLACE INTO punishments (id, uuid, name, ip, by, reason, type)
@@ -784,7 +791,7 @@ public class PlayerRegistry extends KoolListener
         }
     }
 
-    private void saveReportSync(Report report)
+    private synchronized void saveReportSync(Report report)
     {
         try (PreparedStatement ps = connection.prepareStatement("""
             INSERT OR REPLACE INTO reports (id, reporter, reported, reason, timestamp, status, last_note, handlers)
@@ -931,7 +938,7 @@ public class PlayerRegistry extends KoolListener
         Bukkit.getScheduler().runTaskAsynchronously(KoolSMPCore.getInstance(), task);
     }
 
-    public void close()
+    public synchronized void close()
     {
         try
         {

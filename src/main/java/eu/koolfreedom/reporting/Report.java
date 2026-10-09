@@ -80,41 +80,27 @@ public class Report
 				.build();
 	}
 
-	public ConfigurationSection toConfigurationSection()
-	{
-		final MemoryConfiguration section = new MemoryConfiguration();
-		section.set("reporter", reporter.toString());
-		section.set("reported", reported.toString());
-		section.set("reason", reason);
-		section.set("timestamp", timestamp);
-		section.set("status", status.name());
-		section.set("lastNote", lastNote);
-		section.set("handlers", handlers);
-		section.set("extra", additionalData);
-		return section;
-	}
-
 	public void addHandler(String handlerId)
 	{
 		handlers.remove(handlerId);
 		handlers.addLast(handlerId);
 	}
 
-	public boolean update(Component displayName, String staffName, String staffId, ReportStatus newStatus, String note)
+	public void update(Component displayName, String staffName, String staffId, ReportStatus newStatus, String note)
 	{
-		return update(new PlayerReportUpdateEvent(false, displayName, staffName, staffId, getStatus(), newStatus, note, this));
+		update(new PlayerReportUpdateEvent(false, displayName, staffName, staffId, getStatus(), newStatus, note, this));
 	}
 
-	public boolean updateAsync(Component displayName, String staffName, String staffId, ReportStatus newStatus, String note)
+	public void updateAsync(Component displayName, String staffName, String staffId, ReportStatus newStatus, String note)
 	{
-		return update(new PlayerReportUpdateEvent(true, displayName, staffName, staffId, getStatus(), newStatus, note, this));
+		update(new PlayerReportUpdateEvent(true, displayName, staffName, staffId, getStatus(), newStatus, note, this));
 	}
 
-	private boolean update(PlayerReportUpdateEvent event)
+	private void update(PlayerReportUpdateEvent event)
 	{
 		if (isResolved() && event.getNewStatus() != ReportStatus.REOPENED)
 		{
-			return false;
+			return;
 		}
 
 		if (event.getNewNote() != null)
@@ -126,7 +112,6 @@ public class Report
 		addHandler(event.getStaffId());
 
 		event.callEvent();
-		return true;
 	}
 
 	public PlayerReportEvent createEvent()
@@ -152,7 +137,7 @@ public class Report
 				Placeholder.parsed("reported", reported.getName() != null ? reported.getName() : reported.getUniqueId().toString()),
 				Placeholder.unparsed("reason", reason),
 				Placeholder.parsed("timestamp", String.valueOf(timestamp)),
-				Formatter.date("date", LocalDateTime.ofEpochSecond(timestamp, 0, ZoneId.systemDefault().getRules().getOffset(Instant.now()))),
+				Formatter.date("date", LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.systemDefault())),
 				Placeholder.component("handlers", handlers.isEmpty() ? Component.text("(none)") : Component.join(JoinConfiguration.commas(true),
 						handlers.stream().map(handler -> Component.text(handler).color(NamedTextColor.WHITE)).toList())),
 				Placeholder.component("status", status.label()),
@@ -173,7 +158,7 @@ public class Report
 				Placeholder.parsed("reported", reported.getName() != null ? reported.getName() : reported.getUniqueId().toString()),
 				Placeholder.unparsed("reason", reason),
 				Placeholder.parsed("timestamp", String.valueOf(timestamp)),
-				Formatter.date("date", LocalDateTime.ofEpochSecond(timestamp, 0, ZoneId.systemDefault().getRules().getOffset(Instant.now()))),
+				Formatter.date("date", LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.systemDefault())),
 				Placeholder.component("handlers", handlers.isEmpty() ? Component.text("(none)") : Component.join(JoinConfiguration.commas(true),
 						handlers.stream().map(handler -> Component.text(handler).color(NamedTextColor.WHITE)).toList())),
 				Placeholder.component("status", status.label()),

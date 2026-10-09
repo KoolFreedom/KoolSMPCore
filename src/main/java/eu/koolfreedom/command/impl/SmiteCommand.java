@@ -1,10 +1,14 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.punishment.Punishment;
 import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
@@ -19,31 +23,13 @@ import java.util.List;
 public class SmiteCommand extends KoolCommand
 {
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        if (args.length == 0)
-        {
-            return false;
-        }
-
-        Player target = Bukkit.getPlayer(args[0]);
-        if (target == null)
-        {
-            msg(sender, playerNotFound);
-            return true;
-        }
-
-
-        String reason = args.length >= 2 ? String.join(" ", ArrayUtils.remove(args, 0)) : null;
-
-        zap(target, sender, reason);
-        return true;
-    }
-
-    @Override
-    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
-    {
-        return args.length == 1 ? Bukkit.getOnlinePlayers().stream().map(Player::getName).toList() : List.of();
+        root.then(argument("target", ArgumentTypes.player())
+                .executes(executes(ctx -> zap(player(ctx, "target"), sender(ctx), null)))
+                .then(argument("reason", StringArgumentType.greedyString())
+                        .executes(executes(ctx -> zap(player(ctx, "target"), sender(ctx),
+                                StringArgumentType.getString(ctx, "reason"))))));
     }
 
     public static void zap(Player target, CommandSender sender, String reason)
@@ -54,11 +40,10 @@ public class SmiteCommand extends KoolCommand
 
         if (reason != null)
         {
-
             FUtil.broadcast("<red>Reason: <yellow><reason>", Placeholder.unparsed("reason", reason));
         }
 
-        KoolSMPCore.getInstance().getRecordKeeper().recordPunishment(Punishment.builder()
+        plugin.getRecordKeeper().recordPunishment(Punishment.builder()
                 .uuid(target.getUniqueId())
                 .name(target.getName())
                 .ip(FUtil.getIp(target))

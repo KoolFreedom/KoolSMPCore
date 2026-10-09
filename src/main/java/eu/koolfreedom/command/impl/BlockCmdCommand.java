@@ -1,99 +1,66 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.listener.impl.MuteManager;
 import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.List;
-import java.util.UUID;
-
-import static org.bukkit.Bukkit.getPlayer;
-
-@CommandParameters(name = "blockcommand", description = "Block all commands for everyone on the server, or a specific player.", usage = "/<command> <-a | purge | <player>>", aliases = {"bmcd", "blockcmd"})
+@CommandParameters(
+        name = "blockcommand",
+        description = "Block all commands for everyone on the server, or a specific player.",
+        usage = "/<command> <-a | purge | <player>>",
+        aliases = {"bmcd", "blockcmd"})
 public class BlockCmdCommand extends KoolCommand
 {
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command cmd, String label, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        MuteManager manager = plugin.getMuteManager();
-
-        if (args.length != 1)
-        {
-            return false;
-        }
-
-        String sub = args[0];
-
-        if (sub.equalsIgnoreCase("purge"))
-        {
-            int count = manager.wipeBlockedCommands();
-            FUtil.staffAction(sender, "Unblocked commands for all players.");
-
-            for (Player p : Bukkit.getOnlinePlayers())
-            {
-                p.sendMessage(FUtil.miniMessage("<green>Your command block has been lifted."));
-            }
-
-            msg(sender, "<gray>Unblocked commands for " + count + " players.");
-            return true;
-        }
-
-        if (sub.equalsIgnoreCase("-a"))
-        {
-            int count = 0;
-
-            for (Player p : Bukkit.getOnlinePlayers())
-            {
-                if (!p.hasPermission("kfc.admin") && !manager.isCommandsBlocked(p.getUniqueId()))
+        root.then(literal("purge").executes(executes(ctx ->
                 {
-                    manager.setCommandsBlocked(p.getUniqueId(), true);
-                    p.sendMessage(FUtil.miniMessage("<red>Your commands have been blocked by an admin."));
-                    count++;
-                }
-            }
+                    MuteManager manager = plugin.getMuteManager();
+                    manager.wipeBlockedCommands();
+                    FUtil.staffAction(sender(ctx), "Unblocked commands for all players");
+                })))
+                .then(literal("-a").executes(executes(ctx ->
+                {
+                    MuteManager manager = plugin.getMuteManager();
+                    for (Player player : Bukkit.getOnlinePlayers())
+                    {
+                        if (!player.hasPermission("kfc.admin") && !manager.isCommandsBlocked(player.getUniqueId()))
+                        {
+                            manager.setCommandsBlocked(player.getUniqueId(), true);
+                        }
+                    }
 
-            FUtil.staffAction(sender, "Blocked commands for all non-admins.");
-            msg(sender, "<gray>Blocked commands for " + count + " players.");
-            return true;
-        }
-
-        Player target = getPlayer(sub);
-        if (target == null)
-        {
-            msg(sender, playerNotFound);
-            return true;
-        }
-
-        UUID uuid = target.getUniqueId();
-
-        if (target.hasPermission("kfc.admin"))
-        {
-            msg(sender, "<gray>" + target.getName() + " is an admin and cannot be command-blocked.");
-            return true;
-        }
-
-        if (manager.isCommandsBlocked(uuid))
-        {
-            msg(sender, "<red>That player's commands have already been blocked.");
-            return true;
-        }
-
-        manager.setCommandsBlocked(uuid, true);
-        target.sendMessage(FUtil.miniMessage("<red>Your commands have been blocked."));
-        FUtil.staffAction(sender, "Blocked all commands for " + target.getName());
-        msg(sender, "<gray>Blocked commands for " + target.getName() + ".");
-        return true;
+                    FUtil.staffAction(sender(ctx), "Blocking commands for all non-admins");
+                })))
+                .then(argument("target", ArgumentTypes.player())
+                        .executes(executes(ctx -> blockPlayer(sender(ctx), plugin.getMuteManager(), player(ctx, "target")))));
     }
 
-    @Override
-    public List<String> tabComplete(CommandSender sender, Command command, String commandLabel, String[] args)
+    private void blockPlayer(CommandSender sender, MuteManager manager, Player target)
     {
-        return args.length == 1 ? Bukkit.getOnlinePlayers().stream().map(Player::getName)
-                .filter(name -> !name.equalsIgnoreCase(sender.getName())).toList() : List.of();
+        if (target.hasPermission("kfc.admin"))
+        {
+            msg(sender, "<red>That player is an admin, they cannot have their commands blocked");
+            return;
+        }
+
+        if (manager.isCommandsBlocked(target.getUniqueId()))
+        {
+            msg(sender, "<red>That player's commands are already blocked");
+            return;
+        }
+
+        manager.setCommandsBlocked(target.getUniqueId(), true);
+        FUtil.staffAction(sender, "Blocking all commands for <target>",
+                Placeholder.unparsed("target", target.getName()));
     }
 }

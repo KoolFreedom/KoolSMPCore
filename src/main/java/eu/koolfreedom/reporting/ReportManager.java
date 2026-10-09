@@ -19,6 +19,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ReportManager extends KoolListener
 {
@@ -26,7 +27,7 @@ public class ReportManager extends KoolListener
 
 	public ReportManager()
 	{
-		reportMap = KoolSMPCore.getInstance().getPlayerRegistry().loadAllReports();
+		reportMap = new ConcurrentHashMap<>(KoolSMPCore.getInstance().getPlayerRegistry().loadAllReports());
 		FLog.info("{} report(s) loaded.", reportMap.size());
 	}
 
@@ -101,7 +102,7 @@ public class ReportManager extends KoolListener
 		reportMap.put(id, report);
 		playerRegistry.saveReport(report);
 
-		FUtil.broadcast("kfc.command.reports", ConfigEntry.FORMATS_REPORT.getString(),
+		FUtil.broadcast("kfc.admin", ConfigEntry.FORMATS_REPORT.getString(),
 				Placeholder.parsed("reporter", event.getReporter().getName()),
 				Placeholder.parsed("player", event.getReported().getName() != null
 						? event.getReported().getName()
@@ -109,7 +110,7 @@ public class ReportManager extends KoolListener
 				Placeholder.unparsed("reason", event.getReason()));
 
 		Bukkit.getOnlinePlayers().stream()
-				.filter(p -> p.hasPermission("kfc.command.reports"))
+				.filter(p -> p.hasPermission("kfc.admin"))
 				.forEach(p -> p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0F, 2.0F));
 	}
 
@@ -143,7 +144,7 @@ public class ReportManager extends KoolListener
 	public void onAdminJoin(PlayerJoinEvent event)
 	{
 		Player player = event.getPlayer();
-		if (!player.hasPermission("kfc.command.reports")) return;
+		if (!player.hasPermission("kfc.admin")) return;
 
 		long unresolved = reportMap.values().stream().filter(r -> !r.isResolved()).count();
 		if (unresolved > 0)

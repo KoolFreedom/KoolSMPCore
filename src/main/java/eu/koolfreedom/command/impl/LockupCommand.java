@@ -1,16 +1,14 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.listener.impl.LockupManager;
 import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
-import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.util.List;
 
 @CommandParameters(
         name        = "lockup",
@@ -21,38 +19,23 @@ import java.util.List;
 public class LockupCommand extends KoolCommand
 {
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command command, String label, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        if (args.length != 1)
-            return false;
+        root.then(argument("target", ArgumentTypes.player())
+                .executes(executes(ctx ->
+                {
+                    Player target = player(ctx, "target");
+                    LockupManager lm = plugin.getLockupManager();
+                    boolean nowLocked = lm.toggle(target);
 
-        Player target = FUtil.getPlayer(args[0], true);
-        if (target == null)
-        {
-            msg(sender, playerNotFound);
-            return true;
-        }
+                    FUtil.staffAction(sender(ctx),
+                            (nowLocked ? "Locked-up " : "Unlocked ") + "<player>",
+                            Placeholder.unparsed("player", target.getName()));
 
-        LockupManager lm   = plugin.getLockupManager();
-        boolean nowLocked  = lm.toggle(target);
+                    msg(sender(ctx), "<gray>" + target.getName() + " is now "
+                            + (nowLocked ? "<red>locked-up" : "<green>free") + ".");
 
-        FUtil.staffAction(sender,
-                (nowLocked ? "Locked‑up " : "Unlocked ") + "<player>",
-                Placeholder.unparsed("player", target.getName()));
-
-        msg(sender, "<gray>" + target.getName() + " is now "
-                + (nowLocked ? "<red>locked‑up" : "<green>free") + ".");
-
-        if (nowLocked) target.openInventory(target.getInventory());
-        return true;
-    }
-
-    @Override
-    public List<String> tabComplete(CommandSender sender, Command command,
-                                    String label, String[] args)
-    {
-        return args.length == 1
-                ? Bukkit.getOnlinePlayers().stream().map(Player::getName).toList()
-                : List.of();
+                    if (nowLocked) target.openInventory(target.getInventory());
+                })));
     }
 }

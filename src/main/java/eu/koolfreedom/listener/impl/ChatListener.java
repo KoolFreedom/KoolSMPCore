@@ -12,6 +12,8 @@ import eu.koolfreedom.util.FUtil;
 import eu.koolfreedom.util.TimeOffset;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
@@ -53,6 +55,23 @@ public class ChatListener extends KoolListener
 	public Optional<FilterEntry> getFilterEntryIfApplicable(OfflinePlayer player, String message)
 	{
 		return filters.stream().filter(entry -> entry.isApplicable(player, message)).findAny();
+	}
+
+	private static void notifyAdmins(Component component)
+	{
+		for (Player player : Bukkit.getOnlinePlayers())
+		{
+			if (!player.hasPermission("kfc.admin")) continue;
+
+			player.sendMessage(Component.newline()
+					.append(Component.text("[", NamedTextColor.DARK_GRAY))
+					.append(Component.text("KoolFreedom | Chat Filter", NamedTextColor.RED))
+					.append(Component.text("] ", NamedTextColor.DARK_GRAY))
+					.append(component)
+					.appendNewline());
+		}
+
+		FLog.info(component);
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -103,6 +122,8 @@ public class ChatListener extends KoolListener
 							if (player.isOnline())
 							{
 								DoomCommand.eviscerate(player, Bukkit.getConsoleSender(), filter.getReason());
+								notifyAdmins(FUtil.miniMessage("<red>Player has triggered the command filter | Content: '<message>'",
+										Placeholder.unparsed("message", content)));
 								break;
 							}
 						}
@@ -111,6 +132,8 @@ public class ChatListener extends KoolListener
 							if (player.isOnline())
 							{
 								SmiteCommand.zap(player, Bukkit.getConsoleSender(), filter.getReason());
+								notifyAdmins(FUtil.miniMessage("<red>Player has triggered the command filter | Content: '<message>'",
+										Placeholder.unparsed("message", content)));
 								break;
 							}
 						}
@@ -122,11 +145,15 @@ public class ChatListener extends KoolListener
 							player.kick(ban.getKickMessage(), PlayerKickEvent.Cause.BANNED);
 							Bukkit.getOnlinePlayers().stream().filter(suspect -> FUtil.getIp(player).equalsIgnoreCase(FUtil.getIp(player))).forEach(suspect ->
 									player.kick(ban.getKickMessage()));
+							notifyAdmins(FUtil.miniMessage("<red>Player has triggered the command filter | Content: '<message>'",
+									Placeholder.unparsed("message", content)));
 							break;
 						}
 						case LOG:
 						{
 							FLog.warning(filter.getReason(), player.getName(), content);
+							notifyAdmins(FUtil.miniMessage("<red>Player has triggered the command filter | Content: '<message>'",
+									Placeholder.unparsed("message", content)));
 							break;
 						}
 						case MUTE:
@@ -146,6 +173,8 @@ public class ChatListener extends KoolListener
 										.type("MUTE")
 										.build());
 							}
+							notifyAdmins(FUtil.miniMessage("<red>Player has triggered the command filter | Content: '<message>'",
+									Placeholder.unparsed("message", content)));
 						}
 						default:
 						{
@@ -182,6 +211,8 @@ public class ChatListener extends KoolListener
 							if (player.isOnline())
 							{
 								DoomCommand.eviscerate(player, Bukkit.getConsoleSender(), filter.getReason());
+								notifyAdmins(FUtil.miniMessage("<red>Player has triggered the chat filter | Content: '<message>'",
+										Placeholder.unparsed("message", message)));
 								break;
 							}
 						}
@@ -190,6 +221,8 @@ public class ChatListener extends KoolListener
 							if (player.isOnline())
 							{
 								SmiteCommand.zap(player, Bukkit.getConsoleSender(), filter.getReason());
+								notifyAdmins(FUtil.miniMessage("<red>Player has triggered the chat filter | Content: '<message>'",
+										Placeholder.unparsed("message", message)));
 								break;
 							}
 						}
@@ -201,11 +234,15 @@ public class ChatListener extends KoolListener
 							player.kick(ban.getKickMessage(), PlayerKickEvent.Cause.BANNED);
 							Bukkit.getOnlinePlayers().stream().filter(suspect -> FUtil.getIp(player).equalsIgnoreCase(FUtil.getIp(player))).forEach(suspect ->
 									player.kick(ban.getKickMessage()));
+							notifyAdmins(FUtil.miniMessage("<red>Player has triggered the chat filter | Content: '<message>'",
+									Placeholder.unparsed("message", message)));
 							break;
 						}
 						case LOG:
 						{
 							FLog.warning(filter.getReason(), player.getName(), message);
+							notifyAdmins(FUtil.miniMessage("<red>Player has triggered the chat filter | Content: '<message>'",
+									Placeholder.unparsed("message", message)));
 							break;
 						}
 						case MUTE:
@@ -225,6 +262,8 @@ public class ChatListener extends KoolListener
 										.type("MUTE")
 										.build());
 							}
+							notifyAdmins(FUtil.miniMessage("<red>Player has triggered the chat filter | Content: '<message>'",
+									Placeholder.unparsed("message", message)));
 						}
 						default:
 						{

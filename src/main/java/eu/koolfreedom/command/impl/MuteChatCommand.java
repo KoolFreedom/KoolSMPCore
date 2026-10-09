@@ -1,8 +1,10 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.util.FUtil;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.command.Command;
@@ -17,11 +19,13 @@ public class MuteChatCommand extends KoolCommand
     private static boolean chatMuted = false;
 
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command cmd, String s, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        chatMuted = !chatMuted;
-        String status = chatMuted ? "Muted" : "Unmuted";
-        FUtil.staffAction(sender, status + " global chat");
-        return true;
+        root.executes(executes(ctx ->
+        {
+            chatMuted = !chatMuted;
+            String status = chatMuted ? "Muting" : "Unmuting";
+            FUtil.staffAction(sender(ctx), status + " global chat");
+        }));
     }
 }

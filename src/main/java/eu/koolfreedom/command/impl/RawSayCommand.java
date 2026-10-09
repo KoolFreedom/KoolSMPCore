@@ -1,7 +1,10 @@
 package eu.koolfreedom.command.impl;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -12,14 +15,9 @@ import org.bukkit.entity.Player;
 public class RawSayCommand extends KoolCommand
 {
     @Override
-    public boolean run(CommandSender sender, Player playerSender, Command cmd, String commandLabel, String[] args)
+    public void build(LiteralArgumentBuilder<CommandSourceStack> root)
     {
-        if (args.length == 0)
-        {
-            return false;
-        }
-
-        broadcast(StringUtils.join(args, " "));
-        return true;
+        root.then(argument("message", StringArgumentType.greedyString())
+                .executes(executes(ctx -> broadcast(StringArgumentType.getString(ctx, "message")))));
     }
 }
