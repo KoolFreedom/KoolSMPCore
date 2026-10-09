@@ -40,6 +40,15 @@ public enum ConfigEntry
     EXPLOIT_BUNDLE(ConfigurationSection.class, "exploits.crash.bundle"),
     EXPLOIT_BUNDLE_ENABLED(Boolean.class, "exploits.crash.bundle.enabled"),
     EXPLOIT_BUNDLE_PUNISH(String.class, "exploits.crash.bundle.punishment"),
+    EXPLOIT_BOOK(ConfigurationSection.class, "exploits.crash.book"),
+    EXPLOIT_BOOK_ENABLED(Boolean.class, "exploits.crash.book.enabled"),
+    EXPLOIT_BOOK_PUNISH(String.class, "exploits.crash.book.punishment"),
+    EXPLOIT_SIGN(ConfigurationSection.class, "exploits.crash.sign"),
+    EXPLOIT_SIGN_ENABLED(Boolean.class, "exploits.crash.sign.enabled"),
+    EXPLOIT_SIGN_PUNISH(String.class, "exploits.crash.sign.punishment"),
+    EXPLOIT_WINDOW_CLICK(ConfigurationSection.class, "exploits.crash.window_click"),
+    EXPLOIT_WINDOW_CLICK_ENABLED(Boolean.class, "exploits.crash.window_click.enabled"),
+    EXPLOIT_WINDOW_CLICK_PUNISH(String.class, "exploits.crash.window_click.punishment"),
     EXPLOITS_DUPE(ConfigurationSection.class, "exploits.dupe"),
     EXPLOIT_BOOK_AND_QUILL(ConfigurationSection.class, "exploits.dupe.book_and_quill"),
     EXPLOIT_BOOK_AND_QUILL_ENABLED(Boolean.class, "exploits.dupe.book_and_quill.enabled"),
@@ -50,7 +59,14 @@ public enum ConfigEntry
     EXPLOITS_MISC(ConfigurationSection.class, "exploits.misc"),
     EXPLOIT_MISC_ABILITIES(ConfigurationSection.class, "exploits.misc.abilities"),
     EXPLOIT_MISC_ABILITIES_ENABLED(Boolean.class, "exploits.misc.abilities.enabled"),
-    EXPLOIT_MISC_ABILITIES_PUNISH(String.class, "exploits.misc.abilities.punishment");
+    EXPLOIT_MISC_ABILITIES_PUNISH(String.class, "exploits.misc.abilities.punishment"),
+    EXPLOITS_SPAM(ConfigurationSection.class, "exploits.spam"),
+    EXPLOIT_SPAM_COMMAND(ConfigurationSection.class, "exploits.spam.command"),
+    EXPLOIT_SPAM_COMMAND_ENABLED(Boolean.class, "exploits.spam.command.enabled"),
+    EXPLOIT_SPAM_COMMAND_PUNISH(String.class, "exploits.spam.command.punishment"),
+    EXPLOIT_SPAM_CHAT(ConfigurationSection.class, "exploits.spam.chat"),
+    EXPLOIT_SPAM_CHAT_ENABLED(Boolean.class, "exploits.spam.chat.enabled"),
+    EXPLOIT_SPAM_CHAT_PUNISH(String.class, "exploits.spam.chat.punishment");
 
 
 
