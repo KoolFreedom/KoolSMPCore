@@ -25,7 +25,7 @@ repositories {
 
 dependencies {
     // Paper API
-    compileOnly("io.papermc.paper:paper-api:26.2.build.+")
+    compileOnly("io.papermc.paper:paper-api:26.3.build.+")
 
     // Plugin integrations
     compileOnly("net.essentialsx:EssentialsX:2.21.1") {
@@ -43,7 +43,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude("org.bukkit", "bukkit")
     }
-    implementation("com.github.retrooper:packetevents-spigot:2.13.0")
+    implementation("com.github.retrooper:packetevents-spigot:2.14.0")
 
     // Utilities
     implementation("org.apache.commons:commons-lang3:3.18.0")
@@ -53,7 +53,7 @@ dependencies {
     implementation("org.reflections:reflections:0.10.2")
 
     // Integrations
-    compileOnly("com.discordsrv:discordsrv:1.29.0")
+    compileOnly("com.discordsrv:discordsrv:1.30.5")
     compileOnly("net.dv8tion:JDA:5.6.1") {
         exclude(group = "org.slf4j")
     }
