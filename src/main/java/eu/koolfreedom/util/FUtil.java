@@ -289,7 +289,8 @@ public class FUtil // the f stands for fuck
                 Placeholder.styling("rank_color", rank -> rank.color(group.getColor())),
                 Placeholder.component("message", message));
 
-        broadcast(formattedMessage, "kfc.command.adminchat");
+        broadcast(formattedMessage, "kfc.admin");
+        FLog.info(formattedMessage);
         new AdminChatEvent(async, sender, senderDisplay, senderName, group, message, caller).callEvent();
     }
 
@@ -311,9 +312,9 @@ public class FUtil // the f stands for fuck
      */
     public static List<String> getPlayerList(boolean includeVanish)
     {
+        var vanishBridge = KoolSMPCore.getInstance().getVanishBridge();
         return Bukkit.getOnlinePlayers().stream().filter(player ->
-                KoolSMPCore.getInstance().getVanishBridge() != null &&
-                        KoolSMPCore.getInstance().getVanishBridge().isVanished(player) || includeVanish)
+            includeVanish || vanishBridge == null || !vanishBridge.isVanished(player))
                 .map(Player::getName).toList();
     }
 
@@ -337,7 +338,7 @@ public class FUtil // the f stands for fuck
         private static final RandomColorTag randomColorTag = new RandomColorTag();
 
         @Override
-        public Component apply(@NotNull Component current, int depth)
+        public @NonNull Component apply(@NotNull Component current, int depth)
         {
             if (current instanceof TextComponent textComponent)
             {
