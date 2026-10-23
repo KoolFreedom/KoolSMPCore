@@ -43,6 +43,7 @@ permissions:
     children:
       - kfc.admininfo
       - kfc.koolsmpcore
+      - kfc.list
       - kfc.playtime
       - kfc.reaction
       - kfc.report
@@ -58,10 +59,13 @@ permissions:
       - kfc.banip
       - kfc.banlist
       - kfc.blockcommand
+      - kfc.checkban
+      - kfc.checkmute
       - kfc.clearchat
       - kfc.commandspy
       - kfc.freeze
       - kfc.heal
+      - kfc.history
       - kfc.kick
       - kfc.lockup
       - kfc.mute
