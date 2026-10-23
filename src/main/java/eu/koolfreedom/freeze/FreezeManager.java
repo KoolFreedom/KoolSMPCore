@@ -60,27 +60,9 @@ public class FreezeManager
         return frozenPlayers.containsKey(player.getUniqueId());
     }
 
-    public FreezeData getData(Player player)
-    {
-        return frozenPlayers.get(player.getUniqueId());
-    }
-
-    public boolean isFrozen()
-    {
-        return unfreezeTask != null;
-    }
-
     public void clearTask()
     {
         if (unfreezeTask != null) unfreezeTask.cancel();
         unfreezeTask = null;
-    }
-
-    public void unfreezeAll()
-    {
-        for (UUID id : new HashSet<>(frozenPlayers.keySet()))
-        {
-            unfreeze(id);
-        }
     }
 }

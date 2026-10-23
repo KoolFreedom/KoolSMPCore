@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Single source of truth for all persistent plugin data.
- *
+ *<p>
  * Owns:
  *  - koolsmpcore.db (SQLite)
  *  - UUID → PlayerData in-memory cache

@@ -83,18 +83,6 @@ public class PlayerData
         this.lockedUp = value;
     }
 
-    // --- Derived state ---
-
-    public boolean isFrozenInSession(Player player)
-    {
-        return freezeData != null && freezeData.isFrozen(player);
-    }
-
-    public long getPlaytimeMillis()
-    {
-        return System.currentTimeMillis() - joinTime;
-    }
-
     // --- Notes (session cache) ---
 
     public void cacheNote(PlayerNote note)

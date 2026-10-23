@@ -50,11 +50,6 @@ public class GroupManagement
         return groups.getOrDefault(name, group);
     }
 
-    public boolean isGroupPresent(String name)
-    {
-        return groups.containsKey(name);
-    }
-
     public Group getSenderGroup(CommandSender sender)
     {
         if (sender instanceof Player player)
@@ -138,7 +133,7 @@ public class GroupManagement
             }
             else
             {
-                color = TextColor.color(Math.max(Math.min(section.getInt("color", NamedTextColor.GRAY.value()), 0xFFFFFF), 0));
+                color = TextColor.color(Math.clamp(section.getInt("color", NamedTextColor.GRAY.value()), 0, 0xFFFFFF));
             }
 
             Component displayName = section.getRichMessage("displayName", Component.text(name).color(color));
@@ -149,17 +144,6 @@ public class GroupManagement
         public static Group createGroup(String internalName, String name, Component displayName, TextColor color)
         {
             return new Group(internalName, name, displayName, color);
-        }
-
-        @SuppressWarnings("deprecation")
-        public ChatColor toChatColor()
-        {
-            if (color instanceof NamedTextColor named)
-            {
-                return ChatColor.valueOf(named.toString().toUpperCase(Locale.ROOT));
-            }
-            // fallback (no hex codes)
-            return ChatColor.GRAY;
         }
 
         private Group(String internalName, String name, TextColor textColor)

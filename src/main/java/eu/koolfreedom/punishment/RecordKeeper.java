@@ -3,9 +3,7 @@ package eu.koolfreedom.punishment;
 import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.util.FLog;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 public class RecordKeeper
 {
@@ -23,13 +21,15 @@ public class RecordKeeper
 		KoolSMPCore.getInstance().getPlayerRegistry().savePunishment(punishment);
 	}
 
-	public Collection<Punishment> getPunishments()
+	public Collection<Punishment> getPunishmentHistory(String target, int limit)
 	{
-		return Collections.unmodifiableCollection(punishmentMap.values());
-	}
-
-	public Punishment getPunishment(long id)
-	{
-		return punishmentMap.get(id);
+		String normalizedTarget = target.trim();
+		return punishmentMap.values().stream()
+				.filter(punishment -> (punishment.getName() != null &&
+						normalizedTarget.equalsIgnoreCase(punishment.getName())) ||
+						(punishment.getUuid() != null && normalizedTarget.equalsIgnoreCase(punishment.getUuid().toString())))
+				.sorted(Comparator.comparingLong(Punishment::getIssued).reversed())
+				.limit(limit)
+				.toList();
 	}
 }

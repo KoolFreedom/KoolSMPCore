@@ -27,7 +27,7 @@ public class ListCommand extends KoolCommand
 	public void build(LiteralArgumentBuilder<CommandSourceStack> root)
 	{
 		root.executes(executes(ctx -> sendPlayerList(sender(ctx), false)))
-				.then(literal("vanished")
+				.then(literal("-v")
 						.requires(source -> source.getSender().hasPermission("kfc.admin"))
 						.executes(executes(ctx -> sendPlayerList(sender(ctx), true))));
 	}
