@@ -6,13 +6,8 @@ import eu.koolfreedom.command.KoolCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.util.List;
 
 @CommandParameters(name = "spectate", description = "Be like Big Brother and watch suspicious players.",
         usage = "/<command> <player>", aliases = "watch")

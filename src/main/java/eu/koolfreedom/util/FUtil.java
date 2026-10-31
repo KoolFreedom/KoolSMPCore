@@ -278,6 +278,7 @@ public class FUtil // the f stands for fuck
             Objects.requireNonNull(sender);
         }
 
+        @SuppressWarnings("null")
         Component formattedMessage = miniMessage(ConfigEntry.FORMATS_ADMIN_CHAT.getString(),
                 Placeholder.unparsed("name", sender != null ? sender.getName() : senderName),
                 Placeholder.component("display_name", senderDisplay != null ?

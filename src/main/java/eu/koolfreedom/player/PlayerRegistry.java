@@ -224,7 +224,6 @@ public class PlayerRegistry extends KoolListener
 
     public void clearCommandsBlocked()
     {
-        int count = countBooleanFieldSync("commands_blocked");
         getAll().forEach(data -> data.applyCommandsBlocked(false));
         updateAllFieldSync("commands_blocked", 0);
     }

@@ -2,7 +2,6 @@ package eu.koolfreedom.command.impl;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.banning.Ban;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
@@ -13,7 +12,6 @@ import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.luckperms.api.LuckPerms;
 import net.milkbowl.vault.permission.Permission;
-import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.command.*;
 import org.bukkit.entity.*;
 import org.bukkit.*;

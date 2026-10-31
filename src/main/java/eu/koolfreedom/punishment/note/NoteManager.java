@@ -1,8 +1,6 @@
 package eu.koolfreedom.punishment.note;
 
 import eu.koolfreedom.player.PlayerRegistry;
-
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 

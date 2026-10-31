@@ -2,11 +2,13 @@ package eu.koolfreedom.banning;
 
 import java.net.InetSocketAddress;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 import eu.koolfreedom.listener.KoolListener;
 import eu.koolfreedom.util.FLog;
@@ -14,7 +16,7 @@ import eu.koolfreedom.util.FUtil;
 
 public class BanManager extends KoolListener
 {
-	private final Map<Long, Ban> banMap = new LinkedHashMap<>();
+	private final Map<Long, Ban> banMap = new ConcurrentHashMap<>();
 
 	public void load()
 	{
@@ -129,19 +131,48 @@ public class BanManager extends KoolListener
 	// --- Login enforcement ---
 
 	@EventHandler
-	@SuppressWarnings("deprecation")
-	public void onPlayerLogin(PlayerLoginEvent event)
+	public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event)
 	{
-		findBan(event.getPlayer())
-				.or(() -> findBan(event.getAddress().getHostAddress()))
-				.ifPresent(ban ->
-				{
-					event.disallow(PlayerLoginEvent.Result.KICK_BANNED, ban.getKickMessage());
-					FUtil.broadcast("kfc.admin",
-							"<gradient:#ff4d4d:#ff9966><b>⚠ Banned Join Attempt</b></gradient> "
-									+ "<gray>-</gray> <#ffb347>" + event.getPlayer().getName()
-									+ "</#ffb347> <gray>tried to join but is banned</gray> "
-									+ "(<#ffd580>" + ban.getDurationString() + "</#ffd580>)");
-				});
+		if (event.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED)
+		{
+			return;
+		}
+
+		Optional<Ban> ban = findBan(event.getUniqueId().toString());
+		if (ban.isEmpty())
+		{
+			ban = findBan(event.getName());
+		}
+		if (ban.isEmpty())
+		{
+			ban = findBan(event.getAddress().getHostAddress());
+		}
+
+		if (ban.isPresent())
+		{
+			Ban activeBan = ban.get();
+			event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, activeBan.getKickMessage());
+			plugin.getServer().getScheduler().runTask(plugin,
+					() -> announceBannedJoin(event.getName(), activeBan));
+		}
+	}
+
+	@EventHandler
+	public void onPlayerJoin(PlayerJoinEvent event)
+	{
+		Player player = event.getPlayer();
+		findBan(player).ifPresent(ban ->
+		{
+			player.kick(ban.getKickMessage());
+		});
+	}
+
+	private void announceBannedJoin(String playerName, Ban ban)
+	{
+		FUtil.broadcast("kfc.admin",
+				"<gradient:#ff4d4d:#ff9966><b>⚠ Banned Join Attempt</b></gradient> "
+						+ "<gray>-</gray> <#ffb347>" + (playerName != null ? playerName : "Unknown")
+						+ "</#ffb347> <gray>tried to join but is banned</gray> "
+						+ "(<#ffd580>" + ban.getDurationString() + "</#ffd580>)");
 	}
 }

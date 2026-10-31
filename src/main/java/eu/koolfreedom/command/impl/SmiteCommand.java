@@ -2,7 +2,6 @@ package eu.koolfreedom.command.impl;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import eu.koolfreedom.KoolSMPCore;
 import eu.koolfreedom.command.annotation.CommandParameters;
 import eu.koolfreedom.command.KoolCommand;
 import eu.koolfreedom.punishment.Punishment;
@@ -10,13 +9,8 @@ import eu.koolfreedom.util.FUtil;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
-import org.apache.commons.lang3.ArrayUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.util.List;
 
 @CommandParameters(name = "smite", description = "\"Kindly\" correct a misbehaving player.",
         usage = "/<command> <player> [reason]", aliases = {"bitchslap"})

@@ -12,7 +12,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerKickEvent;
 
 @CommandParameters(name = "kick", description = "Kick someone from the server.", usage = "/<command> <player> [reason]")
 public class KickCommand extends KoolCommand

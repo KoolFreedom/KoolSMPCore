@@ -3,7 +3,6 @@ package eu.koolfreedom.listener.impl;
 import eu.koolfreedom.listener.KoolListener;
 import eu.koolfreedom.util.FUtil;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -20,7 +19,7 @@ import java.util.UUID;
 
 public class LockupManager extends KoolListener
 {
-    private final Component lockupTitle = MiniMessage.miniMessage().deserialize("<red>You are locked up!");
+    private final Component lockupTitle = FUtil.miniMessage("<red>You are locked up!");
 
     public boolean toggle(Player p)
     {

@@ -44,6 +44,8 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.annotation.Nonnull;
+
 @SuppressWarnings("unused")
 public class DiscordSRVIntegration extends ListenerAdapter implements DiscordIntegration<DiscordSRV>
 {
@@ -230,7 +232,7 @@ public class DiscordSRVIntegration extends ListenerAdapter implements DiscordInt
     // -- JDA EVENTS -- //
 
     @Override
-    public void onButtonClick(ButtonClickEvent event)
+    public void onButtonClick(@Nonnull ButtonClickEvent event)
     {
         if (channelDoesNotMatch("reports", event.getChannel().getId())
                 || event.getMember() == null

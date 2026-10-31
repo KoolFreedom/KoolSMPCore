@@ -8,9 +8,6 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 @CommandParameters(name = "clearchat", description = "Clears the chat for non-admins online", aliases = {"cc", "cleanchat"})
 public class ClearChatCommand extends KoolCommand

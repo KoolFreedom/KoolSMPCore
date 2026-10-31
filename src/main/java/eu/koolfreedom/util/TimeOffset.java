@@ -10,7 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Getter
-public enum TimeOffset 
+public enum TimeOffset
 {
 	MILLISECOND(1L, "ms"),
 	SECOND(1000L, "s"),
