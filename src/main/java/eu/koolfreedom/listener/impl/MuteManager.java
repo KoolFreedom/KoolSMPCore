@@ -4,25 +4,54 @@ import eu.koolfreedom.command.impl.MuteChatCommand;
 import eu.koolfreedom.listener.KoolListener;
 import eu.koolfreedom.util.FUtil;
 import io.papermc.paper.event.player.AsyncChatEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.scheduler.BukkitTask;
 
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MuteManager extends KoolListener
 {
+    private final Map<UUID, BukkitTask> muteTasks = new ConcurrentHashMap<>();
+
     // --- Public API ---
 
     public void mute(UUID uuid)
     {
+        cancelMuteTask(uuid);
         playerRegistry.setMuted(uuid, true);
+    }
+
+    public void mute(UUID uuid, long durationTicks)
+    {
+        mute(uuid);
+        BukkitTask task = Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (isMuted(uuid))
+            {
+                unmute(uuid);
+                Player online = Bukkit.getPlayer(uuid);
+                if (online != null)
+                {
+                    online.sendMessage(FUtil.miniMessage("<green>Your mute has expired."));
+                }
+            }
+            else
+            {
+                muteTasks.remove(uuid);
+            }
+        }, Math.max(1L, durationTicks));
+        muteTasks.put(uuid, task);
     }
 
     public void unmute(UUID uuid)
     {
+        cancelMuteTask(uuid);
         playerRegistry.setMuted(uuid, false);
     }
 
@@ -43,7 +72,18 @@ public class MuteManager extends KoolListener
 
     public int wipeMutes()
     {
+        muteTasks.values().forEach(BukkitTask::cancel);
+        muteTasks.clear();
         return playerRegistry.clearMutes();
+    }
+
+    private void cancelMuteTask(UUID uuid)
+    {
+        BukkitTask task = muteTasks.remove(uuid);
+        if (task != null)
+        {
+            task.cancel();
+        }
     }
 
     public void wipeBlockedCommands()

@@ -58,7 +58,10 @@ public class BanCommand extends KoolCommand
         if (target instanceof Player online)
         {
             for (int i = 0; i < 4; i++)
+            {
                 online.getWorld().strikeLightning(online.getLocation());
+            }
+
             online.setHealth(0);
             online.kick(ban.getKickMessage());
 
