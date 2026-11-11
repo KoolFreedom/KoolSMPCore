@@ -291,7 +291,6 @@ public class FUtil // the f stands for fuck
                 Placeholder.component("message", message));
 
         broadcast(formattedMessage, "kfc.admin");
-        FLog.info(formattedMessage);
         new AdminChatEvent(async, sender, senderDisplay, senderName, group, message, caller).callEvent();
     }
 

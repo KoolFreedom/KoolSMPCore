@@ -86,7 +86,7 @@ public class BanManager extends KoolListener
 
 		Optional<Ban> existing = ban.getUuid() != null ? findBan(ban.getUuid().toString())
 				: ban.getName() != null ? findBan(ban.getName())
-				  : ban.getIps().stream().map(this::findBan).filter(Optional::isPresent).map(Optional::get).findFirst().map(Optional::of).orElse(Optional.empty());
+				  : ban.getIps().stream().map(this::findBan).filter(Optional::isPresent).map(Optional::get).findFirst();
 
 		if (existing.isPresent())
 		{
