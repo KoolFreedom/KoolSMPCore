@@ -32,9 +32,11 @@ dependencies:
 authors:
   - "gamingto12"
   - "0x7694C9"
+contributors:
   - "videogamesm12"
   - "sapph-ic"
 api-version: "26.2"
+website: "https://koolfreedom.eu.org"
 
 permissions:
   kfc.member:

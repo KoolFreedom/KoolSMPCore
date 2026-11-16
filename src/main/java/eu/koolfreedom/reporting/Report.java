@@ -116,7 +116,7 @@ public class Report
 
 	public PlayerReportEvent createEvent()
 	{
-		return new PlayerReportEvent(Bukkit.getPlayer(reporter), Bukkit.getOfflinePlayer(reported), reason, this);
+		return new PlayerReportEvent(Objects.requireNonNull(Bukkit.getPlayer(reporter)), Bukkit.getOfflinePlayer(reported), reason, this);
 	}
 
 	public boolean isResolved()

@@ -9,6 +9,7 @@ import eu.koolfreedom.util.FUtil;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
@@ -62,7 +63,6 @@ public class SeenCommand extends KoolCommand
         displayPlayer(sender, target, null);
     }
 
-    @SuppressWarnings("deprecation")
     private void displayPlayer(CommandSender sender, OfflinePlayer target, String forcedIp)
     {
         UUID uuid = target.getUniqueId();
@@ -70,7 +70,7 @@ public class SeenCommand extends KoolCommand
         msg(sender, FUtil.miniMessage("<red>Player Info: <gold>" + name + "</gold> <gray>(" + uuid + ")</gray>"));
 
         long first = target.getFirstPlayed();
-        long last = target.getLastPlayed();
+        long last = target.getLastLogin();
 
         long played = 0;
         try {
@@ -82,9 +82,12 @@ public class SeenCommand extends KoolCommand
         String lastStr = last > 0 ? fmt.format(Instant.ofEpochMilli(last)) : "Unknown";
         String playStr = played > 0 ? formatDuration(played) : "Unknown";
 
-        msg(sender, FUtil.miniMessage("<gray>First Join:</gray> <red>" + firstStr));
-        msg(sender, FUtil.miniMessage("<gray>Last Seen:</gray>  <red>" + lastStr));
-        msg(sender, FUtil.miniMessage("<gray>Playtime:</gray>   <red>" + playStr));
+        msg(sender, "<gray>First Join: <red><first>",
+                Placeholder.unparsed("first", firstStr));
+        msg(sender, "<gray>Last Seen: <red><last>",
+                Placeholder.unparsed("last", lastStr));
+        msg(sender, "<gray>Playtime: <red><playtime",
+                Placeholder.unparsed("playtime", playStr));
 
         String ip = forcedIp != null ? forcedIp : plugin.getAltManager().getLastIP(uuid).orElse("Cannot find IP");
         List<String> alts = FUtil.getOfflinePlayersByIp(ip).stream()
@@ -130,7 +133,7 @@ public class SeenCommand extends KoolCommand
         }
 
         String status = (muted ? "Muted" : "Not Muted") + ", " + (frozen ? "Frozen" : "Not Frozen");
-        msg(sender, FUtil.miniMessage("<gray>Status:</gray> <red>" + status + "</red>"));
+        msg(sender, FUtil.miniMessage("<gray>Muted/Frozen:</gray> <red>" + status + "</red>"));
         msg(sender, FUtil.miniMessage("<gray>OP:</gray> <red>" + (opped ? "Yes" : "No") + "</red>"));
         msg(sender, FUtil.miniMessage("<gray>Banned:</gray> <red>" + (banned ? "Yes" : "No") + "</red>"));
         msg(sender, FUtil.miniMessage("<gray>Whitelisted:</gray> <red>" + (white ? "Yes" : "No") + "</red>"));

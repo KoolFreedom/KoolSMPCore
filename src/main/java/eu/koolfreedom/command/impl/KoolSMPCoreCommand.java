@@ -19,12 +19,15 @@ public class KoolSMPCoreCommand extends KoolCommand
         root.executes(executes(ctx ->
                 {
                     final String authors = String.join(", ", plugin.getPluginMeta().getAuthors());
+                    final String contributors = String.join(", ", plugin.getPluginMeta().getContributors());
                     BuildProperties build = plugin.getBuildMeta();
-                    msg(sender(ctx), "<gradient:#38d6c8:#8eb8ff><bold>KoolSMPCore</bold></gradient> <dark_gray>•</dark_gray> <gray>Core plugin of KoolFreedom SMP");
+                    msg(sender(ctx), "<gradient:#38d6c8:#8eb8ff><bold>KoolSMPCore</bold> <dark_gray>• <gray>Core plugin of KoolFreedom SMP");
                     msg(sender(ctx), "<gray>Version <white>" + build.getVersion() + "." + build.getNumber());
-                    msg(sender(ctx), "<gray>Built <white>" + build.getDate() + " <dark_gray>by</dark_gray> <white>" + build.getAuthor());
+                    msg(sender(ctx), "<gray>Built <white>" + build.getDate() + " <dark_gray>by <white>" + build.getAuthor());
                     msg(sender(ctx), "<gray>Authors <white><authors>",
                             Placeholder.unparsed("authors", authors));
+                    msg(sender(ctx), "<gray>Contributors <white><contributors>",
+                            Placeholder.unparsed("contributors", contributors));
                 }))
                 .then(literal("reload").executes(executes(ctx ->
                 {

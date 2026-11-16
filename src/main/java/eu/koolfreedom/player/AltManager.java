@@ -27,11 +27,6 @@ public class AltManager
         return playerRegistry.getAlts(ip);
     }
 
-    public Set<UUID> getAccounts(String ip)
-    {
-        return getAlts(ip);
-    }
-
     public Optional<String> getLastIP(UUID uuid)
     {
         return playerRegistry.getLastIp(uuid);
