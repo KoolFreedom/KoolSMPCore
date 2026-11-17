@@ -61,7 +61,6 @@ dependencies {
     // Metrics
     implementation("org.bstats:bstats-bukkit:3.0.2")
     implementation("org.bstats:bstats-base:3.0.2")
-    implementation("com.google.code.gson:gson:2.10.1")
 }
 
 val buildPropsFile = layout.projectDirectory.file("src/main/resources/build.properties").asFile
@@ -110,14 +109,8 @@ tasks {
     shadowJar {
         archiveFileName.set("KoolSMPCore-${project.version}.jar")
 
-        exclude("META-INF/*.SF")
-        exclude("META-INF/*.DSA")
-        exclude("META-INF/*.RSA")
-        exclude("META-INF/versions/**")
-
         mergeServiceFiles()
         relocate("org.bstats", "eu.koolfreedom.libs.bstats")
-        relocate("com.google.gson", "eu.koolfreedom.libs.gson")
         relocate("org.reflections", "eu.koolfreedom.libs.reflections")
         relocate("javassist", "eu.koolfreedom.libs.javassist")
         finalizedBy("incrementBuildNumber")

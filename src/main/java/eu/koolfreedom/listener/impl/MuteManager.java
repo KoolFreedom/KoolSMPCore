@@ -96,10 +96,6 @@ public class MuteManager extends KoolListener
     {
         mute(p.getUniqueId());
     }
-    public void unmute(Player p)
-    {
-        unmute(p.getUniqueId());
-    }
 
     public boolean isMuted(Player p)
     {
