@@ -38,7 +38,7 @@ public class MuteManager extends KoolListener
                 Player online = Bukkit.getPlayer(uuid);
                 if (online != null)
                 {
-                    online.sendMessage(FUtil.miniMessage("<green>Your mute has expired."));
+                    online.sendMessage(mmDeserialize("<green>Your mute has expired."));
                 }
             }
             else
@@ -114,14 +114,14 @@ public class MuteManager extends KoolListener
     {
         if (isMuted(e.getPlayer()))
         {
-            e.getPlayer().sendMessage(FUtil.miniMessage("<gray>You are muted."));
+            e.getPlayer().sendMessage(mmDeserialize("<gray>You are muted."));
             e.setCancelled(true);
         }
 
         if (MuteChatCommand.isChatMuted() && !e.getPlayer().hasPermission("kfc.mutechat.bypass"))
         {
             e.setCancelled(true);
-            e.getPlayer().sendMessage(FUtil.miniMessage("<red>Chat is currently muted, you cannot speak."));
+            e.getPlayer().sendMessage(mmDeserialize("<red>Chat is currently muted, you cannot speak."));
         }
     }
 
@@ -140,20 +140,20 @@ public class MuteManager extends KoolListener
         if (isCommandsBlocked(id))
         {
             e.setCancelled(true);
-            e.getPlayer().sendMessage(FUtil.miniMessage("<red>Your commands are blocked."));
+            e.getPlayer().sendMessage(mmDeserialize("<red>Your commands are blocked."));
             return;
         }
 
         if (isMuted(id))
         {
             e.setCancelled(true);
-            e.getPlayer().sendMessage(FUtil.miniMessage("<red>You are muted, you cannot use commands."));
+            e.getPlayer().sendMessage(mmDeserialize("<red>You are muted, you cannot use commands."));
         }
 
         if (MuteChatCommand.isChatMuted() && !e.getPlayer().hasPermission("kfc.mutechat.bypass"))
         {
             e.setCancelled(true);
-            e.getPlayer().sendMessage(FUtil.miniMessage("<red>Chat is currently muted, you cannot speak."));
+            e.getPlayer().sendMessage(mmDeserialize("<red>Chat is currently muted, you cannot speak."));
         }
     }
 }

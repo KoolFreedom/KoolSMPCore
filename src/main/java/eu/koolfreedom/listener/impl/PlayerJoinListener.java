@@ -48,20 +48,20 @@ public class PlayerJoinListener extends KoolListener
                 if (data.isFrozen())
                 {
                     freezeManager.freeze(player);
-                    player.sendMessage(FUtil.miniMessage(
+                    player.sendMessage(mmDeserialize(
                             "<#CCBBF0>Just because you re-logged, doesn't mean you're safe."));
                 }
 
                 if (data.isMuted())
-                    player.sendMessage(FUtil.miniMessage("<#678580>You are still muted."));
+                    player.sendMessage(mmDeserialize("<#678580>You are still muted."));
 
                 if (data.isCommandsBlocked())
-                    player.sendMessage(FUtil.miniMessage("<#678580>Your commands are still blocked."));
+                    player.sendMessage(mmDeserialize("<#678580>Your commands are still blocked."));
 
                 if (data.isLockedUp())
                 {
                     lockupManager.lock(player);
-                    player.sendMessage(FUtil.miniMessage(
+                    player.sendMessage(mmDeserialize(
                             "<#CCBBF0>Just because you re-logged doesn't mean you're safe!"));
                 }
             }

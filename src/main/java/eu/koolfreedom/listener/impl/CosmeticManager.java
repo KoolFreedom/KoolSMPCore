@@ -35,7 +35,7 @@ public class CosmeticManager extends KoolListener
             if (ban.getReason() != null)
                 mm.append("<newline><red>Reason:</red> <yellow><reason>");
 
-            event.motd(FUtil.miniMessage(
+            event.motd(mmDeserialize(
                     mm.toString(),
                     Placeholder.unparsed("reason",
                             ban.getReason() == null ? "No reason specified" : ban.getReason())));
@@ -44,17 +44,17 @@ public class CosmeticManager extends KoolListener
 
         if (Bukkit.hasWhitelist())
         {
-            event.motd(FUtil.miniMessage(ConfigEntry.SERVER_WHITELIST_MOTD.getString()));
+            event.motd(mmDeserialize(ConfigEntry.SERVER_WHITELIST_MOTD.getString()));
             return;
         }
 
         if (Bukkit.getOnlinePlayers().size() >= Bukkit.getMaxPlayers())
         {
-            event.motd(FUtil.miniMessage(ConfigEntry.SERVER_FULL_MOTD.getString()));
+            event.motd(mmDeserialize(ConfigEntry.SERVER_FULL_MOTD.getString()));
             return;
         }
 
-        event.motd(FUtil.miniMessage(ConfigEntry.SERVER_MOTD.getString()));
+        event.motd(mmDeserialize(ConfigEntry.SERVER_MOTD.getString()));
     }
 
     @EventHandler
@@ -75,7 +75,7 @@ public class CosmeticManager extends KoolListener
             player.sendPlayerListFooter(FUtil.miniMessage(footer));
         }
 
-        player.playerListName(KoolSMPCore.getInstance().getGroupManager().getColoredName(player));
+        player.playerListName(plugin.getGroupManager().getColoredName(player));
     }
 
 }

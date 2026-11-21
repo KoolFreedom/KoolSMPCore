@@ -19,7 +19,7 @@ import java.util.UUID;
 
 public class LockupManager extends KoolListener
 {
-    private final Component lockupTitle = FUtil.miniMessage("<red>You are locked up!");
+    private final Component lockupTitle = mmDeserialize("<red>You are locked up!");
 
     public boolean toggle(Player p)
     {
@@ -91,7 +91,7 @@ public class LockupManager extends KoolListener
         if (isLocked(e.getPlayer().getUniqueId()))
         {
             e.setCancelled(true);
-            e.getPlayer().sendMessage(FUtil.miniMessage("<red>You are locked‑up and cannot use commands."));
+            e.getPlayer().sendMessage(mmDeserialize("<red>You are locked‑up and cannot use commands."));
         }
     }
 
@@ -102,7 +102,7 @@ public class LockupManager extends KoolListener
         if (isLocked(e.getPlayer().getUniqueId()))
         {
             e.setCancelled(true);
-            e.getPlayer().sendMessage(FUtil.miniMessage("<red>You are locked-up and cannot chat."));
+            e.getPlayer().sendMessage(mmDeserialize("<red>You are locked-up and cannot chat."));
         }
     }
 
