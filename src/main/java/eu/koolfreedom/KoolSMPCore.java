@@ -55,6 +55,7 @@ public class KoolSMPCore extends JavaPlugin
     private ExploitListener exploitListener;
     private ChatListener chatListener;
     private PlayerJoinListener pjListener;
+    private TextFilterListener textFilterListener;
 
     // Bridges
     private GroupManagement groupManager;
@@ -165,6 +166,7 @@ public class KoolSMPCore extends JavaPlugin
         freezeListener = new FreezeListener();
         lockupManager = new LockupManager();
         pjListener = new PlayerJoinListener();
+        textFilterListener = new TextFilterListener();
     }
 
     public void loadBridges()
