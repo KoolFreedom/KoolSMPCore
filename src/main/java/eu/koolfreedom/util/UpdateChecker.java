@@ -1,133 +1,190 @@
 package eu.koolfreedom.util;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
+import java.io.IOException;
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.security.MessageDigest;
+import java.time.Duration;
+import java.util.HexFormat;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.Nullable;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import eu.koolfreedom.KoolSMPCore;
 
+/**
+ * Checks GitHub Releases for a newer version and can stage it in Bukkit's update folder.
+ * <p>
+ * The version is taken from the release tag (never from the jar filename), and the installed
+ * jar is replaced on next restart by dropping the new file into {@code plugins/update/} under
+ * the same filename as the running jar.
+ */
 public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoName,
                             @Nullable String spigotUrl, @Nullable String modrinthUrl)
 {
-    private static final Pattern TAG_NAME_PATTERN = Pattern.compile("\"tag_name\"\\s*:\\s*\"([^\"]+)\"");
-    private static final Pattern DOWNLOAD_URL_PATTERN = Pattern.compile("\"browser_download_url\"\\s*:\\s*\"([^\"]+\\.jar)\"");
+    private static final HttpClient HTTP = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .build();
+
+    private static final String DIVIDER = "<yellow>------------------------------------------------";
 
     public void check()
     {
-        check(null, false);
+        run(null, false);
     }
 
     public void check(@Nullable CommandSender sender)
     {
-        check(sender, false);
+        run(sender, false);
     }
 
     public void checkAndUpdate(@Nullable CommandSender sender)
     {
-        check(sender, true);
+        run(sender, true);
     }
 
-    private void check(@Nullable CommandSender sender, boolean download)
+    private void run(@Nullable CommandSender sender, boolean install)
     {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () ->
         {
             try
             {
-                ReleaseInfo release = fetchLatestRelease();
-                if (release == null)
+                Release latest = fetchLatest();
+                String current = currentVersion();
+
+                if (!isOutdated(current, latest.tag()))
                 {
-                    notify(sender, "<red>Could not fetch the latest version from GitHub.");
+                    notify(sender, "<green>You are already running the latest version of <white>"
+                            + plugin.getName() + " <green>(<white>" + current + "<green>).");
                     return;
                 }
 
-                String currentVersion = getCurrentVersion();
-                if (!isOutdated(currentVersion, release.tag()))
+                if (!install)
                 {
-                    notify(sender, String.format("<green>You are already running the latest version of <white>%s <green>(<white>%s<green>).",
-                            plugin.getName(), currentVersion));
+                    announce(sender, current, latest.tag());
                     return;
                 }
 
-                if (!download)
+                if (latest.downloadUrl() == null)
                 {
-                    notifyUpdateAvailable(sender, currentVersion, release.tag());
+                    notify(sender, "<red>The latest release has no JAR attached.");
+                    notify(sender, manualDownloadMessage());
                     return;
                 }
 
-                if (release.downloadUrl() == null)
-                {
-                    notify(sender, "<red>No JAR file found in the latest release.");
-                    notify(sender, buildManualDownloadMessage());
-                    return;
-                }
-
-                notify(sender, "<gray>Downloading <white>" + plugin.getName() + " " + release.tag() + "<gray>...");
-                downloadUpdate(release.downloadUrl(), release.tag(), sender);
-
+                notify(sender, "<gray>Downloading <white>" + plugin.getName() + " " + latest.tag() + "<gray>...");
+                stage(sender, latest);
             }
             catch (Exception e)
             {
-                FLog.error("Failed to check for updates: " + e.getMessage(), e);
-                notify(sender, "<red>Failed to check for updates: " + e.getMessage());
+                FLog.error("Update check failed: " + e.getMessage(), e);
+                notify(sender, "<red>Update check failed: " + e.getMessage());
             }
         });
     }
 
-    @SuppressWarnings("ConstantConditions")
-    private String getCurrentVersion()
+    private Release fetchLatest() throws IOException, InterruptedException
     {
-        String buildVersion = plugin.getBuildMeta() != null ? plugin.getBuildMeta().getVersion() : null;
-        if (isMeaningful(buildVersion))
-            return buildVersion;
+        HttpRequest request = HttpRequest.newBuilder(URI.create(
+                        "https://api.github.com/repos/" + repoOwner + "/" + repoName + "/releases/latest"))
+                .header("Accept", "application/vnd.github+json")
+                .timeout(Duration.ofSeconds(10))
+                .GET()
+                .build();
 
-        String metaVersion = plugin.getPluginMeta() != null ? plugin.getPluginMeta().getVersion() : null;
-        return isMeaningful(metaVersion) ? metaVersion : "unknown";
+        HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 200)
+            throw new IOException("GitHub API responded with HTTP " + response.statusCode());
+
+        JsonObject release = JsonParser.parseString(response.body()).getAsJsonObject();
+        if (!release.has("tag_name"))
+            throw new IOException("GitHub response had no tag_name");
+
+        String tag = release.get("tag_name").getAsString();
+        String preferred = plugin.getName() + ".jar";
+
+        String downloadUrl = null;
+        String sha256 = null;
+
+        if (release.has("assets"))
+        {
+            for (JsonElement element : release.getAsJsonArray("assets"))
+            {
+                JsonObject asset = element.getAsJsonObject();
+                String name = asset.get("name").getAsString();
+                if (!name.endsWith(".jar")) continue;
+
+                boolean exact = name.equalsIgnoreCase(preferred);
+                if (downloadUrl == null || exact)
+                {
+                    downloadUrl = asset.get("browser_download_url").getAsString();
+                    sha256 = parseDigest(asset);
+                }
+                if (exact) break;
+            }
+        }
+
+        return new Release(tag, downloadUrl, sha256);
     }
 
-    private boolean isMeaningful(@Nullable String value)
+    /** GitHub exposes asset digests as "sha256:<hex>"; older releases may not have one. */
+    private static @Nullable String parseDigest(JsonObject asset)
     {
-        return value != null && !value.isBlank() && !"unknown".equalsIgnoreCase(value);
+        if (!asset.has("digest") || asset.get("digest").isJsonNull()) return null;
+        String digest = asset.get("digest").getAsString();
+        return digest.startsWith("sha256:") ? digest.substring("sha256:".length()) : null;
     }
 
-    private void downloadUpdate(String downloadUrl, String latestTag, @Nullable CommandSender sender)
+    /**
+     * Downloads the release jar into plugins/update/ using the running jar's filename, which
+     * is what makes Bukkit swap it in on the next restart.
+     */
+    private void stage(@Nullable CommandSender sender, Release release)
     {
         try
         {
-            Path pluginJar = Path.of(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
-            Path pluginsFolder = pluginJar.getParent();
-            String jarName = pluginJar.getFileName().toString();
-            Path newJar = pluginsFolder.resolve(plugin.getName() + "-" + latestTag + ".jar");
-            Path oldJar = pluginsFolder.resolve(jarName.replaceFirst("\\.jar$", ".jar.old"));
+            Path runningJar = Path.of(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+            Path updateFolder = Bukkit.getUpdateFolderFile().toPath();
+            Files.createDirectories(updateFolder);
 
-            HttpURLConnection connection = (HttpURLConnection) URI.create(downloadUrl).toURL().openConnection();
-            connection.setRequestProperty("Accept", "application/octet-stream");
-            connection.setConnectTimeout(10000);
-            connection.setReadTimeout(30000);
+            Path target = updateFolder.resolve(runningJar.getFileName());
+            Path partial = updateFolder.resolve(runningJar.getFileName() + ".part");
 
-            try (InputStream in = connection.getInputStream())
+            HttpRequest request = HttpRequest.newBuilder(URI.create(release.downloadUrl()))
+                    .header("Accept", "application/octet-stream")
+                    .timeout(Duration.ofSeconds(60))
+                    .GET()
+                    .build();
+
+            HttpResponse<Path> response = HTTP.send(request, HttpResponse.BodyHandlers.ofFile(partial));
+            if (response.statusCode() != 200)
             {
-                Files.copy(in, newJar, StandardCopyOption.REPLACE_EXISTING);
+                Files.deleteIfExists(partial);
+                throw new IOException("Download responded with HTTP " + response.statusCode());
             }
 
-            Files.move(pluginJar, oldJar, StandardCopyOption.REPLACE_EXISTING);
-            Files.move(newJar, pluginsFolder.resolve(plugin.getName() + "-" + latestTag + ".jar"), StandardCopyOption.REPLACE_EXISTING);
+            if (release.sha256() != null && !release.sha256().equalsIgnoreCase(sha256Of(partial)))
+            {
+                Files.deleteIfExists(partial);
+                throw new IOException("Checksum mismatch, download discarded");
+            }
+
+            Files.move(partial, target, StandardCopyOption.REPLACE_EXISTING);
 
             notify(sender, "<green>Update downloaded successfully!");
-            notify(sender, "<gray>The update will take effect after the next server restart.");
-            notify(sender, "<gray>Old JAR backed up as: <white>" + oldJar.getFileName());
-            FLog.info(String.format("Update to %s downloaded. Restart the server to apply.", latestTag));
-
+            notify(sender, "<gray>It will be applied on the next server restart.");
+            FLog.info("Update to " + release.tag() + " staged in " + updateFolder + ". Restart to apply.");
         }
         catch (Exception e)
         {
@@ -136,31 +193,25 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
         }
     }
 
-    private ReleaseInfo fetchLatestRelease() throws Exception
+    private static String sha256Of(Path file) throws Exception
     {
-        String apiUrl = String.format("https://api.github.com/repos/%s/%s/releases/latest", repoOwner, repoName);
-        HttpURLConnection connection = (HttpURLConnection) URI.create(apiUrl).toURL().openConnection();
-        connection.setRequestProperty("Accept", "application/vnd.github+json");
-        connection.setConnectTimeout(5000);
-        connection.setReadTimeout(5000);
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        return HexFormat.of().formatHex(digest.digest(Files.readAllBytes(file)));
+    }
 
-        int responseCode = connection.getResponseCode();
-        if (responseCode >= 400)
-        {
-            String error = connection.getResponseMessage();
-            throw new IllegalStateException("GitHub API responded with HTTP " + responseCode + ": " + error);
-        }
+    @SuppressWarnings("ConstantConditions")
+    private String currentVersion()
+    {
+        String build = plugin.getBuildMeta() != null ? plugin.getBuildMeta().getVersion() : null;
+        if (isMeaningful(build)) return build;
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream())))
-        {
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) response.append(line);
-            String json = response.toString();
-            String tag = extractTagName(json);
-            String downloadUrl = extractDownloadUrl(json);
-            return tag != null ? new ReleaseInfo(tag, downloadUrl) : null;
-        }
+        String meta = plugin.getPluginMeta() != null ? plugin.getPluginMeta().getVersion() : null;
+        return isMeaningful(meta) ? meta : "unknown";
+    }
+
+    private static boolean isMeaningful(@Nullable String value)
+    {
+        return value != null && !value.isBlank() && !"unknown".equalsIgnoreCase(value);
     }
 
     static boolean isOutdated(String current, String latest)
@@ -168,36 +219,31 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
         return !VersionUtil.normalizeVersion(latest).equalsIgnoreCase(VersionUtil.normalizeVersion(current));
     }
 
-    private void notifyUpdateAvailable(@Nullable CommandSender sender, String current, String latest)
+    private void announce(@Nullable CommandSender sender, String current, String latest)
     {
-        String githubUrl = String.format("https://github.com/%s/%s/releases/latest", repoOwner, repoName);
-        String[] lines = {
-                "<yellow>------------------------------------------------",
-                String.format("<yellow>An update is available for <white>%s<yellow>!", plugin.getName()),
-                String.format("<gray>Current version: <white>%s", current),
-                String.format("<gray>Latest version:  <white>%s", latest),
-                "<gray>Use `/koolsmpcore update` to install it automatically.",
-                "<gray>If that didn't work, then you can download the plugin here and update manually:",
-                String.format("<gray>• GitHub: <white>%s", githubUrl),
-                spigotUrl != null && !spigotUrl.isEmpty() ? "<gray>• SpigotMC: <white>" + spigotUrl : null,
-                modrinthUrl != null && !modrinthUrl.isEmpty() ? "<gray>• Modrinth: <white>" + modrinthUrl : null,
-                "<yellow>------------------------------------------------"
-        };
-
-        for (String line : lines)
-            if (line != null) notify(sender, line);
+        notify(sender, DIVIDER);
+        notify(sender, "<yellow>An update is available for <white>" + plugin.getName() + "<yellow>!");
+        notify(sender, "<gray>Current version: <white>" + current);
+        notify(sender, "<gray>Latest version:  <white>" + latest);
+        notify(sender, "<gray>Use `/koolsmpcore update` to download it automatically, or grab it manually:");
+        notify(sender, downloadLinks());
+        notify(sender, DIVIDER);
     }
 
-    private String buildManualDownloadMessage()
+    private String manualDownloadMessage()
     {
-        String githubUrl = String.format("https://github.com/%s/%s/releases/latest", repoOwner, repoName);
-        StringBuilder builder = new StringBuilder("<gray>If that didn't work, then you can download the plugin here and update manually:\n");
-        builder.append(String.format("<gray>• GitHub: <white>%s\n", githubUrl));
+        return "<gray>You can download the plugin manually here:\n" + downloadLinks();
+    }
+
+    private String downloadLinks()
+    {
+        StringBuilder links = new StringBuilder("<gray>• GitHub: <white>https://github.com/")
+                .append(repoOwner).append('/').append(repoName).append("/releases/latest");
         if (spigotUrl != null && !spigotUrl.isEmpty())
-            builder.append(String.format("<gray>• SpigotMC: <white>%s\n", spigotUrl));
+            links.append("\n<gray>• SpigotMC: <white>").append(spigotUrl);
         if (modrinthUrl != null && !modrinthUrl.isEmpty())
-            builder.append(String.format("<gray>• Modrinth: <white>%s", modrinthUrl));
-        return builder.toString();
+            links.append("\n<gray>• Modrinth: <white>").append(modrinthUrl);
+        return links.toString();
     }
 
     private void notify(@Nullable CommandSender sender, String miniMessage)
@@ -208,17 +254,5 @@ public record UpdateChecker(KoolSMPCore plugin, String repoOwner, String repoNam
             FLog.info(miniMessage.replaceAll("<[^>]+>", ""));
     }
 
-    private String extractTagName(String json)
-    {
-        Matcher matcher = TAG_NAME_PATTERN.matcher(json);
-        return matcher.find() ? matcher.group(1) : null;
-    }
-
-    private String extractDownloadUrl(String json)
-    {
-        Matcher matcher = DOWNLOAD_URL_PATTERN.matcher(json);
-        return matcher.find() ? matcher.group(1) : null;
-    }
-
-    private record ReleaseInfo(String tag, @Nullable String downloadUrl) {}
+    private record Release(String tag, @Nullable String downloadUrl, @Nullable String sha256) {}
 }

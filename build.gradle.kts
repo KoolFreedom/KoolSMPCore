@@ -106,8 +106,12 @@ tasks {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 
+    jar {
+        enabled = false
+    }
+
     shadowJar {
-        archiveFileName.set("KoolSMPCore-${project.version}.jar")
+        archiveFileName.set("KoolSMPCore.jar")
 
         mergeServiceFiles()
         relocate("org.bstats", "eu.koolfreedom.libs.bstats")
