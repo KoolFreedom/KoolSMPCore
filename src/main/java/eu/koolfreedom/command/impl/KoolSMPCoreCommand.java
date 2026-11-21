@@ -41,7 +41,7 @@ public class KoolSMPCoreCommand extends KoolCommand
                     {
                         MainConfig.load();
                         plugin.getGroupManager().loadGroups();
-                        plugin.getChatListener().loadFilters();
+                        plugin.getTextFilterListener().loadFilters();
                         plugin.resetAnnouncer();
                         msg(sender(ctx), "<gray>Reloaded config");
                     }
